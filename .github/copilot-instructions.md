@@ -62,7 +62,7 @@ Import from folder paths, never from files inside folders:
 
 ### Import Boundaries
 
-- **Context hooks**: Only from direct parent directories
+- **Context hooks**: Only from direct ancestor directories (parent, grandparent, great-grandparent, etc.)
 - **Components**: Only from direct child directories
 - **Exception**: `Shared*` prefixed components can be imported from anywhere
 

@@ -388,7 +388,7 @@ const componentFolderStructure = {
 /**
  * Rule: import-boundaries
  *
- * - Context hooks can only be imported from DIRECT parent directories
+ * - Context hooks can only be imported from DIRECT ancestor directories (parent, grandparent, etc.)
  * - Components can only be imported from DIRECT descendant directories
  * - Exception: "Shared" prefixed components from "Shared..." directories
  */
@@ -399,8 +399,8 @@ const importBoundaries = {
       description: 'Enforce import boundaries for components and context hooks',
     },
     messages: {
-      contextFromNonParent:
-        'Context hook "{{name}}" can only be imported from direct parent directories. Import path "{{path}}" is not a direct parent.',
+      contextFromNonAncestor:
+        'Context hook "{{name}}" can only be imported from direct ancestor directories (parent, grandparent, etc.). Import path "{{path}}" is not a direct ancestor.',
       componentFromNonChild:
         'Component "{{name}}" can only be imported from direct descendant directories. Import path "{{path}}" is not a direct descendant.',
       sharedMustBeFromSharedDir:
@@ -411,6 +411,36 @@ const importBoundaries = {
   create(context) {
     const filename = context.filename || context.getFilename();
     const fileDir = path.dirname(filename);
+
+    // Helper to check if import path is a direct ancestor (only goes up, never sideways)
+    const isDirectAncestorImport = (importPath) => {
+      // Must start with '../' to be an ancestor
+      if (!importPath.startsWith('../')) {
+        return false;
+      }
+      
+      // Split the path and check that it only contains '..' segments followed by a single folder name
+      // Valid: '../', '../../', '../../../FolderName'
+      // Invalid: '../../sibling/Folder' (goes up then sideways)
+      const parts = importPath.split('/').filter((p) => p && p !== '.');
+      
+      // Count the '..' parts at the start
+      let upCount = 0;
+      for (const part of parts) {
+        if (part === '..') {
+          upCount++;
+        } else {
+          break;
+        }
+      }
+      
+      // After the '..' parts, there should be at most one folder name (the target)
+      // The remaining parts after '..' should be exactly 0 or 1 (the target folder)
+      const remainingParts = parts.slice(upCount);
+      
+      // Must have at least one '..' and at most one folder name after the '..'s
+      return upCount >= 1 && remainingParts.length <= 1;
+    };
 
     return {
       ImportDeclaration(node) {
@@ -431,19 +461,13 @@ const importBoundaries = {
 
           // Check context hooks (use*Context pattern)
           if (/^use.*Context$/.test(importedName)) {
-            // Must be from direct parent (../)
-            if (!importPath.startsWith('../') || importPath.startsWith('../../')) {
-              // Allow if it starts with exactly '../' (direct parent)
-              const pathParts = importPath.split('/').filter((p) => p && p !== '.');
-              const upCount = pathParts.filter((p) => p === '..').length;
-
-              if (upCount !== 1) {
-                context.report({
-                  node: specifier,
-                  messageId: 'contextFromNonParent',
-                  data: { name: importedName, path: importPath },
-                });
-              }
+            // Must be from a direct ancestor (../, ../../, ../../../, etc.)
+            if (!isDirectAncestorImport(importPath)) {
+              context.report({
+                node: specifier,
+                messageId: 'contextFromNonAncestor',
+                data: { name: importedName, path: importPath },
+              });
             }
           }
 

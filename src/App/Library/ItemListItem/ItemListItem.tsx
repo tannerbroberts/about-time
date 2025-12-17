@@ -1,6 +1,4 @@
-import { memo } from 'react';
-
-interface MemoItemListItemProps {
+interface ItemListItemProps {
   id: string;
   intent: string;
   estimatedDuration: number;
@@ -17,11 +15,11 @@ function formatDuration(ms: number): string {
   return remainingMinutes > 0 ? `~${hours}h ${remainingMinutes}m` : `~${hours}h`;
 }
 
-export const MemoItemListItem = memo(({
+export function ItemListItem({
   intent,
   estimatedDuration,
   version,
-}: MemoItemListItemProps) => {
+}: ItemListItemProps) {
   return (
     <div style={styles.container}>
       <span style={styles.intent}>{intent}</span>
@@ -29,7 +27,7 @@ export const MemoItemListItem = memo(({
       <span style={styles.version}>v{version}</span>
     </div>
   );
-});
+}
 
 const styles: Record<string, React.CSSProperties> = {
   container: {

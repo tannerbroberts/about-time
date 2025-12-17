@@ -1,1 +1,1 @@
-export { MemoItemListItem } from './ItemListItem';
+export { ItemListItem } from './ItemListItem';
