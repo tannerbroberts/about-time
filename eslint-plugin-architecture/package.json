@@ -1,0 +1,17 @@
+{
+  "name": "eslint-plugin-architecture",
+  "version": "1.0.0",
+  "description": "Strict architectural ESLint rules for React/TypeScript projects",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "react",
+    "architecture"
+  ],
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  }
+}
