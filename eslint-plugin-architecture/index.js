@@ -5,6 +5,7 @@
  */
 
 import path from 'path';
+import { ESLintUtils } from '@typescript-eslint/utils';
 
 // Helper to check if a file is a hook file (prefixed with "use")
 const isHookFile = (filename) => {
@@ -790,6 +791,196 @@ const memoNoContextHooks = {
   },
 };
 
+// Primitive types that are allowed in Memo component props
+const PRIMITIVE_TYPE_FLAGS = [
+  'string',
+  'number',
+  'boolean',
+  'null',
+  'undefined',
+  'literal', // string/number/boolean literals
+  'stringLiteral',
+  'numberLiteral',
+  'booleanLiteral',
+];
+
+/**
+ * Rule: memo-primitive-props-only
+ *
+ * Memo components (prefixed with "Memo") can only have primitive prop types.
+ * This ensures memoization works correctly since objects/arrays/functions
+ * change reference equality on every render.
+ *
+ * Allowed types: string, number, boolean, null, undefined, and literal types
+ * Disallowed types: object, array, function, Record, interface, etc.
+ */
+const memoPrimitivePropsOnly = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: 'Memo components can only have primitive prop types',
+    },
+    messages: {
+      nonPrimitiveProp:
+        'Memo component prop "{{propName}}" has non-primitive type "{{propType}}". Memo components should only accept primitive props (string, number, boolean) to ensure proper memoization.',
+    },
+    schema: [],
+  },
+  create(context) {
+    const filename = context.filename || context.getFilename();
+    const basename = path.basename(filename, path.extname(filename));
+
+    // Only apply to Memo component files
+    if (!isMemoComponent(basename)) {
+      return {};
+    }
+
+    // Try to get TypeScript services
+    let services;
+    let checker;
+    try {
+      services = ESLintUtils.getParserServices(context);
+      if (services.program) {
+        checker = services.program.getTypeChecker();
+      }
+    } catch {
+      // TypeScript services not available, skip this rule
+      return {};
+    }
+
+    if (!checker) {
+      return {};
+    }
+
+    /**
+     * Check if a TypeScript type is a primitive type
+     */
+    const isPrimitiveType = (type) => {
+      if (!type) return false;
+
+      const typeString = checker.typeToString(type).toLowerCase();
+
+      // Check for primitive type flags
+      if (type.flags) {
+        const ts = services.program.getTypeChecker();
+        
+        // String, Number, Boolean primitives
+        if (type.flags & 4) return true; // String
+        if (type.flags & 8) return true; // Number
+        if (type.flags & 16) return true; // Boolean
+        if (type.flags & 32) return true; // Enum
+        if (type.flags & 64) return true; // BigInt
+        if (type.flags & 128) return true; // StringLiteral
+        if (type.flags & 256) return true; // NumberLiteral
+        if (type.flags & 512) return true; // BooleanLiteral
+        if (type.flags & 1024) return true; // EnumLiteral
+        if (type.flags & 2048) return true; // BigIntLiteral
+        if (type.flags & 32768) return true; // Undefined
+        if (type.flags & 65536) return true; // Null
+        if (type.flags & 131072) return true; // Never
+        if (type.flags & 4194304) return true; // ESSymbol
+        if (type.flags & 2097152) return true; // Intersection - check components
+      }
+
+      // Handle union types (e.g., string | number)
+      if (type.isUnion && type.isUnion()) {
+        return type.types.every(t => isPrimitiveType(t));
+      }
+
+      // Handle intersection types
+      if (type.isIntersection && type.isIntersection()) {
+        // For intersections, all parts must be primitive
+        return type.types.every(t => isPrimitiveType(t));
+      }
+
+      // Check common primitive type strings
+      if (['string', 'number', 'boolean', 'null', 'undefined', 'never', 'void'].includes(typeString)) {
+        return true;
+      }
+
+      // Check for literal types like 'hello' or 42
+      if (/^".*"$/.test(typeString) || /^'.*'$/.test(typeString)) return true;
+      if (/^\d+$/.test(typeString)) return true;
+      if (typeString === 'true' || typeString === 'false') return true;
+
+      return false;
+    };
+
+    /**
+     * Get a user-friendly type name
+     */
+    const getTypeName = (type) => {
+      if (!type) return 'unknown';
+      return checker.typeToString(type);
+    };
+
+    return {
+      // Check interface declarations for Memo component props
+      TSInterfaceDeclaration(node) {
+        // Look for interfaces ending in 'Props' in Memo component files
+        if (!node.id.name.endsWith('Props')) {
+          return;
+        }
+
+        for (const member of node.body.body) {
+          if (member.type === 'TSPropertySignature' && member.typeAnnotation) {
+            const propName = member.key.name || member.key.value;
+            const tsNode = services.esTreeNodeToTSNodeMap.get(member.typeAnnotation.typeAnnotation);
+            
+            if (tsNode) {
+              const type = checker.getTypeAtLocation(tsNode);
+              
+              if (!isPrimitiveType(type)) {
+                context.report({
+                  node: member,
+                  messageId: 'nonPrimitiveProp',
+                  data: {
+                    propName,
+                    propType: getTypeName(type),
+                  },
+                });
+              }
+            }
+          }
+        }
+      },
+
+      // Check type alias declarations for Memo component props
+      TSTypeAliasDeclaration(node) {
+        // Look for type aliases ending in 'Props' in Memo component files
+        if (!node.id.name.endsWith('Props')) {
+          return;
+        }
+
+        // Handle object type literals: type Props = { ... }
+        if (node.typeAnnotation.type === 'TSTypeLiteral') {
+          for (const member of node.typeAnnotation.members) {
+            if (member.type === 'TSPropertySignature' && member.typeAnnotation) {
+              const propName = member.key.name || member.key.value;
+              const tsNode = services.esTreeNodeToTSNodeMap.get(member.typeAnnotation.typeAnnotation);
+              
+              if (tsNode) {
+                const type = checker.getTypeAtLocation(tsNode);
+                
+                if (!isPrimitiveType(type)) {
+                  context.report({
+                    node: member,
+                    messageId: 'nonPrimitiveProp',
+                    data: {
+                      propName,
+                      propType: getTypeName(type),
+                    },
+                  });
+                }
+              }
+            }
+          }
+        }
+      },
+    };
+  },
+};
+
 // Export the plugin
 export default {
   meta: {
@@ -808,6 +999,7 @@ export default {
     'no-useref-in-components': noUseRefInComponents,
     'memo-no-context-hooks': memoNoContextHooks,
     'import-from-index': importFromIndex,
+    'memo-primitive-props-only': memoPrimitivePropsOnly,
   },
   configs: {
     recommended: {
@@ -824,6 +1016,7 @@ export default {
         'architecture/no-useref-in-components': 'error',
         'architecture/memo-no-context-hooks': 'error',
         'architecture/import-from-index': 'error',
+        'architecture/memo-primitive-props-only': 'error',
       },
     },
   },

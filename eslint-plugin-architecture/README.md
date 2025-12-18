@@ -16,3 +16,4 @@ Strict architectural ESLint rules for React/TypeScript projects.
 | `file-export-name-match` | File names must match export names |
 | `no-useref-in-components` | Disallow useRef in component files |
 | `memo-no-context-hooks` | Memo components cannot use context hooks |
+| `memo-primitive-props-only` | Memo components can only have primitive prop types (requires type-aware linting) |

@@ -30,6 +30,8 @@ export default defineConfig([
         ecmaFeatures: {
           jsx: true,
         },
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     settings: {
@@ -181,6 +183,7 @@ export default defineConfig([
       'architecture/no-useref-in-components': 'error',
       'architecture/memo-no-context-hooks': 'error',
       'architecture/import-from-index': 'error',
+      'architecture/memo-primitive-props-only': 'error',
     },
   },
   // Config files need default exports (Vite, ESLint, etc.)
