@@ -170,9 +170,9 @@ export default defineConfig([
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
 
       // Architecture rules - strict enforcement
-      'architecture/no-hooks-in-components': 'error',
+      'architecture/no-react-hooks-in-components': 'error',
       'architecture/named-exports-only': 'error',
-      'architecture/hooks-only-in-hook-files': 'error',
+      'architecture/react-hooks-only-in-hook-files': 'error',
       'architecture/memo-component-rules': 'error',
       'architecture/context-provider-file': 'error',
       'architecture/component-folder-structure': 'error',

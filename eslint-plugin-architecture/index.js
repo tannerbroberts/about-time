@@ -52,7 +52,7 @@ const HOOKS_ONLY_IN_HOOK_FILES = [
 ];
 
 /**
- * Rule: no-hooks-in-components
+ * Rule: no-react-hooks-in-components
  *
  * TSX component files can ONLY have:
  * - Component imports
@@ -139,7 +139,7 @@ const namedExportsOnly = {
 };
 
 /**
- * Rule: hooks-only-in-hook-files
+ * Rule: react-hooks-only-in-hook-files
  *
  * useState, useCallback, useEffect, useMemo can ONLY be used in files prefixed with "use"
  */
@@ -616,7 +616,7 @@ const fileExportNameMatch = {
  * Rule: no-useRef-in-components
  *
  * useRef is not allowed in component files (must be in hook files).
- * This is covered by no-hooks-in-components but we make it explicit.
+ * This is covered by no-react-hooks-in-components but we make it explicit.
  */
 const noUseRefInComponents = {
   meta: {
@@ -797,9 +797,9 @@ export default {
     version: '1.0.0',
   },
   rules: {
-    'no-hooks-in-components': noHooksInComponents,
+    'no-react-hooks-in-components': noHooksInComponents,
     'named-exports-only': namedExportsOnly,
-    'hooks-only-in-hook-files': hooksOnlyInHookFiles,
+    'react-hooks-only-in-hook-files': hooksOnlyInHookFiles,
     'memo-component-rules': memoComponentRules,
     'context-provider-file': contextProviderFile,
     'component-folder-structure': componentFolderStructure,
@@ -813,9 +813,9 @@ export default {
     recommended: {
       plugins: ['architecture'],
       rules: {
-        'architecture/no-hooks-in-components': 'error',
+        'architecture/no-react-hooks-in-components': 'error',
         'architecture/named-exports-only': 'error',
-        'architecture/hooks-only-in-hook-files': 'error',
+        'architecture/react-hooks-only-in-hook-files': 'error',
         'architecture/memo-component-rules': 'error',
         'architecture/context-provider-file': 'error',
         'architecture/component-folder-structure': 'error',
