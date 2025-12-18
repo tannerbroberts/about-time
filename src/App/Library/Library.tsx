@@ -1,7 +1,9 @@
+import React from 'react';
+
 import { MemoItemListItem } from './MemoItemListItem';
 import { useItemsList } from './useItemsList';
 
-export function Library() {
+export function Library(): React.ReactElement {
   const items = useItemsList();
   return (
     <div>

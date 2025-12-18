@@ -1,6 +1,8 @@
+import React from 'react';
+
 import { Library } from './Library';
 
-export function App() {
+export function App(): React.ReactElement {
   return (
     <>
       <Library />

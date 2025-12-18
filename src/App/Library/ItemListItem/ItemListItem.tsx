@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface ItemListItemProps {
   id: string;
   intent: string;
@@ -19,7 +21,7 @@ export function ItemListItem({
   intent,
   estimatedDuration,
   version,
-}: ItemListItemProps) {
+}: ItemListItemProps): React.ReactElement {
   return (
     <div style={styles.container}>
       <span style={styles.intent}>{intent}</span>

@@ -44,6 +44,26 @@ MyComponent/
   └── index.ts
 ```
 
+### Explicit Return Types
+
+All functions **must** have explicit return type annotations. These rules are enforced:
+```
+'@typescript-eslint/explicit-function-return-type': 'error'
+'@typescript-eslint/explicit-module-boundary-types': 'error'
+```
+
+Examples:
+```tsx
+// ❌ function add(a: number, b: number) { return a + b; }
+// ✅ function add(a: number, b: number): number { return a + b; }
+
+// ❌ const onClick = () => { ... }
+// ✅ const onClick = (): void => { ... }
+
+// ❌ export function App() { return <div />; }
+// ✅ export function App(): React.ReactElement { return <div />; }
+```
+
 ### Named Exports Only
 
 No default exports. Always use named exports:
