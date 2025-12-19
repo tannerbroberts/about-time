@@ -9,7 +9,7 @@ import architecture from 'eslint-plugin-architecture'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'eslint-plugin-architecture']),
+  globalIgnores(['dist', 'eslint-plugin-architecture', 'mcp-server']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

@@ -1,0 +1,440 @@
+{
+  "version": "0.0.1",
+  "templates": [
+    {
+      "templateType": "lane",
+      "id": "template_001",
+      "intent": "Make Scrambled Eggs",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "segments": [
+        {
+          "templateId": "template_011",
+          "offset": 0
+        },
+        {
+          "templateId": "template_012",
+          "offset": 320000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "template_011",
+      "intent": "Prepare Food",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 320000,
+      "segments": [
+        {
+          "templateId": "template_002",
+          "offset": 0
+        },
+        {
+          "templateId": "template_002",
+          "offset": 10000
+        },
+        {
+          "templateId": "template_002",
+          "offset": 20000
+        },
+        {
+          "templateId": "template_003",
+          "offset": 30000
+        },
+        {
+          "templateId": "template_004",
+          "offset": 0
+        },
+        {
+          "templateId": "template_005",
+          "offset": 60000
+        },
+        {
+          "templateId": "template_006",
+          "offset": 65000
+        },
+        {
+          "templateId": "template_007",
+          "offset": 185000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "template_012",
+      "intent": "Clean Up",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 90000,
+      "segments": [
+        {
+          "templateId": "template_008",
+          "offset": 0
+        },
+        {
+          "templateId": "template_009",
+          "offset": 45000
+        },
+        {
+          "templateId": "template_010",
+          "offset": 75000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "template_002",
+      "intent": "Crack egg into bowl",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "willConsume": {
+        "egg": 1,
+        "clean_bowl": 1
+      },
+      "willProduce": {
+        "egg_in_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_003",
+      "intent": "Whisk 3 eggs",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "willConsume": {
+        "egg_in_bowl": 3,
+        "clean_fork": 1
+      },
+      "willProduce": {
+        "whisked_eggs": 3,
+        "dirty_fork": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_004",
+      "intent": "Heat pan with butter",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "willConsume": {
+        "clean_pan": 1,
+        "butter_pat": 1
+      },
+      "willProduce": {
+        "heated_buttered_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_005",
+      "intent": "Pour whisked eggs into heated pan",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "willConsume": {
+        "whisked_eggs": 3,
+        "heated_buttered_pan": 1,
+        "dirty_bowl": 1
+      },
+      "willProduce": {
+        "raw_eggs_in_pan": 3,
+        "dirty_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_006",
+      "intent": "Scramble eggs in pan with spatula",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "willConsume": {
+        "raw_eggs_in_pan": 3
+      },
+      "willProduce": {
+        "cooked_eggs_in_pan": 3
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_007",
+      "intent": "Plate scrambled eggs",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "willConsume": {
+        "cooked_eggs_in_pan": 3,
+        "clean_plate": 1
+      },
+      "willProduce": {
+        "cooked_egg_portion": 3,
+        "dirty_pan": 1,
+        "dirty_plate": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_008",
+      "intent": "Wash pan with soap and water",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 45000,
+      "willConsume": {
+        "dirty_pan": 1,
+        "soap": 1,
+        "water": 1
+      },
+      "willProduce": {
+        "clean_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_009",
+      "intent": "Wash bowl with soap and water",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "willConsume": {
+        "dirty_bowl": 1,
+        "soap": 1,
+        "water": 1
+      },
+      "willProduce": {
+        "clean_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "template_010",
+      "intent": "Wash fork with soap and water",
+      "authorId": "user_123",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "willConsume": {
+        "dirty_fork": 1,
+        "soap": 1,
+        "water": 1
+      },
+      "willProduce": {
+        "clean_fork": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_001",
+      "intent": "Mix flour, salt, and yeast in a large bowl",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "willConsume": {
+        "flour": 500,
+        "salt": 2,
+        "yeast": 7,
+        "clean_bowl": 1
+      },
+      "willProduce": {
+        "dry_bread_mix_in_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_002",
+      "intent": "Add olive oil and water to dry mix and stir",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "willConsume": {
+        "dry_bread_mix_in_bowl": 1,
+        "olive_oil": 3,
+        "water": 300
+      },
+      "willProduce": {
+        "shaggy_dough_in_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_003",
+      "intent": "Knead dough on floured surface until smooth",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "willConsume": {
+        "shaggy_dough_in_bowl": 1,
+        "flour": 10,
+        "dirty_bowl": 1
+      },
+      "willProduce": {
+        "smooth_dough": 1,
+        "dirty_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_004",
+      "intent": "Place dough in oiled bowl, cover, and let rise 1 hour",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 3600000,
+      "willConsume": {
+        "smooth_dough": 1,
+        "clean_bowl": 1,
+        "olive_oil": 1
+      },
+      "willProduce": {
+        "risen_dough_in_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_005",
+      "intent": "Knock back dough and shape into ball",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "willConsume": {
+        "risen_dough_in_bowl": 1
+      },
+      "willProduce": {
+        "shaped_dough_ball": 1,
+        "dirty_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_006",
+      "intent": "Place dough on parchment-lined tray and prove 1 hour",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 3600000,
+      "willConsume": {
+        "shaped_dough_ball": 1,
+        "clean_baking_tray": 1,
+        "parchment_paper": 1
+      },
+      "willProduce": {
+        "proved_loaf_on_tray": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_007",
+      "intent": "Preheat oven to 220C/fan 200C",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "willConsume": {
+        "cold_oven": 1
+      },
+      "willProduce": {
+        "heated_oven_220c": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_008",
+      "intent": "Dust loaf with flour and score a cross on top",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "willConsume": {
+        "proved_loaf_on_tray": 1,
+        "flour": 5,
+        "sharp_knife": 1
+      },
+      "willProduce": {
+        "scored_loaf_on_tray": 1,
+        "sharp_knife": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_009",
+      "intent": "Bake bread until golden brown 25-30 mins",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1680000,
+      "willConsume": {
+        "scored_loaf_on_tray": 1,
+        "heated_oven_220c": 1
+      },
+      "willProduce": {
+        "fresh_baked_bread": 1,
+        "hot_oven": 1,
+        "dirty_baking_tray": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bread_010",
+      "intent": "Cool bread on wire rack",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "willConsume": {
+        "fresh_baked_bread": 1,
+        "wire_rack": 1
+      },
+      "willProduce": {
+        "cooled_fresh_bread": 1,
+        "wire_rack": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "bread_lane_001",
+      "intent": "Bake Fresh Bread",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 12240000,
+      "segments": [
+        {
+          "templateId": "bread_001",
+          "offset": 0
+        },
+        {
+          "templateId": "bread_002",
+          "offset": 120000
+        },
+        {
+          "templateId": "bread_003",
+          "offset": 240000
+        },
+        {
+          "templateId": "bread_004",
+          "offset": 840000
+        },
+        {
+          "templateId": "bread_005",
+          "offset": 4440000
+        },
+        {
+          "templateId": "bread_006",
+          "offset": 4620000
+        },
+        {
+          "templateId": "bread_007",
+          "offset": 7620000
+        },
+        {
+          "templateId": "bread_008",
+          "offset": 8220000
+        },
+        {
+          "templateId": "bread_009",
+          "offset": 8280000
+        },
+        {
+          "templateId": "bread_010",
+          "offset": 9960000
+        }
+      ]
+    }
+  ]
+}
