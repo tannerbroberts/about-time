@@ -41,26 +41,16 @@ export function filterTemplates(
       return false;
     }
 
-    // Filter by inputs (willConsume) - only applicable to busy templates
-    if (filters.inputsQuery) {
+    // Filter by variables (willConsume or willProduce) - only applicable to busy templates
+    if (filters.variablesQuery) {
       if (template.templateType === 'busy') {
-        if (!matchesVariables(template.willConsume, filters.inputsQuery)) {
+        const matchesInput = matchesVariables(template.willConsume, filters.variablesQuery);
+        const matchesOutput = matchesVariables(template.willProduce, filters.variablesQuery);
+        if (!matchesInput && !matchesOutput) {
           return false;
         }
       } else {
-        // Lane templates don't have willConsume, so they don't match input filters
-        return false;
-      }
-    }
-
-    // Filter by outputs (willProduce) - only applicable to busy templates
-    if (filters.outputsQuery) {
-      if (template.templateType === 'busy') {
-        if (!matchesVariables(template.willProduce, filters.outputsQuery)) {
-          return false;
-        }
-      } else {
-        // Lane templates don't have willProduce, so they don't match output filters
+        // Lane templates don't have variables, so they don't match variable filters
         return false;
       }
     }

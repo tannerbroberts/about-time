@@ -26,20 +26,18 @@ function fuzzyMatch(text: string, query: string): boolean {
 }
 
 interface VariablesListResult {
-  inputs: Variable[];
-  outputs: Variable[];
+  variables: Variable[];
 }
 
 export function useVariablesList(
-  inputsQuery: string,
-  outputsQuery: string,
+  variablesQuery: string,
 ): VariablesListResult {
   const allTemplates = useMemo((): Template[] => {
     const library = templatesData as TemplateLibrary;
     return library.templates;
   }, []);
 
-  const { inputs, outputs } = useMemo((): VariablesListResult => {
+  const variables = useMemo((): Variable[] => {
     const inputsMap = new Map<string, string[]>();
     const outputsMap = new Map<string, string[]>();
 
@@ -63,36 +61,42 @@ export function useVariablesList(
       }
     }
 
-    const allInputs: Variable[] = Array.from(inputsMap.entries()).map(
-      ([name, templateIds]): Variable => ({
-        name,
-        type: 'input',
-        templateIds,
-      }),
+    // Merge all variable names
+    const allNames = new Set([...inputsMap.keys(), ...outputsMap.keys()]);
+
+    const mergedVariables: Variable[] = Array.from(allNames).map(
+      (name): Variable => {
+        const isInput = inputsMap.has(name);
+        const isOutput = outputsMap.has(name);
+        const inputTemplateIds = inputsMap.get(name) ?? [];
+        const outputTemplateIds = outputsMap.get(name) ?? [];
+        const allTemplateIds = [...new Set([...inputTemplateIds, ...outputTemplateIds])];
+
+        let type: 'input' | 'output' | 'both';
+        if (isInput && isOutput) {
+          type = 'both';
+        } else if (isInput) {
+          type = 'input';
+        } else {
+          type = 'output';
+        }
+
+        return {
+          name,
+          type,
+          templateIds: allTemplateIds,
+        };
+      },
     );
 
-    const allOutputs: Variable[] = Array.from(outputsMap.entries()).map(
-      ([name, templateIds]): Variable => ({
-        name,
-        type: 'output',
-        templateIds,
-      }),
-    );
-
-    return { inputs: allInputs, outputs: allOutputs };
+    return mergedVariables;
   }, [allTemplates]);
 
-  // Filter inputs based on inputsQuery
-  const filteredInputs = useMemo((): Variable[] => {
-    if (!inputsQuery) return inputs;
-    return inputs.filter((variable) => fuzzyMatch(variable.name, inputsQuery));
-  }, [inputs, inputsQuery]);
+  // Filter variables based on query
+  const filteredVariables = useMemo((): Variable[] => {
+    if (!variablesQuery) return variables;
+    return variables.filter((variable) => fuzzyMatch(variable.name, variablesQuery));
+  }, [variables, variablesQuery]);
 
-  // Filter outputs based on outputsQuery
-  const filteredOutputs = useMemo((): Variable[] => {
-    if (!outputsQuery) return outputs;
-    return outputs.filter((variable) => fuzzyMatch(variable.name, outputsQuery));
-  }, [outputs, outputsQuery]);
-
-  return { inputs: filteredInputs, outputs: filteredOutputs };
+  return { variables: filteredVariables };
 }

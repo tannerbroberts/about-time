@@ -13,15 +13,13 @@ interface TemplateLibrary {
 
 interface LibraryState {
   templates: Template[];
-  inputs: Variable[];
-  outputs: Variable[];
+  variables: Variable[];
   filters: LibraryFilters;
   minDurationInput: string;
   maxDurationInput: string;
   setMinDurationInput: (value: string) => void;
   setMaxDurationInput: (value: string) => void;
-  setInputsQuery: (value: string) => void;
-  setOutputsQuery: (value: string) => void;
+  setVariablesQuery: (value: string) => void;
   setIntentQuery: (value: string) => void;
   clearFilters: () => void;
 }
@@ -29,8 +27,7 @@ interface LibraryState {
 const initialFilters: LibraryFilters = {
   minDuration: null,
   maxDuration: null,
-  inputsQuery: '',
-  outputsQuery: '',
+  variablesQuery: '',
   intentQuery: '',
 };
 
@@ -51,11 +48,8 @@ export function useLibraryState(): LibraryState {
     [allTemplates, filters],
   );
 
-  // Get filtered inputs and outputs
-  const { inputs, outputs } = useVariablesList(
-    filters.inputsQuery,
-    filters.outputsQuery,
-  );
+  // Get filtered variables
+  const { variables } = useVariablesList(filters.variablesQuery);
 
   const setMinDurationInput = useCallback((value: string): void => {
     setMinDurationInputState(value);
@@ -69,12 +63,8 @@ export function useLibraryState(): LibraryState {
     setFilters((prev) => ({ ...prev, maxDuration: parsed }));
   }, []);
 
-  const setInputsQuery = useCallback((value: string): void => {
-    setFilters((prev) => ({ ...prev, inputsQuery: value }));
-  }, []);
-
-  const setOutputsQuery = useCallback((value: string): void => {
-    setFilters((prev) => ({ ...prev, outputsQuery: value }));
+  const setVariablesQuery = useCallback((value: string): void => {
+    setFilters((prev) => ({ ...prev, variablesQuery: value }));
   }, []);
 
   const setIntentQuery = useCallback((value: string): void => {
@@ -89,15 +79,13 @@ export function useLibraryState(): LibraryState {
 
   return {
     templates,
-    inputs,
-    outputs,
+    variables,
     filters,
     minDurationInput,
     maxDurationInput,
     setMinDurationInput,
     setMaxDurationInput,
-    setInputsQuery,
-    setOutputsQuery,
+    setVariablesQuery,
     setIntentQuery,
     clearFilters,
   };

@@ -1,8 +1,19 @@
 import React, { memo } from 'react';
 
+function getTypeIndicator(type: 'input' | 'output' | 'both'): string {
+  switch (type) {
+    case 'input':
+      return '→';
+    case 'output':
+      return '←';
+    case 'both':
+      return '↔';
+  }
+}
+
 interface MemoVariableListItemProps {
   name: string;
-  type: 'input' | 'output';
+  type: 'input' | 'output' | 'both';
   usageCount: number;
 }
 
@@ -13,7 +24,7 @@ export const MemoVariableListItem = memo(({
 }: MemoVariableListItemProps): React.ReactElement => {
   return (
     <div style={styles.container}>
-      <span style={styles.typeIndicator}>{type === 'input' ? '→' : '←'}</span>
+      <span style={styles.typeIndicator}>{getTypeIndicator(type)}</span>
       <span style={styles.name}>{name}</span>
       <span style={styles.usageCount}>{usageCount} template{usageCount !== 1 ? 's' : ''}</span>
     </div>

@@ -3,13 +3,11 @@ import React from 'react';
 interface LibraryFiltersProps {
   minDuration: string;
   maxDuration: string;
-  inputsQuery: string;
-  outputsQuery: string;
+  variablesQuery: string;
   intentQuery: string;
   onMinDurationChange: (value: string) => void;
   onMaxDurationChange: (value: string) => void;
-  onInputsQueryChange: (value: string) => void;
-  onOutputsQueryChange: (value: string) => void;
+  onVariablesQueryChange: (value: string) => void;
   onIntentQueryChange: (value: string) => void;
   onClear: () => void;
 }
@@ -17,13 +15,11 @@ interface LibraryFiltersProps {
 export function LibraryFilters({
   minDuration,
   maxDuration,
-  inputsQuery,
-  outputsQuery,
+  variablesQuery,
   intentQuery,
   onMinDurationChange,
   onMaxDurationChange,
-  onInputsQueryChange,
-  onOutputsQueryChange,
+  onVariablesQueryChange,
   onIntentQueryChange,
   onClear,
 }: LibraryFiltersProps): React.ReactElement {
@@ -76,29 +72,16 @@ export function LibraryFilters({
       </div>
       <div style={styles.row}>
         <div style={styles.field}>
-          <label style={styles.label} htmlFor="inputs-filter">
-            Inputs (willConsume)
+          <label style={styles.label} htmlFor="variables-filter">
+            Variables
           </label>
           <input
-            id="inputs-filter"
+            id="variables-filter"
             type="text"
             style={styles.input}
-            value={inputsQuery}
-            onChange={(e): void => onInputsQueryChange(e.target.value)}
-            placeholder="Fuzzy search inputs..."
-          />
-        </div>
-        <div style={styles.field}>
-          <label style={styles.label} htmlFor="outputs-filter">
-            Outputs (willProduce)
-          </label>
-          <input
-            id="outputs-filter"
-            type="text"
-            style={styles.input}
-            value={outputsQuery}
-            onChange={(e): void => onOutputsQueryChange(e.target.value)}
-            placeholder="Fuzzy search outputs..."
+            value={variablesQuery}
+            onChange={(e): void => onVariablesQueryChange(e.target.value)}
+            placeholder="Fuzzy search variables..."
           />
         </div>
       </div>

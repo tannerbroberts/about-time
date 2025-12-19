@@ -23,9 +23,17 @@ const isMemoComponent = (name) => {
   return name && /^Memo[A-Z]/.test(name);
 };
 
-// Helper to check if something is a Shared component/folder
-const isShared = (name) => {
-  return name && /^Shared[A-Z]/.test(name);
+// Helper to check if a file path is inside src/Shared directory
+const isInSharedDir = (filePath) => {
+  return filePath && filePath.includes('/src/Shared/');
+};
+
+// Helper to check if an import path points to src/Shared
+const isSharedImport = (importPath, currentFileDir) => {
+  if (!importPath) return false;
+  // Resolve the import path relative to the current file
+  const resolvedPath = path.resolve(currentFileDir, importPath);
+  return resolvedPath.includes('/src/Shared');
 };
 
 // Helper to check if a file is a types file (named exactly "types.ts" or "types.tsx")
@@ -391,7 +399,7 @@ const componentFolderStructure = {
  *
  * - Context hooks can only be imported from DIRECT ancestor directories (parent, grandparent, etc.)
  * - Components can only be imported from DIRECT descendant directories
- * - Exception: "Shared" prefixed components from "Shared..." directories
+ * - Exception: Components from the src/Shared directory can be imported from anywhere
  */
 const importBoundaries = {
   meta: {
@@ -403,9 +411,7 @@ const importBoundaries = {
       contextFromNonAncestor:
         'Context hook "{{name}}" can only be imported from direct ancestor directories (parent, grandparent, etc.). Import path "{{path}}" is not a direct ancestor.',
       componentFromNonChild:
-        'Component "{{name}}" can only be imported from direct descendant directories. Import path "{{path}}" is not a direct descendant.',
-      sharedMustBeFromSharedDir:
-        'Shared component "{{name}}" must be imported from a "Shared..." prefixed directory.',
+        'Component "{{name}}" can only be imported from direct descendant directories or src/Shared. Import path "{{path}}" is not allowed.',
     },
     schema: [],
   },
@@ -474,8 +480,6 @@ const importBoundaries = {
 
           // Check component imports (PascalCase, not context)
           if (/^[A-Z]/.test(importedName) && !importedName.endsWith('Context')) {
-            const isSharedComponent = isShared(importedName);
-            
             // Check if this is a type import (from ImportSpecifier with type modifier)
             // Type imports are allowed from ancestor directories
             const isTypeImport = specifier.importKind === 'type' || node.importKind === 'type';
@@ -486,16 +490,10 @@ const importBoundaries = {
               continue;
             }
 
-            if (isSharedComponent) {
-              // Shared components must come from Shared directories
-              if (!importPath.includes('Shared')) {
-                context.report({
-                  node: specifier,
-                  messageId: 'sharedMustBeFromSharedDir',
-                  data: { name: importedName },
-                });
-              }
-            } else {
+            // Check if importing from src/Shared directory (allowed from anywhere)
+            const isFromShared = isSharedImport(importPath, fileDir);
+            
+            if (!isFromShared) {
               // Regular components must be from direct descendants (./)
               if (!importPath.startsWith('./')) {
                 context.report({
@@ -548,8 +546,8 @@ const fileExportNameMatch = {
       return {};
     }
 
-    // Skip Shared files (they can export multiple)
-    if (isShared(basename)) {
+    // Skip files in src/Shared directory (they can export multiple)
+    if (isInSharedDir(filename)) {
       return {};
     }
 
@@ -593,11 +591,12 @@ const fileExportNameMatch = {
         }
 
         // For component files, check folder name matches (except for hook files)
+        // Skip files in src/Shared directory (they can have different folder names)
         if (
           isTsxComponentFile(filename)
           && folderName !== primaryExport
           && folderName !== 'src'
-          && !isShared(folderName)
+          && !isInSharedDir(filename)
         ) {
           context.report({
             node,
@@ -981,6 +980,123 @@ const memoPrimitivePropsOnly = {
   },
 };
 
+// Track shared component imports across all files for shared-must-be-multi-imported rule
+const sharedComponentImports = new Map(); // componentName -> Set of importing file paths
+
+/**
+ * Rule: shared-must-be-multi-imported
+ *
+ * Components in src/Shared must be imported from at least 2 different files.
+ * This ensures that shared components are actually shared and not just misplaced.
+ *
+ * Note: This rule works by tracking imports across files during a lint run.
+ * The error is reported on the shared component's export declaration.
+ */
+const sharedMustBeMultiImported = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description:
+        'Components in src/Shared must be imported from multiple files',
+    },
+    messages: {
+      notShared:
+        'Shared component "{{name}}" is only imported from {{count}} file(s). Components in src/Shared must be imported from at least 2 different files to justify being shared. Move this component closer to where it\'s used.',
+    },
+    schema: [],
+  },
+  create(context) {
+    const filename = context.filename || context.getFilename();
+    const fileDir = path.dirname(filename);
+    const isSharedFile = isInSharedDir(filename);
+    const basename = path.basename(filename, path.extname(filename));
+
+    // For non-shared files: track imports from src/Shared
+    if (!isSharedFile) {
+      return {
+        ImportDeclaration(node) {
+          const importPath = node.source.value;
+
+          // Skip external modules
+          if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
+            return;
+          }
+
+          // Check if importing from src/Shared
+          if (!isSharedImport(importPath, fileDir)) {
+            return;
+          }
+
+          // Track each imported component
+          for (const specifier of node.specifiers) {
+            if (specifier.type !== 'ImportSpecifier') continue;
+
+            const importedName = specifier.imported.name;
+
+            // Only track component imports (PascalCase)
+            if (!/^[A-Z]/.test(importedName)) continue;
+
+            // Add this file to the set of files importing this component
+            if (!sharedComponentImports.has(importedName)) {
+              sharedComponentImports.set(importedName, new Set());
+            }
+            sharedComponentImports.get(importedName).add(filename);
+          }
+        },
+      };
+    }
+
+    // For shared component files: check if they're imported enough
+    // Only check .tsx files that export components (not hooks, types, etc.)
+    if (!isTsxComponentFile(filename) || basename === 'index') {
+      return {};
+    }
+
+    return {
+      'Program:exit'(node) {
+        // Find the primary export (component name)
+        let componentName = null;
+
+        for (const statement of node.body) {
+          if (statement.type === 'ExportNamedDeclaration' && statement.declaration) {
+            if (
+              statement.declaration.type === 'FunctionDeclaration'
+              && statement.declaration.id
+            ) {
+              componentName = statement.declaration.id.name;
+              break;
+            }
+            if (statement.declaration.type === 'VariableDeclaration') {
+              const firstDecl = statement.declaration.declarations[0];
+              if (firstDecl && firstDecl.id.type === 'Identifier') {
+                componentName = firstDecl.id.name;
+                break;
+              }
+            }
+          }
+        }
+
+        if (!componentName) return;
+
+        // Check how many files import this component
+        const importingFiles = sharedComponentImports.get(componentName);
+        const importCount = importingFiles ? importingFiles.size : 0;
+
+        if (importCount < 2) {
+          context.report({
+            node,
+            messageId: 'notShared',
+            data: {
+              name: componentName,
+              count: importCount,
+            },
+          });
+        }
+      },
+    };
+  },
+};
+
 // Export the plugin
 export default {
   meta: {
@@ -1000,6 +1116,7 @@ export default {
     'memo-no-context-hooks': memoNoContextHooks,
     'import-from-index': importFromIndex,
     'memo-primitive-props-only': memoPrimitivePropsOnly,
+    'shared-must-be-multi-imported': sharedMustBeMultiImported,
   },
   configs: {
     recommended: {
@@ -1017,6 +1134,7 @@ export default {
         'architecture/memo-no-context-hooks': 'error',
         'architecture/import-from-index': 'error',
         'architecture/memo-primitive-props-only': 'error',
+        'architecture/shared-must-be-multi-imported': 'error',
       },
     },
   },

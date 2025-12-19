@@ -89,14 +89,13 @@ export type Execution = RootExecution | SegmentExecution;
 
 export interface Variable {
   name: string;
-  type: 'input' | 'output';
+  type: 'input' | 'output' | 'both';
   templateIds: string[];
 }
 
 export interface LibraryFilters {
   minDuration: number | null;
   maxDuration: number | null;
-  inputsQuery: string;
-  outputsQuery: string;
+  variablesQuery: string;
   intentQuery: string;
 }
