@@ -1,8 +1,10 @@
 import React from 'react';
 
 import type { LaneTemplate, Template, BusyTemplate } from '../../App';
+import type { ValidationError, ValidationResult } from '../../validation/validateLane';
 
 import { formatDurationHuman } from './calculateLedgerConfig';
+import { useLaneValidation } from './useLaneValidation';
 import {
   useLaneViewState,
   truncateText,
@@ -295,6 +297,125 @@ function formatLedger(ledger: Record<string, number>): string {
 }
 
 /**
+ * Get icon for validation error type.
+ */
+function getErrorIcon(errorType: ValidationError['type']): string {
+  switch (errorType) {
+    case 'busy-overlap':
+      return '⏱️';
+    case 'unsatisfied-consume':
+      return '📥';
+    case 'unsatisfied-produce':
+      return '📤';
+    case 'missing-template':
+      return '❓';
+    case 'empty-lane':
+      return '🚫';
+    default:
+      return '⚠️';
+  }
+}
+
+/**
+ * Get human-readable label for error type.
+ */
+function getErrorTypeLabel(errorType: ValidationError['type']): string {
+  switch (errorType) {
+    case 'busy-overlap':
+      return 'Overlap';
+    case 'unsatisfied-consume':
+      return 'Missing Input';
+    case 'unsatisfied-produce':
+      return 'Orphan Output';
+    case 'missing-template':
+      return 'Missing Template';
+    case 'empty-lane':
+      return 'Empty Lane';
+    default:
+      return 'Error';
+  }
+}
+
+/**
+ * Render the validation panel showing errors and contract signature.
+ */
+function renderValidationPanel(validation: ValidationResult): React.ReactElement {
+  const hasErrors = validation.errors.length > 0;
+  const hasInputs = Object.keys(validation.contractInputs).length > 0;
+  const hasOutputs = Object.keys(validation.contractOutputs).length > 0;
+
+  return (
+    <div style={styles.validationPanel}>
+      {/* Contract Signature */}
+      <div style={styles.contractSection}>
+        <div style={styles.contractHeader}>
+          <span style={styles.contractTitle}>Contract Signature</span>
+          <span style={hasErrors ? styles.contractInvalid : styles.contractValid}>
+            {hasErrors ? '✗ Invalid' : '✓ Valid'}
+          </span>
+        </div>
+        <div style={styles.contractBody}>
+          <div style={styles.contractRow}>
+            <span style={styles.contractLabel}>Inputs:</span>
+            <span style={styles.contractValue}>
+              {hasInputs ? formatLedger(validation.contractInputs) : '(none)'}
+            </span>
+          </div>
+          <div style={styles.contractRow}>
+            <span style={styles.contractLabel}>Outputs:</span>
+            <span style={styles.contractValue}>
+              {hasOutputs ? formatLedger(validation.contractOutputs) : '(none)'}
+            </span>
+          </div>
+          {validation.firstBusy && (
+            <div style={styles.contractRow}>
+              <span style={styles.contractLabel}>First Task:</span>
+              <span style={styles.contractValueMono}>
+                {validation.firstBusy.intent}
+              </span>
+            </div>
+          )}
+          {validation.lastBusy && (
+            <div style={styles.contractRow}>
+              <span style={styles.contractLabel}>Last Task:</span>
+              <span style={styles.contractValueMono}>
+                {validation.lastBusy.intent}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Errors Section */}
+      {hasErrors && (
+        <div style={styles.errorsSection}>
+          <div style={styles.errorsHeader}>
+            <span style={styles.errorsIcon}>⚠️</span>
+            <span style={styles.errorsTitle}>
+              {validation.errors.length} Validation Error
+              {validation.errors.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <div style={styles.errorsList}>
+            {validation.errors.map((error, index) => (
+              <div key={index} style={styles.errorItem}>
+                <span style={styles.errorIcon}>{getErrorIcon(error.type)}</span>
+                <div style={styles.errorContent}>
+                  <span style={styles.errorType}>
+                    {getErrorTypeLabel(error.type)}
+                  </span>
+                  <span style={styles.errorMessage}>{error.message}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * SharedLaneView - Renders a lane template as stacked capsules with a time ledger
  *
  * Architecture:
@@ -324,6 +445,8 @@ export function SharedLaneView(
     hoveredGroupIndex,
     setHoveredGroupIndex,
   } = useLaneViewState(lane, allTemplates);
+
+  const validation = useLaneValidation(lane, allTemplates);
 
   const totalHeight = (maxDepth + 1) * CAPSULE_HEIGHT + LEDGER_HEIGHT + 16;
 
@@ -429,6 +552,9 @@ export function SharedLaneView(
           </div>
         )}
       </div>
+
+      {/* Validation panel */}
+      {renderValidationPanel(validation)}
 
       {/* Details panel */}
       {selectedTemplate && renderDetailsPanel(selectedTemplate)}
@@ -745,5 +871,136 @@ const styles: Record<string, React.CSSProperties> = {
   detailsValue: {
     color: '#333',
     wordBreak: 'break-word',
+  },
+  // Validation panel styles
+  validationPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+  contractSection: {
+    backgroundColor: '#fff',
+    border: '1px solid #e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+  },
+  contractHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 16px',
+    backgroundColor: '#f9f9f9',
+    borderBottom: '1px solid #eee',
+  },
+  contractTitle: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#444',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  contractValid: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#2e7d32',
+    backgroundColor: '#e8f5e9',
+    padding: '4px 10px',
+    borderRadius: 4,
+  },
+  contractInvalid: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#c62828',
+    backgroundColor: '#ffebee',
+    padding: '4px 10px',
+    borderRadius: 4,
+  },
+  contractBody: {
+    padding: 16,
+  },
+  contractRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 8,
+    fontSize: 13,
+  },
+  contractLabel: {
+    fontWeight: 600,
+    color: '#666',
+    flexShrink: 0,
+    minWidth: 80,
+  },
+  contractValue: {
+    color: '#333',
+    wordBreak: 'break-word',
+  },
+  contractValueMono: {
+    color: '#333',
+    fontFamily: 'monospace',
+    fontSize: 12,
+    wordBreak: 'break-word',
+  },
+  errorsSection: {
+    backgroundColor: '#fff',
+    border: '1px solid #ffcdd2',
+    borderRadius: 8,
+    overflow: 'hidden',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+  },
+  errorsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '10px 16px',
+    backgroundColor: '#ffebee',
+    borderBottom: '1px solid #ffcdd2',
+  },
+  errorsIcon: {
+    fontSize: 16,
+  },
+  errorsTitle: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#c62828',
+  },
+  errorsList: {
+    padding: 12,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  errorItem: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: '10px 12px',
+    backgroundColor: '#fff8f8',
+    borderRadius: 6,
+    border: '1px solid #ffe0e0',
+  },
+  errorIcon: {
+    fontSize: 16,
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  errorContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    flex: 1,
+  },
+  errorType: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#c62828',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  errorMessage: {
+    fontSize: 13,
+    color: '#444',
+    lineHeight: 1.4,
   },
 };

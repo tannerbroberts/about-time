@@ -5,6 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { getTemplates, getVocabulary, addTemplate, getTemplateById } from './storage.js';
 import type { BusyTemplate, LaneTemplate, Template, StateLedger } from './types.js';
+import { validateLane } from './validateLane.js';
 
 // Common units that indicate a variable represents a measurable quantity
 const UNIT_PATTERNS = [
@@ -337,6 +338,69 @@ server.tool(
               intent: t.intent,
               templateType: t.templateType,
             })),
+          }, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+// Tool: Validate lane template
+server.tool(
+  'validate_lane_template',
+  'Validate a lane template against state transition contract rules. Checks: (1) No busy template overlaps, (2) Only first busy can have unsatisfied inputs, (3) Only last busy can have unconsumed outputs, (4) All internal state must be produced before consumed.',
+  {
+    laneId: z.string().describe('The ID of the lane template to validate'),
+  },
+  async ({ laneId }) => {
+    const template = getTemplateById(laneId);
+    if (!template) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ error: `Template with ID ${laneId} not found` }),
+          },
+        ],
+      };
+    }
+
+    if (template.templateType !== 'lane') {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: `Template ${laneId} is not a lane template (type: ${template.templateType})`,
+            }),
+          },
+        ],
+      };
+    }
+
+    const allTemplates = getTemplates();
+    const result = validateLane(template as LaneTemplate, allTemplates);
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({
+            isValid: result.isValid,
+            contractSignature: {
+              inputs: result.contractInputs,
+              outputs: result.contractOutputs,
+            },
+            firstBusy: result.firstBusy ? {
+              id: result.firstBusy.id,
+              intent: result.firstBusy.intent,
+            } : null,
+            lastBusy: result.lastBusy ? {
+              id: result.lastBusy.id,
+              intent: result.lastBusy.intent,
+            } : null,
+            errors: result.errors,
+            errorCount: result.errors.length,
           }, null, 2),
         },
       ],
