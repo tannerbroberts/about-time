@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@tannerbroberts/about-time-core": "^0.1.1",
+    "@tannerbroberts/about-time-core": "^0.2.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {

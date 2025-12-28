@@ -4,77 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { getTemplates, getVocabulary, addTemplate, getTemplateById, getTemplateMap, saveTemplateMap, } from './storage.js';
-import { validateLane } from './validateLane.js';
-import { applyLaneLayout, packSegments, equallyDistributeSegments, distributeSegmentOffsetsByInterval, fitLaneDurationToLast, insertGap, addSegmentToEnd, pushSegmentToStart, insertSegmentAt, visualizeLane, visualizeLaneIds, } from '@tannerbroberts/about-time-core';
-// Common units that indicate a variable represents a measurable quantity
-const UNIT_PATTERNS = [
-    // Volume
-    'cups', 'cup', 'liters', 'liter', 'l', 'ml', 'milliliters', 'milliliter',
-    'gallons', 'gallon', 'gal', 'quarts', 'quart', 'qt', 'pints', 'pint', 'pt',
-    'tablespoons', 'tablespoon', 'tbsp', 'teaspoons', 'teaspoon', 'tsp',
-    'floz', 'fl_oz', 'fluid_ounces', 'fluid_ounce',
-    // Weight/Mass
-    'grams', 'gram', 'g', 'kg', 'kilograms', 'kilogram',
-    'pounds', 'pound', 'lbs', 'lb', 'ounces', 'ounce', 'oz',
-    'mg', 'milligrams', 'milligram',
-    // Length/Distance
-    'meters', 'meter', 'm', 'km', 'kilometers', 'kilometer',
-    'centimeters', 'centimeter', 'cm', 'millimeters', 'millimeter', 'mm',
-    'inches', 'inch', 'in', 'feet', 'foot', 'ft', 'yards', 'yard', 'yd',
-    'miles', 'mile', 'mi',
-    // Time (for durations as variables)
-    'seconds', 'second', 'sec', 's', 'minutes', 'minute', 'min',
-    'hours', 'hour', 'hr', 'days', 'day', 'weeks', 'week',
-    // Count/Quantity (these are unit-agnostic, so they're acceptable as-is)
-    'count', 'units', 'unit', 'pieces', 'piece', 'items', 'item',
-    'servings', 'serving', 'portions', 'portion', 'batches', 'batch',
-];
-// Substances that commonly have variable units and REQUIRE a unit suffix
-const MEASURABLE_SUBSTANCES = [
-    'water', 'flour', 'sugar', 'salt', 'oil', 'butter', 'milk', 'cream',
-    'rice', 'pasta', 'beans', 'coffee', 'tea', 'juice', 'wine', 'beer',
-    'honey', 'syrup', 'vinegar', 'sauce', 'broth', 'stock',
-    'meat', 'chicken', 'beef', 'pork', 'fish',
-    'vegetables', 'fruit', 'cheese', 'eggs',
-    'paint', 'cement', 'concrete', 'sand', 'gravel', 'soil', 'dirt',
-    'fuel', 'gas', 'gasoline', 'diesel', 'propane',
-    'chemicals', 'solution', 'mixture', 'compound',
-    'fabric', 'thread', 'yarn', 'wire', 'cable', 'rope',
-    'wood', 'lumber', 'metal', 'steel', 'aluminum', 'plastic',
-];
-/**
- * Validates that variable names for measurable substances include a unit.
- * Returns an array of validation errors, empty if all variables are valid.
- */
-function validateVariableNames(variables) {
-    const errors = [];
-    const variableNames = Object.keys(variables);
-    for (const varName of variableNames) {
-        const lowerName = varName.toLowerCase();
-        const parts = lowerName.split(/[_\s-]+/);
-        // Check if the variable name contains a measurable substance
-        const containsSubstance = MEASURABLE_SUBSTANCES.some(substance => parts.includes(substance) || lowerName.includes(substance));
-        if (containsSubstance) {
-            // Check if the variable name also contains a unit
-            const containsUnit = UNIT_PATTERNS.some(unit => {
-                // Match unit as a complete word/part (not substring of another word)
-                // e.g., "g" should match "flour_g" but not "sugar" (which contains 'g')
-                return parts.includes(unit) ||
-                    lowerName.endsWith(`_${unit}`) ||
-                    lowerName.endsWith(`-${unit}`) ||
-                    // Special case for single-letter units at word boundaries
-                    (unit.length === 1 && parts.some(p => p === unit));
-            });
-            if (!containsUnit) {
-                errors.push(`Variable "${varName}" contains a measurable substance but no unit. ` +
-                    `When a variable represents something that can be measured in different units ` +
-                    `(e.g., cups, liters, grams), the unit MUST be part of the variable name. ` +
-                    `Example: "water_cups", "flour_grams", "oil_ml".`);
-            }
-        }
-    }
-    return errors;
-}
+import { applyLaneLayout, packSegments, equallyDistributeSegments, distributeSegmentOffsetsByInterval, fitLaneDurationToLast, insertGap, addSegmentToEnd, pushSegmentToStart, insertSegmentAt, visualizeLane, visualizeLaneIds, validateLane, validateVariableNames, } from '@tannerbroberts/about-time-core';
 // Create server instance
 const server = new McpServer({
     name: 'about-time',
@@ -161,10 +91,25 @@ server.tool('create_busy_template', 'Create a new busy template (an atomic activ
     authorId: z.string().optional().describe('Author ID (defaults to "agent")'),
     version: z.string().optional().describe('SemVer version (defaults to "0.0.0")'),
 }, async ({ intent, estimatedDuration, willConsume, willProduce, authorId, version }) => {
+    // Validate duration is positive (0-duration templates are not allowed)
+    if (estimatedDuration <= 0) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Invalid duration',
+                        details: 'estimatedDuration must be greater than 0. Every busy template represents an action that takes time for a person to read or hear the intent.',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
     // Validate variable names for measurable substances
-    const consumeErrors = validateVariableNames(willConsume);
-    const produceErrors = validateVariableNames(willProduce);
-    const allErrors = [...consumeErrors, ...produceErrors];
+    const consumeResult = validateVariableNames(willConsume);
+    const produceResult = validateVariableNames(willProduce);
+    const allErrors = [...consumeResult.errors, ...produceResult.errors];
     if (allErrors.length > 0) {
         return {
             content: [
@@ -232,6 +177,21 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
     authorId: z.string().optional().describe('Author ID (defaults to "agent")'),
     version: z.string().optional().describe('SemVer version (defaults to "0.0.0")'),
 }, async ({ intent, estimatedDuration, segments, authorId, version }) => {
+    // Validate duration is positive
+    if (estimatedDuration <= 0) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Invalid duration',
+                        details: 'estimatedDuration must be greater than 0.',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
     const template = {
         templateType: 'lane',
         id: randomUUID(),
@@ -321,8 +281,8 @@ server.tool('validate_lane_template', 'Validate a lane template against state tr
             ],
         };
     }
-    const allTemplates = getTemplates();
-    const result = validateLane(template, allTemplates);
+    const templateMap = getTemplateMap();
+    const result = validateLane(template, templateMap);
     return {
         content: [
             {
@@ -720,6 +680,147 @@ server.tool('visualize_lane_ids', 'Generate a text-based visualization of a lane
                         laneId,
                         visualization: `\n${visualization}`,
                         note: 'Each character represents a template ID. Requires single-character IDs.',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Create passthrough template from validation errors
+server.tool('create_passthrough_template', 'Analyze a lane\'s validation errors and create a pass-through busy template that consumes and produces the same variables, capping off unconsumed outputs. Use this to resolve "unsatisfied produce" errors by creating a summary template like "Leave out ingredients for use" or "Serve fresh baked bread".', {
+    laneId: z.string().describe('The lane to analyze for unsatisfied produce errors'),
+    intent: z.string().describe('Human-readable description (e.g., "Leave out ingredients for use", "Serve fresh baked bread")'),
+    estimatedDuration: z.number().describe('Duration in ms - time for a person to read/hear the intent (must be > 0)'),
+    addToLane: z.boolean().optional().describe('If true, automatically append to the lane (default: false)'),
+}, async ({ laneId, intent, estimatedDuration, addToLane }) => {
+    // Validate duration is positive
+    if (estimatedDuration <= 0) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Invalid duration',
+                        details: 'estimatedDuration must be greater than 0. Every busy template represents an action that takes time for a person to read or hear the intent.',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    const template = getTemplateById(laneId);
+    if (!template) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ error: `Template with ID ${laneId} not found` }),
+                },
+            ],
+        };
+    }
+    if (template.templateType !== 'lane') {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        error: `Template ${laneId} is not a lane template (type: ${template.templateType})`,
+                    }),
+                },
+            ],
+        };
+    }
+    const templateMap = getTemplateMap();
+    const validationResult = validateLane(template, templateMap);
+    // Extract variables from "unsatisfied-produce" errors
+    const unsatisfiedProduceErrors = validationResult.errors.filter((e) => e.type === 'unsatisfied-produce');
+    if (unsatisfiedProduceErrors.length === 0) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        message: 'No unsatisfied produce errors found in this lane',
+                        validationResult: {
+                            isValid: validationResult.isValid,
+                            errorCount: validationResult.errors.length,
+                            errorTypes: validationResult.errors.map((e) => e.type),
+                        },
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    // Build the passthrough ledger from errors
+    const passthroughLedger = {};
+    const resolvedErrors = [];
+    for (const error of unsatisfiedProduceErrors) {
+        if (error.type === 'unsatisfied-produce') {
+            const quantity = error.producedQuantity - error.consumedQuantity;
+            if (quantity > 0) {
+                passthroughLedger[error.variableName] = quantity;
+                resolvedErrors.push(error.variableName);
+            }
+        }
+    }
+    // Create the passthrough busy template
+    const passthroughTemplate = {
+        templateType: 'busy',
+        id: randomUUID(),
+        intent,
+        authorId: 'agent',
+        version: '0.0.0',
+        estimatedDuration,
+        references: [],
+        willConsume: { ...passthroughLedger },
+        willProduce: { ...passthroughLedger },
+    };
+    try {
+        addTemplate(passthroughTemplate);
+        // Optionally add to the lane
+        if (addToLane) {
+            const templateMap = getTemplateMap();
+            const relationshipId = randomUUID();
+            addSegmentToEnd(laneId, passthroughTemplate.id, relationshipId, templateMap);
+            fitLaneDurationToLast(laneId, templateMap);
+            saveTemplateMap(templateMap);
+        }
+        // Re-validate to show updated state
+        const updatedTemplateMap = getTemplateMap();
+        const updatedValidation = validateLane(getTemplateById(laneId), updatedTemplateMap);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Created passthrough template: ${intent}`,
+                        template: passthroughTemplate,
+                        resolvedErrors,
+                        addedToLane: addToLane ?? false,
+                        updatedValidation: {
+                            isValid: updatedValidation.isValid,
+                            errorCount: updatedValidation.errors.length,
+                            remainingErrors: updatedValidation.errors.map((e) => ({
+                                type: e.type,
+                                message: e.message,
+                            })),
+                        },
                     }, null, 2),
                 },
             ],

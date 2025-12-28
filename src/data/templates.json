@@ -1,440 +1,1179 @@
 {
-  "version": "0.0.1",
   "templates": [
     {
-      "templateType": "lane",
-      "id": "template_001",
-      "intent": "Make Scrambled Eggs",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 600000,
-      "segments": [
-        {
-          "templateId": "template_011",
-          "offset": 0
-        },
-        {
-          "templateId": "template_012",
-          "offset": 320000
-        }
-      ]
-    },
-    {
-      "templateType": "lane",
-      "id": "template_011",
-      "intent": "Prepare Food",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 320000,
-      "segments": [
-        {
-          "templateId": "template_002",
-          "offset": 0
-        },
-        {
-          "templateId": "template_002",
-          "offset": 10000
-        },
-        {
-          "templateId": "template_002",
-          "offset": 20000
-        },
-        {
-          "templateId": "template_003",
-          "offset": 30000
-        },
-        {
-          "templateId": "template_004",
-          "offset": 0
-        },
-        {
-          "templateId": "template_005",
-          "offset": 60000
-        },
-        {
-          "templateId": "template_006",
-          "offset": 65000
-        },
-        {
-          "templateId": "template_007",
-          "offset": 185000
-        }
-      ]
-    },
-    {
-      "templateType": "lane",
-      "id": "template_012",
-      "intent": "Clean Up",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 90000,
-      "segments": [
-        {
-          "templateId": "template_008",
-          "offset": 0
-        },
-        {
-          "templateId": "template_009",
-          "offset": 45000
-        },
-        {
-          "templateId": "template_010",
-          "offset": 75000
-        }
-      ]
-    },
-    {
       "templateType": "busy",
-      "id": "template_002",
-      "intent": "Crack egg into bowl",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 10000,
-      "willConsume": {
-        "egg": 1,
-        "clean_bowl": 1
-      },
-      "willProduce": {
-        "egg_in_bowl": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "template_003",
-      "intent": "Whisk 3 eggs",
-      "authorId": "user_123",
+      "id": "80a5b53f-147a-436b-a2da-331a3ac4f63e",
+      "intent": "Gather flour from pantry",
+      "authorId": "agent",
       "version": "0.0.0",
       "estimatedDuration": 15000,
-      "willConsume": {
-        "egg_in_bowl": 3,
-        "clean_fork": 1
-      },
+      "references": [],
+      "willConsume": {},
       "willProduce": {
-        "whisked_eggs": 3,
-        "dirty_fork": 1
+        "flour_cups": 3
       }
     },
     {
       "templateType": "busy",
-      "id": "template_004",
-      "intent": "Heat pan with butter",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 60000,
-      "willConsume": {
-        "clean_pan": 1,
-        "butter_pat": 1
-      },
-      "willProduce": {
-        "heated_buttered_pan": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "template_005",
-      "intent": "Pour whisked eggs into heated pan",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 5000,
-      "willConsume": {
-        "whisked_eggs": 3,
-        "heated_buttered_pan": 1,
-        "dirty_bowl": 1
-      },
-      "willProduce": {
-        "raw_eggs_in_pan": 3,
-        "dirty_bowl": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "template_006",
-      "intent": "Scramble eggs in pan with spatula",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 120000,
-      "willConsume": {
-        "raw_eggs_in_pan": 3
-      },
-      "willProduce": {
-        "cooked_eggs_in_pan": 3
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "template_007",
-      "intent": "Plate scrambled eggs",
-      "authorId": "user_123",
+      "id": "8ffa2cda-01ad-4618-9ffb-9444ab57e9af",
+      "intent": "Gather yeast from pantry",
+      "authorId": "agent",
       "version": "0.0.0",
       "estimatedDuration": 10000,
-      "willConsume": {
-        "cooked_eggs_in_pan": 3,
-        "clean_plate": 1
-      },
+      "references": [],
+      "willConsume": {},
       "willProduce": {
-        "cooked_egg_portion": 3,
-        "dirty_pan": 1,
-        "dirty_plate": 1
+        "yeast_tsp": 2.25
       }
     },
     {
       "templateType": "busy",
-      "id": "template_008",
-      "intent": "Wash pan with soap and water",
-      "authorId": "user_123",
+      "id": "5f68a20d-0f40-4a3f-979d-7d0f39194207",
+      "intent": "Gather salt from pantry",
+      "authorId": "agent",
       "version": "0.0.0",
-      "estimatedDuration": 45000,
-      "willConsume": {
-        "dirty_pan": 1,
-        "soap": 1,
-        "water": 1
-      },
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
       "willProduce": {
-        "clean_pan": 1
+        "salt_tsp": 1
       }
     },
     {
       "templateType": "busy",
-      "id": "template_009",
-      "intent": "Wash bowl with soap and water",
-      "authorId": "user_123",
+      "id": "dbb27b9f-4aaa-4d68-8f52-099f0d4be287",
+      "intent": "Gather sugar from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "sugar_tbsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "b0e097fa-5c40-40e6-bac0-34c344df4500",
+      "intent": "Measure warm water",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 20000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "warm_water_cups": 1.25
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "884541a3-f90d-4305-819c-12d33bc611d0",
+      "intent": "Gather olive oil",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "olive_oil_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "1209340b-e935-41c5-b3d1-2d4ce1ddfbc7",
+      "intent": "Get large mixing bowl from cabinet",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_large_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "934f2b7e-f36b-4e38-a739-c00b0f976117",
+      "intent": "Get small mixing bowl from cabinet",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_small_bowl": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "31de2a7c-58d8-46f6-b583-060c100f1b2f",
+      "intent": "Get measuring cups and spoons",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_measuring_set": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "15b26b6d-0c10-468e-9f1d-56b30a3af32a",
+      "intent": "Get baking sheet from cabinet",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_baking_sheet": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "52482d8a-ea8f-4aa4-b782-cbded6db38e3",
+      "intent": "Get parchment paper from drawer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 8000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "parchment_sheet": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "4706134f-921f-4dae-8c08-9272c0d78b67",
+      "intent": "Get clean kitchen towel",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 8000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_kitchen_towel": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "63760420-d7d0-4d72-a44b-fea006689539",
+      "intent": "Get sharp bread knife from drawer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_bread_knife": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7cea01a3-5c11-474a-b743-667f07a71642",
+      "intent": "Get wooden spoon from drawer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_wooden_spoon_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "0ad3b219-e40b-4a45-a184-7a0b04b41623",
+      "intent": "Get wire cooling rack",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 8000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "cooling_rack_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "f7a219e5-3464-419a-93af-26ec214e0828",
+      "intent": "Mix dry ingredients in large bowl",
+      "authorId": "agent",
       "version": "0.0.0",
       "estimatedDuration": 30000,
+      "references": [],
       "willConsume": {
-        "dirty_bowl": 1,
-        "soap": 1,
-        "water": 1
+        "flour_cups": 3,
+        "salt_tsp": 1,
+        "clean_large_bowl": 1,
+        "clean_wooden_spoon_count": 1
       },
       "willProduce": {
-        "clean_bowl": 1
+        "dry_mix_in_bowl": 1,
+        "dirty_wooden_spoon_count": 1
       }
     },
     {
       "templateType": "busy",
-      "id": "template_010",
-      "intent": "Wash fork with soap and water",
-      "authorId": "user_123",
-      "version": "0.0.0",
-      "estimatedDuration": 15000,
-      "willConsume": {
-        "dirty_fork": 1,
-        "soap": 1,
-        "water": 1
-      },
-      "willProduce": {
-        "clean_fork": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_001",
-      "intent": "Mix flour, salt, and yeast in a large bowl",
+      "id": "2aae9935-7dfa-4adc-af09-4fe198c4bc61",
+      "intent": "Oil bowl and place dough for first rise",
       "authorId": "agent",
       "version": "0.0.0",
-      "estimatedDuration": 120000,
+      "estimatedDuration": 30000,
+      "references": [],
       "willConsume": {
-        "flour": 500,
-        "salt": 2,
-        "yeast": 7,
-        "clean_bowl": 1
+        "smooth_elastic_dough": 1,
+        "clean_kitchen_towel": 1
       },
       "willProduce": {
-        "dry_bread_mix_in_bowl": 1
+        "dough_in_bowl_for_rise": 1,
+        "towel_covering_bowl": 1
       }
     },
     {
       "templateType": "busy",
-      "id": "bread_002",
-      "intent": "Add olive oil and water to dry mix and stir",
-      "authorId": "agent",
-      "version": "0.0.0",
-      "estimatedDuration": 120000,
-      "willConsume": {
-        "dry_bread_mix_in_bowl": 1,
-        "olive_oil": 3,
-        "water": 300
-      },
-      "willProduce": {
-        "shaggy_dough_in_bowl": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_003",
-      "intent": "Knead dough on floured surface until smooth",
-      "authorId": "agent",
-      "version": "0.0.0",
-      "estimatedDuration": 600000,
-      "willConsume": {
-        "shaggy_dough_in_bowl": 1,
-        "flour": 10,
-        "dirty_bowl": 1
-      },
-      "willProduce": {
-        "smooth_dough": 1,
-        "dirty_bowl": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_004",
-      "intent": "Place dough in oiled bowl, cover, and let rise 1 hour",
-      "authorId": "agent",
-      "version": "0.0.0",
-      "estimatedDuration": 3600000,
-      "willConsume": {
-        "smooth_dough": 1,
-        "clean_bowl": 1,
-        "olive_oil": 1
-      },
-      "willProduce": {
-        "risen_dough_in_bowl": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_005",
-      "intent": "Knock back dough and shape into ball",
-      "authorId": "agent",
-      "version": "0.0.0",
-      "estimatedDuration": 180000,
-      "willConsume": {
-        "risen_dough_in_bowl": 1
-      },
-      "willProduce": {
-        "shaped_dough_ball": 1,
-        "dirty_bowl": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_006",
-      "intent": "Place dough on parchment-lined tray and prove 1 hour",
-      "authorId": "agent",
-      "version": "0.0.0",
-      "estimatedDuration": 3600000,
-      "willConsume": {
-        "shaped_dough_ball": 1,
-        "clean_baking_tray": 1,
-        "parchment_paper": 1
-      },
-      "willProduce": {
-        "proved_loaf_on_tray": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_007",
-      "intent": "Preheat oven to 220C/fan 200C",
-      "authorId": "agent",
-      "version": "0.0.0",
-      "estimatedDuration": 600000,
-      "willConsume": {
-        "cold_oven": 1
-      },
-      "willProduce": {
-        "heated_oven_220c": 1
-      }
-    },
-    {
-      "templateType": "busy",
-      "id": "bread_008",
-      "intent": "Dust loaf with flour and score a cross on top",
+      "id": "87ce70ae-9f3d-4d93-8e9a-386476302f28",
+      "intent": "Activate yeast in warm water with sugar",
       "authorId": "agent",
       "version": "0.0.0",
       "estimatedDuration": 60000,
+      "references": [],
       "willConsume": {
-        "proved_loaf_on_tray": 1,
-        "flour": 5,
-        "sharp_knife": 1
+        "clean_small_bowl_count": 1,
+        "sugar_tbsp": 1,
+        "warm_water_cups": 1.25,
+        "yeast_tsp": 2.25
       },
       "willProduce": {
-        "scored_loaf_on_tray": 1,
-        "sharp_knife": 1
+        "activated_yeast_batch": 1,
+        "used_small_bowl_count": 1
       }
     },
     {
       "templateType": "busy",
-      "id": "bread_009",
-      "intent": "Bake bread until golden brown 25-30 mins",
+      "id": "07a04f22-4d69-4c0a-b1fe-820a624cd919",
+      "intent": "Add wet ingredients to dry mix",
       "authorId": "agent",
       "version": "0.0.0",
-      "estimatedDuration": 1680000,
+      "estimatedDuration": 45000,
+      "references": [],
       "willConsume": {
-        "scored_loaf_on_tray": 1,
-        "heated_oven_220c": 1
+        "activated_yeast_batch": 1,
+        "dry_mix_in_bowl": 1,
+        "olive_oil_tbsp": 2,
+        "used_small_bowl_count": 1
       },
       "willProduce": {
-        "fresh_baked_bread": 1,
-        "hot_oven": 1,
-        "dirty_baking_tray": 1
+        "shaggy_dough_batch": 1,
+        "washable_small_bowl_count": 1
       }
     },
     {
       "templateType": "busy",
-      "id": "bread_010",
-      "intent": "Cool bread on wire rack",
+      "id": "ee9bcae6-6bf2-4031-9735-4fc6146a7272",
+      "intent": "First rise - let dough double in size",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 3600000,
+      "references": [],
+      "willConsume": {
+        "dough_in_bowl_for_rise": 1,
+        "towel_covering_bowl": 1
+      },
+      "willProduce": {
+        "risen_dough_doubled": 1,
+        "used_towel_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "2fe5fde5-d2c8-4571-9b9f-af828346c861",
+      "intent": "Knead dough until smooth and elastic",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "references": [],
+      "willConsume": {
+        "shaggy_dough_batch": 1
+      },
+      "willProduce": {
+        "messy_counter_count": 1,
+        "smooth_elastic_dough": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "3161b4bb-58d8-4a47-939e-b8b02bdc0d09",
+      "intent": "Punch down risen dough",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "risen_dough_doubled": 1
+      },
+      "willProduce": {
+        "punched_dough": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "956d99d8-e589-49bd-8133-2d3e1562b17b",
+      "intent": "Shape dough into loaf",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [],
+      "willConsume": {
+        "punched_dough": 1
+      },
+      "willProduce": {
+        "shaped_loaf": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "129f57a2-f26b-452a-9c35-ad2183b21699",
+      "intent": "Line baking sheet with parchment",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "clean_baking_sheet": 1,
+        "parchment_sheet": 1
+      },
+      "willProduce": {
+        "lined_baking_sheet": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "0b99dd42-ce13-4505-bdb9-4a51fef7db84",
+      "intent": "Place shaped loaf on baking sheet",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {
+        "lined_baking_sheet": 1,
+        "shaped_loaf": 1
+      },
+      "willProduce": {
+        "loaf_on_sheet": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "08cb7d3c-3d54-49f8-a791-e9a353e06c5f",
+      "intent": "Second rise - proof the loaf",
       "authorId": "agent",
       "version": "0.0.0",
       "estimatedDuration": 1800000,
+      "references": [],
       "willConsume": {
-        "fresh_baked_bread": 1,
-        "wire_rack": 1
+        "loaf_on_sheet": 1
       },
       "willProduce": {
-        "cooled_fresh_bread": 1,
-        "wire_rack": 1
+        "proofed_loaf_on_sheet": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "52e8a920-e654-4a1b-98e6-933695e86c12",
+      "intent": "Preheat oven to 425F",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "cold_oven_count": 1
+      },
+      "willProduce": {
+        "preheating_oven_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "52a095a5-19b6-4858-8156-ee64b81bd1dc",
+      "intent": "Wait for oven to reach 425F",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 900000,
+      "references": [],
+      "willConsume": {
+        "preheating_oven_count": 1
+      },
+      "willProduce": {
+        "hot_oven_425f": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "2e68dcdc-c71f-4d71-9ec5-6c573878dd72",
+      "intent": "Score top of loaf with bread knife",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "clean_bread_knife": 1,
+        "proofed_loaf_on_sheet": 1
+      },
+      "willProduce": {
+        "scored_loaf_on_sheet": 1,
+        "used_bread_knife_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "f66238ba-eb93-42a8-8f31-208780c7c707",
+      "intent": "Place loaf in preheated oven",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "hot_oven_425f": 1,
+        "scored_loaf_on_sheet": 1
+      },
+      "willProduce": {
+        "baking_loaf_in_oven": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "2f2a2c6f-60e7-492a-8cd7-9c22a6aabccf",
+      "intent": "Bake bread for 30 minutes until golden",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [],
+      "willConsume": {
+        "baking_loaf_in_oven": 1
+      },
+      "willProduce": {
+        "finished_baking_loaf": 1,
+        "hot_oven_to_turn_off": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7fae75a0-8e6a-474c-8513-618cb9fc606f",
+      "intent": "Remove bread from oven",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "cooling_rack_count": 1,
+        "finished_baking_loaf": 1
+      },
+      "willProduce": {
+        "hot_bread_on_rack": 1,
+        "used_baking_sheet_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "2fcc8cc4-1748-4df5-9969-88425535e45b",
+      "intent": "Turn off oven",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {
+        "hot_oven_to_turn_off": 1
+      },
+      "willProduce": {
+        "cooling_oven_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "6c9fe8cc-2fd5-4c00-b91e-dfbe4e826f06",
+      "intent": "Cool bread on rack for 30 minutes",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [],
+      "willConsume": {
+        "hot_bread_on_rack": 1
+      },
+      "willProduce": {
+        "fresh_baked_bread_loaf": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "41704f8e-9e0c-4595-b44b-95794c7e78f8",
+      "intent": "Wash small mixing bowl",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [],
+      "willConsume": {
+        "washable_small_bowl_count": 1
+      },
+      "willProduce": {
+        "washed_small_bowl_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ae1e5f5c-c6ba-4c31-a4da-e34ed0d491e1",
+      "intent": "Wash large mixing bowl",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [],
+      "willConsume": {
+        "dirty_large_bowl_count": 1
+      },
+      "willProduce": {
+        "washed_large_bowl_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "f02277db-53a7-4b88-8d58-509e0ae6223a",
+      "intent": "Wash wooden spoon",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "dirty_wooden_spoon_count": 1
+      },
+      "willProduce": {
+        "washed_wooden_spoon_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "9706664c-80c7-4087-97f9-626d58de957d",
+      "intent": "Wash measuring cups and spoons",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "dirty_measuring_set_count": 1
+      },
+      "willProduce": {
+        "washed_measuring_set_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "d86e4304-d633-45d9-97a3-7d2ca9978416",
+      "intent": "Wash bread knife",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "used_bread_knife_count": 1
+      },
+      "willProduce": {
+        "washed_bread_knife_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "68eea375-3b0e-4062-a881-5f72278978e2",
+      "intent": "Wash baking sheet",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [],
+      "willConsume": {
+        "used_baking_sheet_count": 1
+      },
+      "willProduce": {
+        "washed_baking_sheet_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "908e1883-817f-4d96-96e5-076ba19c3fb5",
+      "intent": "Clean counter surface",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "messy_counter_count": 1
+      },
+      "willProduce": {
+        "clean_counter_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "1d9109ab-145e-4998-990d-4f289fdccd1b",
+      "intent": "Put used towel in laundry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "used_towel_count": 1
+      },
+      "willProduce": {
+        "towel_in_laundry_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "d2d8a79b-3ad6-40ec-8d19-486bd371801e",
+      "intent": "Check oven is available",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "cold_oven_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "13f8530a-6aaf-4a8f-abac-2029d553322e",
+      "intent": "Get small bowl for yeast activation",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "clean_small_bowl_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "1a2c664f-8269-43ce-8842-2e064c0bfdef",
+      "intent": "Mark measuring set as dirty",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {
+        "clean_measuring_set": 1
+      },
+      "willProduce": {
+        "dirty_measuring_set_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "45e152a8-49bd-4248-8ffe-0ec159598c97",
+      "intent": "Transfer dough to greased bowl and mark large bowl dirty",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "smooth_elastic_dough": 1
+      },
+      "willProduce": {
+        "dirty_large_bowl_count": 1,
+        "greased_dough_batch": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7a3beb76-3cb0-4372-890a-df60bae355a9",
+      "intent": "Cover dough with towel for rising",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {
+        "clean_kitchen_towel": 1,
+        "greased_dough_batch": 1
+      },
+      "willProduce": {
+        "dough_in_bowl_for_rise": 1,
+        "towel_covering_bowl": 1
       }
     },
     {
       "templateType": "lane",
-      "id": "bread_lane_001",
-      "intent": "Bake Fresh Bread",
+      "id": "e61fc6d7-77f7-47cf-b6b0-eab985132291",
+      "intent": "Gather all bread ingredients",
       "authorId": "agent",
       "version": "0.0.0",
-      "estimatedDuration": 12240000,
+      "estimatedDuration": 75000,
+      "references": [],
       "segments": [
         {
-          "templateId": "bread_001",
+          "templateId": "80a5b53f-147a-436b-a2da-331a3ac4f63e",
+          "relationshipId": "gather-flour",
           "offset": 0
         },
         {
-          "templateId": "bread_002",
+          "templateId": "8ffa2cda-01ad-4618-9ffb-9444ab57e9af",
+          "relationshipId": "gather-yeast",
+          "offset": 15000
+        },
+        {
+          "templateId": "5f68a20d-0f40-4a3f-979d-7d0f39194207",
+          "relationshipId": "gather-salt",
+          "offset": 25000
+        },
+        {
+          "templateId": "dbb27b9f-4aaa-4d68-8f52-099f0d4be287",
+          "relationshipId": "gather-sugar",
+          "offset": 35000
+        },
+        {
+          "templateId": "b0e097fa-5c40-40e6-bac0-34c344df4500",
+          "relationshipId": "gather-water",
+          "offset": 45000
+        },
+        {
+          "templateId": "884541a3-f90d-4305-819c-12d33bc611d0",
+          "relationshipId": "gather-oil",
+          "offset": 65000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "e4f16226-a9e8-4725-8f32-f2383b3923d6",
+      "intent": "Get all baking tools ready",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 94000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "1209340b-e935-41c5-b3d1-2d4ce1ddfbc7",
+          "relationshipId": "get-large-bowl",
+          "offset": 0
+        },
+        {
+          "templateId": "13f8530a-6aaf-4a8f-abac-2029d553322e",
+          "relationshipId": "get-small-bowl",
+          "offset": 15000
+        },
+        {
+          "templateId": "31de2a7c-58d8-46f6-b583-060c100f1b2f",
+          "relationshipId": "get-measuring",
+          "offset": 30000
+        },
+        {
+          "templateId": "7cea01a3-5c11-474a-b743-667f07a71642",
+          "relationshipId": "get-spoon",
+          "offset": 40000
+        },
+        {
+          "templateId": "15b26b6d-0c10-468e-9f1d-56b30a3af32a",
+          "relationshipId": "get-baking-sheet",
+          "offset": 50000
+        },
+        {
+          "templateId": "52482d8a-ea8f-4aa4-b782-cbded6db38e3",
+          "relationshipId": "get-parchment",
+          "offset": 60000
+        },
+        {
+          "templateId": "4706134f-921f-4dae-8c08-9272c0d78b67",
+          "relationshipId": "get-towel",
+          "offset": 68000
+        },
+        {
+          "templateId": "63760420-d7d0-4d72-a44b-fea006689539",
+          "relationshipId": "get-knife",
+          "offset": 76000
+        },
+        {
+          "templateId": "0ad3b219-e40b-4a45-a184-7a0b04b41623",
+          "relationshipId": "get-rack",
+          "offset": 86000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "d97a1d14-6a35-4e24-9c57-266a457a80cf",
+      "intent": "Wash all dirty tools",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 630000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "41704f8e-9e0c-4595-b44b-95794c7e78f8",
+          "relationshipId": "wash-small-bowl",
+          "offset": 0
+        },
+        {
+          "templateId": "ae1e5f5c-c6ba-4c31-a4da-e34ed0d491e1",
+          "relationshipId": "wash-large-bowl",
           "offset": 120000
         },
         {
-          "templateId": "bread_003",
+          "templateId": "f02277db-53a7-4b88-8d58-509e0ae6223a",
+          "relationshipId": "wash-spoon",
           "offset": 240000
         },
         {
-          "templateId": "bread_004",
-          "offset": 840000
+          "templateId": "9706664c-80c7-4087-97f9-626d58de957d",
+          "relationshipId": "wash-measuring",
+          "offset": 300000
         },
         {
-          "templateId": "bread_005",
-          "offset": 4440000
+          "templateId": "d86e4304-d633-45d9-97a3-7d2ca9978416",
+          "relationshipId": "wash-knife",
+          "offset": 360000
         },
         {
-          "templateId": "bread_006",
-          "offset": 4620000
+          "templateId": "68eea375-3b0e-4062-a881-5f72278978e2",
+          "relationshipId": "wash-sheet",
+          "offset": 420000
         },
         {
-          "templateId": "bread_007",
-          "offset": 7620000
+          "templateId": "908e1883-817f-4d96-96e5-076ba19c3fb5",
+          "relationshipId": "clean-counter",
+          "offset": 540000
         },
         {
-          "templateId": "bread_008",
-          "offset": 8220000
-        },
-        {
-          "templateId": "bread_009",
-          "offset": 8280000
-        },
-        {
-          "templateId": "bread_010",
-          "offset": 9960000
+          "templateId": "1d9109ab-145e-4998-990d-4f289fdccd1b",
+          "relationshipId": "laundry-towel",
+          "offset": 600000
         }
       ]
+    },
+    {
+      "templateType": "lane",
+      "id": "0bf4e91d-246d-4c2e-9295-932aa53b96be",
+      "intent": "Mix dry ingredients workflow",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 50000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "f7a219e5-3464-419a-93af-26ec214e0828",
+          "relationshipId": "mix-dry",
+          "offset": 0
+        },
+        {
+          "templateId": "1a2c664f-8269-43ce-8842-2e064c0bfdef",
+          "relationshipId": "dirty-measures",
+          "offset": 35000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "1ae40a65-47ed-4c23-9e03-a0165695891f",
+      "intent": "Oven management - preheat and turn off",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 965000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "d2d8a79b-3ad6-40ec-8d19-486bd371801e",
+          "relationshipId": "check-oven",
+          "offset": 0
+        },
+        {
+          "templateId": "52e8a920-e654-4a1b-98e6-933695e86c12",
+          "relationshipId": "preheat",
+          "offset": 5000
+        },
+        {
+          "templateId": "52a095a5-19b6-4858-8156-ee64b81bd1dc",
+          "relationshipId": "wait-preheat",
+          "offset": 65000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "fcf7bebb-01a4-4ec3-8ef4-93dbfc415023",
+      "intent": "Dough preparation and rising",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 4590000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "87ce70ae-9f3d-4d93-8e9a-386476302f28",
+          "relationshipId": "activate-yeast",
+          "offset": 0
+        },
+        {
+          "templateId": "07a04f22-4d69-4c0a-b1fe-820a624cd919",
+          "relationshipId": "add-wet-to-dry",
+          "offset": 300000
+        },
+        {
+          "templateId": "2fe5fde5-d2c8-4571-9b9f-af828346c861",
+          "relationshipId": "knead",
+          "offset": 345000
+        },
+        {
+          "templateId": "45e152a8-49bd-4248-8ffe-0ec159598c97",
+          "relationshipId": "transfer-grease",
+          "offset": 945000
+        },
+        {
+          "templateId": "7a3beb76-3cb0-4372-890a-df60bae355a9",
+          "relationshipId": "cover-rise",
+          "offset": 975000
+        },
+        {
+          "templateId": "ee9bcae6-6bf2-4031-9735-4fc6146a7272",
+          "relationshipId": "first-rise",
+          "offset": 990000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "dc551cc6-a826-48e3-93ca-0ba01c66dfab",
+      "intent": "Shape loaf and bake",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 2025000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "3161b4bb-58d8-4a47-939e-b8b02bdc0d09",
+          "relationshipId": "punch-down",
+          "offset": 0
+        },
+        {
+          "templateId": "956d99d8-e589-49bd-8133-2d3e1562b17b",
+          "relationshipId": "shape-loaf",
+          "offset": 60000
+        },
+        {
+          "templateId": "129f57a2-f26b-452a-9c35-ad2183b21699",
+          "relationshipId": "line-sheet",
+          "offset": 180000
+        },
+        {
+          "templateId": "0b99dd42-ce13-4505-bdb9-4a51fef7db84",
+          "relationshipId": "place-on-sheet",
+          "offset": 210000
+        },
+        {
+          "templateId": "08cb7d3c-3d54-49f8-a791-e9a353e06c5f",
+          "relationshipId": "second-rise",
+          "offset": 225000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "b5a4de22-59e1-4d07-8d14-af1d37967ed7",
+      "intent": "Score and bake bread",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1860000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "2e68dcdc-c71f-4d71-9ec5-6c573878dd72",
+          "relationshipId": "score-loaf",
+          "offset": 0
+        },
+        {
+          "templateId": "f66238ba-eb93-42a8-8f31-208780c7c707",
+          "relationshipId": "put-in-oven",
+          "offset": 30000
+        },
+        {
+          "templateId": "2f2a2c6f-60e7-492a-8cd7-9c22a6aabccf",
+          "relationshipId": "bake",
+          "offset": 60000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "c1bd4266-8405-41e3-a255-0209c14e9c46",
+      "intent": "Finish baking and cool bread",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1845000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "7fae75a0-8e6a-474c-8513-618cb9fc606f",
+          "relationshipId": "remove-from-oven",
+          "offset": 0
+        },
+        {
+          "templateId": "2fcc8cc4-1748-4df5-9969-88425535e45b",
+          "relationshipId": "turn-off-oven",
+          "offset": 30000
+        },
+        {
+          "templateId": "6c9fe8cc-2fd5-4c00-b91e-dfbe4e826f06",
+          "relationshipId": "cool-bread",
+          "offset": 45000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "3c58482f-7272-4c4b-8fdd-d00e0b479396",
+      "intent": "Complete Homemade Bread Recipe",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 12139000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "e61fc6d7-77f7-47cf-b6b0-eab985132291",
+          "relationshipId": "gather-ingredients",
+          "offset": 0
+        },
+        {
+          "templateId": "e4f16226-a9e8-4725-8f32-f2383b3923d6",
+          "relationshipId": "get-tools",
+          "offset": 75000
+        },
+        {
+          "templateId": "0bf4e91d-246d-4c2e-9295-932aa53b96be",
+          "relationshipId": "mix-dry-workflow",
+          "offset": 169000
+        },
+        {
+          "templateId": "fcf7bebb-01a4-4ec3-8ef4-93dbfc415023",
+          "relationshipId": "dough-prep",
+          "offset": 219000
+        },
+        {
+          "templateId": "1ae40a65-47ed-4c23-9e03-a0165695891f",
+          "relationshipId": "oven-mgmt",
+          "offset": 4809000
+        },
+        {
+          "templateId": "dc551cc6-a826-48e3-93ca-0ba01c66dfab",
+          "relationshipId": "shape-bake",
+          "offset": 5774000
+        },
+        {
+          "templateId": "b5a4de22-59e1-4d07-8d14-af1d37967ed7",
+          "relationshipId": "score-bake",
+          "offset": 7799000
+        },
+        {
+          "templateId": "c1bd4266-8405-41e3-a255-0209c14e9c46",
+          "relationshipId": "finish-cool",
+          "offset": 9659000
+        },
+        {
+          "templateId": "d97a1d14-6a35-4e24-9c57-266a457a80cf",
+          "relationshipId": "cleanup",
+          "offset": 11504000
+        },
+        {
+          "templateId": "07e703c1-c849-4ae7-884e-1f681e383dd4",
+          "relationshipId": "passthrough-final-001",
+          "offset": 12134000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "638653af-1b74-4d8e-acde-891fb450b6f1",
+      "intent": "Fresh bread ready to serve with clean kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 0,
+      "references": [
+        {
+          "parentId": "3c58482f-7272-4c4b-8fdd-d00e0b479396",
+          "relationshipId": "passthrough-final-001"
+        }
+      ],
+      "willConsume": {
+        "cooling_oven_count": 1,
+        "fresh_baked_bread_loaf": 1,
+        "washed_small_bowl_count": 1,
+        "washed_large_bowl_count": 1,
+        "washed_wooden_spoon_count": 1,
+        "washed_measuring_set_count": 1,
+        "washed_bread_knife_count": 1,
+        "washed_baking_sheet_count": 1,
+        "clean_counter_count": 1
+      },
+      "willProduce": {
+        "cooling_oven_count": 1,
+        "fresh_baked_bread_loaf": 1,
+        "washed_small_bowl_count": 1,
+        "washed_large_bowl_count": 1,
+        "washed_wooden_spoon_count": 1,
+        "washed_measuring_set_count": 1,
+        "washed_bread_knife_count": 1,
+        "washed_baking_sheet_count": 1,
+        "clean_counter_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "3c3125c5-59ed-40bd-9165-a53ee8917d9c",
+      "intent": "Fresh bread ready to serve with clean kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 0,
+      "references": [],
+      "willConsume": {
+        "clean_counter_count": 1,
+        "cooling_oven_count": 1,
+        "fresh_baked_bread_loaf": 1,
+        "washed_baking_sheet_count": 1,
+        "washed_bread_knife_count": 1,
+        "washed_large_bowl_count": 1,
+        "washed_measuring_set_count": 1,
+        "washed_small_bowl_count": 1,
+        "washed_wooden_spoon_count": 1,
+        "towel_in_laundry_count": 1
+      },
+      "willProduce": {}
+    },
+    {
+      "templateType": "busy",
+      "id": "07e703c1-c849-4ae7-884e-1f681e383dd4",
+      "intent": "Fresh bread ready to serve with clean kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [],
+      "willConsume": {
+        "clean_counter_count": 1,
+        "cooling_oven_count": 1,
+        "fresh_baked_bread_loaf": 1,
+        "towel_in_laundry_count": 1,
+        "washed_baking_sheet_count": 1,
+        "washed_bread_knife_count": 1,
+        "washed_large_bowl_count": 1,
+        "washed_measuring_set_count": 1,
+        "washed_small_bowl_count": 1,
+        "washed_wooden_spoon_count": 1
+      },
+      "willProduce": {
+        "clean_counter_count": 1,
+        "cooling_oven_count": 1,
+        "fresh_baked_bread_loaf": 1,
+        "towel_in_laundry_count": 1,
+        "washed_baking_sheet_count": 1,
+        "washed_bread_knife_count": 1,
+        "washed_large_bowl_count": 1,
+        "washed_measuring_set_count": 1,
+        "washed_small_bowl_count": 1,
+        "washed_wooden_spoon_count": 1
+      }
     }
   ]
 }
