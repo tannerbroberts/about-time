@@ -3,8 +3,9 @@ import { randomUUID } from 'crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { getTemplates, getVocabulary, addTemplate, getTemplateById } from './storage.js';
+import { getTemplates, getVocabulary, addTemplate, getTemplateById, getTemplateMap, saveTemplateMap, } from './storage.js';
 import { validateLane } from './validateLane.js';
+import { applyLaneLayout, packSegments, equallyDistributeSegments, distributeSegmentOffsetsByInterval, fitLaneDurationToLast, insertGap, addSegmentToEnd, pushSegmentToStart, insertSegmentAt, visualizeLane, visualizeLaneIds, } from '@tannerbroberts/about-time-core';
 // Common units that indicate a variable represents a measurable quantity
 const UNIT_PATTERNS = [
     // Volume
@@ -186,6 +187,7 @@ server.tool('create_busy_template', 'Create a new busy template (an atomic activ
         authorId: authorId ?? 'agent',
         version: version ?? '0.0.0',
         estimatedDuration,
+        references: [],
         willConsume,
         willProduce,
     };
@@ -224,6 +226,7 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
     estimatedDuration: z.number().describe('Total estimated duration in milliseconds'),
     segments: z.array(z.object({
         templateId: z.string().describe('ID of the template to include'),
+        relationshipId: z.string().describe('Unique ID for this specific relationship'),
         offset: z.number().describe('When this segment starts (ms from lane start)'),
     })).describe('Ordered list of template references with offsets'),
     authorId: z.string().optional().describe('Author ID (defaults to "agent")'),
@@ -236,6 +239,7 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
         authorId: authorId ?? 'agent',
         version: version ?? '0.0.0',
         estimatedDuration,
+        references: [],
         segments,
     };
     try {
@@ -343,6 +347,397 @@ server.tool('validate_lane_template', 'Validate a lane template against state tr
             },
         ],
     };
+});
+// ==================== LAYOUT OPERATIONS ====================
+// Tool: Apply lane layout
+server.tool('apply_lane_layout', 'Apply flexbox-style layout rules to a lane\'s segments. Supports justifyContent (start, end, center, space-between, space-around, space-evenly) and gap options.', {
+    laneId: z.string().describe('The ID of the lane to layout'),
+    justifyContent: z.enum(['start', 'end', 'center', 'space-between', 'space-around', 'space-evenly']).optional().describe('How to distribute segments within the lane (default: start)'),
+    gap: z.number().optional().describe('Gap duration in milliseconds between segments (default: 0)'),
+}, async ({ laneId, justifyContent, gap }) => {
+    const templateMap = getTemplateMap();
+    const result = applyLaneLayout(laneId, templateMap, { justifyContent, gap });
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} not found or is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Applied layout to lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        estimatedDuration: result.estimatedDuration,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Pack segments
+server.tool('pack_segments', 'Remove all gaps between segments, packing them starting at offset 0. Does NOT resize the lane duration.', {
+    laneId: z.string().describe('The ID of the lane to pack'),
+}, async ({ laneId }) => {
+    const templateMap = getTemplateMap();
+    const result = packSegments(laneId, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} not found or is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Packed segments in lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Equally distribute segments
+server.tool('equally_distribute_segments', 'Equally distribute segments across the lane\'s duration using space-between logic (first segment at 0, last segment ends at duration).', {
+    laneId: z.string().describe('The ID of the lane'),
+}, async ({ laneId }) => {
+    const templateMap = getTemplateMap();
+    const result = equallyDistributeSegments(laneId, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} not found or is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Equally distributed segments in lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Distribute segments by interval
+server.tool('distribute_segments_by_interval', 'Distribute segments with a fixed interval (gap) between them, starting from offset 0.', {
+    laneId: z.string().describe('The ID of the lane'),
+    interval: z.number().describe('The gap duration in milliseconds between segments'),
+}, async ({ laneId, interval }) => {
+    const templateMap = getTemplateMap();
+    const result = distributeSegmentOffsetsByInterval(laneId, interval, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} not found or is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Distributed segments with ${interval}ms interval in lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Fit lane duration to last segment
+server.tool('fit_lane_duration_to_last', 'Resize lane\'s estimatedDuration to match the end-time of its last segment (offset + child duration).', {
+    laneId: z.string().describe('The ID of the lane to resize'),
+}, async ({ laneId }) => {
+    const templateMap = getTemplateMap();
+    const result = fitLaneDurationToLast(laneId, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} not found or is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Fitted lane duration to last segment: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        estimatedDuration: result.estimatedDuration,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Insert gap
+server.tool('insert_gap', 'Insert empty space before a specific segment by shifting it and all subsequent segments forward.', {
+    laneId: z.string().describe('The ID of the lane'),
+    beforeSegmentIndex: z.number().describe('Index of the segment before which to insert the gap (0-based)'),
+    gapDuration: z.number().describe('Duration of the gap to insert in milliseconds'),
+}, async ({ laneId, beforeSegmentIndex, gapDuration }) => {
+    const templateMap = getTemplateMap();
+    const result = insertGap(laneId, beforeSegmentIndex, gapDuration, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} not found, is not a lane template, or index is out of bounds` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Inserted ${gapDuration}ms gap before segment ${beforeSegmentIndex} in lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Add segment to end
+server.tool('add_segment_to_end', 'Add a new segment at the very end of the lane (after the current last segment ends).', {
+    laneId: z.string().describe('The ID of the lane'),
+    childId: z.string().describe('The ID of the template to add as a segment'),
+    relationshipId: z.string().describe('Unique ID for this specific relationship'),
+}, async ({ laneId, childId, relationshipId }) => {
+    const templateMap = getTemplateMap();
+    const result = addSegmentToEnd(laneId, childId, relationshipId, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} or child ${childId} not found, or lane is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Added segment ${childId} to end of lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Push segment to start
+server.tool('push_segment_to_start', 'Add a new segment at offset 0 and shift all existing segments forward by the new child\'s duration.', {
+    laneId: z.string().describe('The ID of the lane'),
+    childId: z.string().describe('The ID of the template to add as a segment'),
+    relationshipId: z.string().describe('Unique ID for this specific relationship'),
+}, async ({ laneId, childId, relationshipId }) => {
+    const templateMap = getTemplateMap();
+    const result = pushSegmentToStart(laneId, childId, relationshipId, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} or child ${childId} not found, or lane is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Pushed segment ${childId} to start of lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Insert segment at offset
+server.tool('insert_segment_at', 'Insert a segment at a specific offset and shift all segments that start at or after that offset forward by the new child\'s duration.', {
+    laneId: z.string().describe('The ID of the lane'),
+    childId: z.string().describe('The ID of the template to add as a segment'),
+    offset: z.number().describe('The offset in milliseconds at which to insert'),
+    relationshipId: z.string().describe('Unique ID for this specific relationship'),
+}, async ({ laneId, childId, offset, relationshipId }) => {
+    const templateMap = getTemplateMap();
+    const result = insertSegmentAt(laneId, childId, offset, relationshipId, templateMap);
+    if (!result) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({ success: false, error: `Lane ${laneId} or child ${childId} not found, or lane is not a lane template` }),
+                },
+            ],
+        };
+    }
+    saveTemplateMap(templateMap);
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    success: true,
+                    message: `Inserted segment ${childId} at offset ${offset}ms in lane: ${result.intent}`,
+                    lane: {
+                        id: result.id,
+                        intent: result.intent,
+                        segments: result.segments,
+                    },
+                }, null, 2),
+            },
+        ],
+    };
+});
+// Tool: Visualize lane
+server.tool('visualize_lane', 'Generate a text-based ASCII visualization of a lane and its segments. 1 character = 1 second. █ = busy, _ = lane, ░ = empty space. DEBUG UTILITY ONLY - for quick inspection of lane structure.', {
+    laneId: z.string().describe('The ID of the lane to visualize'),
+}, async ({ laneId }) => {
+    const templateMap = getTemplateMap();
+    try {
+        const visualization = visualizeLane(laneId, templateMap);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        laneId,
+                        visualization: `\n${visualization}`,
+                        legend: '█ = busy template, _ = lane floor, ░ = empty gap space',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Visualize lane with IDs
+server.tool('visualize_lane_ids', 'Generate a text-based visualization of a lane using template IDs as characters. Requires all template IDs to be exactly 1 character. DEBUG UTILITY ONLY.', {
+    laneId: z.string().describe('The ID of the lane to visualize (must be a single character)'),
+}, async ({ laneId }) => {
+    const templateMap = getTemplateMap();
+    try {
+        const visualization = visualizeLaneIds(laneId, templateMap);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        laneId,
+                        visualization: `\n${visualization}`,
+                        note: 'Each character represents a template ID. Requires single-character IDs.',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
 });
 // Run the server
 async function main() {

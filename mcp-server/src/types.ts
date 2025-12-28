@@ -12,17 +12,25 @@ export type StateLedger = Record<VariableName, Quantity>;
 
 export type TemplateId = string;
 export type TemplateType = 'lane' | 'busy';
+export type RelationshipId = string;
+
+export interface ParentReference {
+  parentId: TemplateId;
+  relationshipId: RelationshipId;
+}
 
 interface BaseTemplate {
   id: TemplateId;
   intent: string;
   authorId: UUID;
-  version: SemVer;
+  version?: SemVer;
   estimatedDuration: Duration;
+  references: ParentReference[];
 }
 
 export interface Segment {
   templateId: TemplateId;
+  relationshipId: RelationshipId;
   offset: Duration;
 }
 
@@ -38,6 +46,9 @@ export interface BusyTemplate extends BaseTemplate {
 }
 
 export type Template = LaneTemplate | BusyTemplate;
+
+// TemplateMap for use with the core library functions
+export type TemplateMap = Record<TemplateId, Template>;
 
 // Storage types
 export interface TemplateLibrary {

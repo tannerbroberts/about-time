@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Template, TemplateLibrary, VariableName, BusyTemplate } from './types.js';
+import type { Template, TemplateLibrary, VariableName, BusyTemplate, TemplateMap } from './types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Point to the shared data file in the main app's src/data folder
@@ -46,6 +46,27 @@ export function addTemplate(template: Template): void {
     throw new Error(`Template with ID ${template.id} already exists`);
   }
   library.templates.push(template);
+  saveLibrary(library);
+}
+
+/**
+ * Convert the template array to a TemplateMap for use with the core library functions.
+ */
+export function getTemplateMap(): TemplateMap {
+  const templates = getTemplates();
+  const map: TemplateMap = {};
+  for (const template of templates) {
+    map[template.id] = template;
+  }
+  return map;
+}
+
+/**
+ * Save a TemplateMap back to the library, converting it to an array.
+ */
+export function saveTemplateMap(templateMap: TemplateMap): void {
+  const library = loadLibrary();
+  library.templates = Object.values(templateMap);
   saveLibrary(library);
 }
 

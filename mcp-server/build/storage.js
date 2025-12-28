@@ -40,6 +40,25 @@ export function addTemplate(template) {
     library.templates.push(template);
     saveLibrary(library);
 }
+/**
+ * Convert the template array to a TemplateMap for use with the core library functions.
+ */
+export function getTemplateMap() {
+    const templates = getTemplates();
+    const map = {};
+    for (const template of templates) {
+        map[template.id] = template;
+    }
+    return map;
+}
+/**
+ * Save a TemplateMap back to the library, converting it to an array.
+ */
+export function saveTemplateMap(templateMap) {
+    const library = loadLibrary();
+    library.templates = Object.values(templateMap);
+    saveLibrary(library);
+}
 export function getVocabulary() {
     const templates = getTemplates();
     const variables = new Set();
