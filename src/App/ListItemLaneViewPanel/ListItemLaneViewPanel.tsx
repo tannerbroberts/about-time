@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { Expander, SharedLaneView } from '../../Shared';
+import { Expander, ListItemLaneView } from '../../Shared';
 
-import { useLaneViewPanelState } from './useLaneViewPanelState';
+import { useListItemLaneViewPanelState } from './useListItemLaneViewPanelState';
 
-export function LaneViewPanel(): React.ReactElement {
+export function ListItemLaneViewPanel(): React.ReactElement {
   const {
     query,
     setQuery,
@@ -14,23 +14,22 @@ export function LaneViewPanel(): React.ReactElement {
     allTemplates,
     showSuggestions,
     setShowSuggestions,
-  } = useLaneViewPanelState();
+  } = useListItemLaneViewPanelState();
 
   return (
-    <Expander title="Lane View" defaultExpanded>
+    <Expander title="List Item Lane View" defaultExpanded>
       <div style={styles.inputContainer}>
-        <label htmlFor="lane-select" style={styles.label}>
+        <label htmlFor="list-lane-select" style={styles.label}>
           Select Lane:
         </label>
         <div style={styles.autosuggestWrapper}>
           <input
-            id="lane-select"
+            id="list-lane-select"
             type="text"
             value={query}
             onChange={(e): void => setQuery(e.target.value)}
             onFocus={(): void => setShowSuggestions(true)}
             onBlur={(): void => {
-              // Delay to allow click on suggestion
               setTimeout((): void => setShowSuggestions(false), 150);
             }}
             placeholder="Search for a lane..."
@@ -56,11 +55,11 @@ export function LaneViewPanel(): React.ReactElement {
 
       {selectedLane ? (
         <div style={styles.laneViewContainer}>
-          <SharedLaneView lane={selectedLane} allTemplates={allTemplates} />
+          <ListItemLaneView lane={selectedLane} allTemplates={allTemplates} />
         </div>
       ) : (
         <div style={styles.placeholder}>
-          Select a lane template to view its structure
+          Select a lane template to view its list breakdown
         </div>
       )}
     </Expander>
@@ -75,19 +74,18 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '16px',
   },
   label: {
-    fontWeight: 600,
+    fontWeight: 500,
     whiteSpace: 'nowrap',
   },
   autosuggestWrapper: {
     position: 'relative',
     flex: 1,
-    maxWidth: '400px',
   },
   input: {
     width: '100%',
     padding: '8px 12px',
-    fontSize: '14px',
-    border: '1px solid #ccc',
+    fontSize: '1rem',
+    border: '1px solid #e0e0e0',
     borderRadius: '4px',
     boxSizing: 'border-box',
   },
@@ -98,11 +96,10 @@ const styles: Record<string, React.CSSProperties> = {
     right: 0,
     maxHeight: '200px',
     overflowY: 'auto',
-    backgroundColor: 'white',
-    border: '1px solid #ccc',
+    backgroundColor: '#fff',
+    border: '1px solid #e0e0e0',
     borderTop: 'none',
     borderRadius: '0 0 4px 4px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
     zIndex: 100,
   },
   suggestionItem: {
@@ -115,24 +112,23 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: 'transparent',
     cursor: 'pointer',
     textAlign: 'left',
-    fontSize: '14px',
+    fontSize: '0.9rem',
   },
   suggestionIntent: {
     fontWeight: 500,
   },
   suggestionId: {
-    fontSize: '12px',
-    color: '#666',
+    fontSize: '0.75rem',
+    color: '#888',
   },
   laneViewContainer: {
-    marginTop: '8px',
+    marginTop: '16px',
   },
   placeholder: {
-    padding: '32px',
+    padding: '24px',
     textAlign: 'center',
-    color: '#666',
-    backgroundColor: '#fafafa',
+    color: '#888',
+    backgroundColor: '#f9f9f9',
     borderRadius: '8px',
-    border: '1px dashed #ccc',
   },
 };

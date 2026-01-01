@@ -4,225 +4,105 @@ import type { Template, LaneTemplate, Segment } from '../../App';
 
 import { calculateLedgerConfig, type LedgerConfig } from './calculateLedgerConfig';
 
-interface ResolvedSegment {
-  template: Template;
-  offset: number;
-  depth: number;
-}
+/**
+ * Minimum ratio of child duration to parent duration for rendering.
+ * Children smaller than 1/20th (5%) of parent are hidden.
+ */
+const MIN_VISIBILITY_RATIO = 1 / 20;
 
-interface CollapsedGroup {
-  type: 'collapsed';
-  count: number;
-  offset: number;
-  depth: number;
-  templates: Template[];
-  endOffset: number;
-  precedingTemplate: Template | null;
-}
+/**
+ * Number of time slots used for grouping hidden children indicators.
+ * The parent lane is divided into 20 equal slots.
+ */
+const TIME_SLOTS = 20;
 
 interface VisibleSegment {
-  type: 'visible';
+  templateId: string;
   template: Template;
   offset: number;
-  depth: number;
+  duration: number;
 }
 
-type DisplaySegment = VisibleSegment | CollapsedGroup;
+interface HiddenChildrenSlot {
+  slotIndex: number;
+  count: number;
+  templates: Template[];
+}
 
 interface LaneViewState {
   ledgerConfig: LedgerConfig;
-  resolvedSegments: ResolvedSegment[];
-  displaySegments: DisplaySegment[];
-  maxDepth: number;
-  hoveredTooltip: string | null;
-  setHoveredTooltip: (tooltip: string | null) => void;
-  selectedTemplate: Template | null;
-  selectTemplate: (template: Template | null) => void;
-  expandedGroupIndex: number | null;
-  toggleExpandedGroup: (index: number) => void;
-  hoveredGroupIndex: number | null;
-  setHoveredGroupIndex: (index: number | null) => void;
-}
-
-interface TruncateResult {
-  text: string;
-  isTruncated: boolean;
+  visibleSegments: VisibleSegment[];
+  hiddenSlots: HiddenChildrenSlot[];
+  selectedTemplateId: string | null;
+  selectTemplate: (templateId: string | null) => void;
+  selectedLaneTemplate: LaneTemplate | null;
 }
 
 /**
- * Recursively resolve segments and calculate their depth
+ * Compute visible segments (>= 1/20th of parent duration) and hidden slots.
+ * Only processes direct children, no recursive rendering.
  */
-function resolveSegmentsRecursively(
+function computeSegmentVisibility(
   segments: Segment[],
+  parentDuration: number,
   allTemplates: Template[],
-  parentOffset: number,
-  currentDepth: number,
-): ResolvedSegment[] {
-  const result: ResolvedSegment[] = [];
+): { visible: VisibleSegment[]; hiddenSlots: HiddenChildrenSlot[] } {
+  const visible: VisibleSegment[] = [];
+  const hiddenBySlot: Map<number, Template[]> = new Map();
+
+  const minDuration = parentDuration * MIN_VISIBILITY_RATIO;
+  const slotDuration = parentDuration / TIME_SLOTS;
 
   for (const segment of segments) {
     const template = allTemplates.find((t) => t.id === segment.templateId);
     if (!template) continue;
 
-    const absoluteOffset = parentOffset + segment.offset;
+    const duration = template.estimatedDuration;
 
-    result.push({
-      template,
-      offset: absoluteOffset,
-      depth: currentDepth,
-    });
-
-    // If this is a lane, recursively resolve its segments at a higher depth
-    if (template.templateType === 'lane') {
-      const nestedSegments = resolveSegmentsRecursively(
-        (template as LaneTemplate).segments,
-        allTemplates,
-        absoluteOffset,
-        currentDepth + 1,
-      );
-      result.push(...nestedSegments);
-    }
-  }
-
-  return result;
-}
-
-/**
- * Truncate text with ellipsis if longer than maxLength
- */
-function truncateTextInternal(text: string, maxLength: number): TruncateResult {
-  if (text.length <= maxLength) {
-    return { text, isTruncated: false };
-  }
-  return { text: `${text.slice(0, maxLength - 3)}...`, isTruncated: true };
-}
-
-/**
- * Format variables for display
- */
-function formatVariablesInternal(template: Template): string {
-  if (template.templateType === 'busy') {
-    const consumes = Object.entries(template.willConsume)
-      .map(([name, qty]) => `-${qty} ${name}`)
-      .join(', ');
-    const produces = Object.entries(template.willProduce)
-      .map(([name, qty]) => `+${qty} ${name}`)
-      .join(', ');
-    const parts = [consumes, produces].filter(Boolean);
-    return parts.join(' | ');
-  }
-  return '';
-}
-
-/**
- * Minimum width percentage for a segment to be rendered as a full capsule.
- * Segments smaller than this will be collapsed into a "+n" indicator.
- * 5% ensures the capsule is at least as wide as it is tall (sphere-like minimum).
- */
-const MIN_CAPSULE_WIDTH_PERCENT = 5;
-
-/**
- * Group resolved segments into displayable segments, collapsing small ones.
- * Consecutive small segments at the same depth are grouped together.
- */
-function computeDisplaySegments(
-  resolvedSegments: ResolvedSegment[],
-  totalDuration: number,
-): DisplaySegment[] {
-  const result: DisplaySegment[] = [];
-  let i = 0;
-
-  while (i < resolvedSegments.length) {
-    const segment = resolvedSegments[i];
-    const widthPercent = (segment.template.estimatedDuration / totalDuration) * 100;
-
-    if (widthPercent >= MIN_CAPSULE_WIDTH_PERCENT) {
-      // Large enough to render as a full capsule
-      result.push({
-        type: 'visible',
-        template: segment.template,
+    if (duration >= minDuration) {
+      visible.push({
+        templateId: segment.templateId,
+        template,
         offset: segment.offset,
-        depth: segment.depth,
+        duration,
       });
-      i++;
     } else {
-      // Small segment - start collecting consecutive small segments at same depth
-      const smallSegments: ResolvedSegment[] = [segment];
-      const depth = segment.depth;
-      let j = i + 1;
-
-      while (j < resolvedSegments.length) {
-        const nextSegment = resolvedSegments[j];
-        if (nextSegment.depth !== depth) break;
-
-        const nextDuration = nextSegment.template.estimatedDuration;
-        const nextWidthPercent = (nextDuration / totalDuration) * 100;
-        if (nextWidthPercent >= MIN_CAPSULE_WIDTH_PERCENT) break;
-
-        smallSegments.push(nextSegment);
-        j++;
-      }
-
-      // Find the preceding template at this depth (could be visible or from prior group)
-      let precedingTemplate: Template | null = null;
-      for (let k = result.length - 1; k >= 0; k--) {
-        const prev = result[k];
-        if (prev.type === 'visible' && prev.depth === depth) {
-          precedingTemplate = prev.template;
-          break;
-        } else if (prev.type === 'collapsed' && prev.depth === depth) {
-          // Use the last template from the collapsed group
-          precedingTemplate = prev.templates[prev.templates.length - 1];
-          break;
-        }
-      }
-
-      // Calculate end offset (start of first small + sum of all small durations)
-      const lastSmall = smallSegments[smallSegments.length - 1];
-      const endOffset = lastSmall.offset + lastSmall.template.estimatedDuration;
-
-      result.push({
-        type: 'collapsed',
-        count: smallSegments.length,
-        offset: smallSegments[0].offset,
-        depth,
-        templates: smallSegments.map((s) => s.template),
-        endOffset,
-        precedingTemplate,
-      });
-
-      i = j;
+      // Determine which slot this hidden segment falls into based on its offset
+      const slotIndex = Math.min(
+        Math.floor(segment.offset / slotDuration),
+        TIME_SLOTS - 1,
+      );
+      const existing = hiddenBySlot.get(slotIndex) || [];
+      existing.push(template);
+      hiddenBySlot.set(slotIndex, existing);
     }
   }
 
-  return result;
+  const hiddenSlots: HiddenChildrenSlot[] = [];
+  hiddenBySlot.forEach((templates, slotIndex) => {
+    hiddenSlots.push({
+      slotIndex,
+      count: templates.length,
+      templates,
+    });
+  });
+
+  // Sort hidden slots by index
+  hiddenSlots.sort((a, b) => a.slotIndex - b.slotIndex);
+
+  return { visible, hiddenSlots };
 }
 
 export function useLaneViewState(
   lane: LaneTemplate,
   allTemplates: Template[],
 ): LaneViewState {
-  const [hoveredTooltip, setHoveredTooltipState] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  const [expandedGroupIndex, setExpandedGroupIndex] = useState<number | null>(null);
-  const [hoveredGroupIndex, setHoveredGroupIndexState] = useState<number | null>(
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
     null,
   );
 
-  const setHoveredTooltip = useCallback((tooltip: string | null): void => {
-    setHoveredTooltipState(tooltip);
-  }, []);
-
-  const selectTemplate = useCallback((template: Template | null): void => {
-    setSelectedTemplate(template);
-  }, []);
-
-  const toggleExpandedGroup = useCallback((index: number): void => {
-    setExpandedGroupIndex((prev) => (prev === index ? null : index));
-  }, []);
-
-  const setHoveredGroupIndex = useCallback((index: number | null): void => {
-    setHoveredGroupIndexState(index);
+  const selectTemplate = useCallback((templateId: string | null): void => {
+    setSelectedTemplateId(templateId);
   }, []);
 
   const ledgerConfig = useMemo(
@@ -230,39 +110,38 @@ export function useLaneViewState(
     [lane.estimatedDuration],
   );
 
-  const resolvedSegments = useMemo((): ResolvedSegment[] => {
-    return resolveSegmentsRecursively(lane.segments, allTemplates, 0, 1);
-  }, [lane.segments, allTemplates]);
-
-  const displaySegments = useMemo(
-    (): DisplaySegment[] => computeDisplaySegments(
-      resolvedSegments,
+  const { visible, hiddenSlots } = useMemo(
+    () => computeSegmentVisibility(
+      lane.segments,
       lane.estimatedDuration,
+      allTemplates,
     ),
-    [resolvedSegments, lane.estimatedDuration],
+    [lane.segments, lane.estimatedDuration, allTemplates],
   );
 
-  const maxDepth = useMemo((): number => {
-    if (resolvedSegments.length === 0) return 0;
-    return Math.max(...resolvedSegments.map((s) => s.depth));
-  }, [resolvedSegments]);
+  // Get the selected lane template if it's a lane and has smaller duration
+  const selectedLaneTemplate = useMemo((): LaneTemplate | null => {
+    if (!selectedTemplateId) return null;
+
+    const template = allTemplates.find((t) => t.id === selectedTemplateId);
+    if (!template) return null;
+    if (template.templateType !== 'lane') return null;
+
+    // Guard: child lane must have smaller duration than parent
+    if (template.estimatedDuration >= lane.estimatedDuration) return null;
+
+    return template as LaneTemplate;
+  }, [selectedTemplateId, allTemplates, lane.estimatedDuration]);
 
   return {
     ledgerConfig,
-    resolvedSegments,
-    displaySegments,
-    maxDepth,
-    hoveredTooltip,
-    setHoveredTooltip,
-    selectedTemplate,
+    visibleSegments: visible,
+    hiddenSlots,
+    selectedTemplateId,
     selectTemplate,
-    expandedGroupIndex,
-    toggleExpandedGroup,
-    hoveredGroupIndex,
-    setHoveredGroupIndex,
+    selectedLaneTemplate,
   };
 }
 
-export const truncateText = truncateTextInternal;
-export const formatVariables = formatVariablesInternal;
-export type { DisplaySegment, CollapsedGroup, VisibleSegment };
+export type { VisibleSegment, HiddenChildrenSlot, LaneViewState };
+export { TIME_SLOTS };

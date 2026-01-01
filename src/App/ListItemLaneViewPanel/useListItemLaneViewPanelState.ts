@@ -8,7 +8,7 @@ interface TemplateLibrary {
   templates: Template[];
 }
 
-interface LaneViewPanelState {
+interface ListItemLaneViewPanelState {
   query: string;
   setQuery: (value: string) => void;
   suggestions: LaneTemplate[];
@@ -19,7 +19,7 @@ interface LaneViewPanelState {
   setShowSuggestions: (show: boolean) => void;
 }
 
-export function useLaneViewPanelState(): LaneViewPanelState {
+export function useListItemLaneViewPanelState(): ListItemLaneViewPanelState {
   const [query, setQueryState] = useState<string>('');
   const [selectedLane, setSelectedLane] = useState<LaneTemplate | null>(null);
   const [showSuggestions, setShowSuggestionsState] = useState<boolean>(false);

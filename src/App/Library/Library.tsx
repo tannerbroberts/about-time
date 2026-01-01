@@ -1,13 +1,13 @@
 import React from 'react';
 
+import { Expander } from '../../Shared';
+
 import { LibraryFilters } from './LibraryFilters';
 import { MemoItemListItem } from './MemoItemListItem';
 import { MemoVariableListItem } from './MemoVariableListItem';
-import { useLibraryExpander } from './useLibraryExpander';
 import { useLibraryState } from './useLibraryState';
 
 export function Library(): React.ReactElement {
-  const { isExpanded, toggle } = useLibraryExpander();
   const {
     templates,
     variables,
@@ -22,10 +22,7 @@ export function Library(): React.ReactElement {
   } = useLibraryState();
 
   return (
-    <details open={isExpanded} style={styles.details}>
-      <summary onClick={toggle} style={styles.summary}>
-        Library
-      </summary>
+    <Expander title="Library" defaultExpanded>
       <LibraryFilters
         minDuration={minDurationInput}
         maxDuration={maxDurationInput}
@@ -66,24 +63,11 @@ export function Library(): React.ReactElement {
           </div>
         </div>
       </div>
-    </details>
+    </Expander>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  details: {
-    border: '1px solid #e0e0e0',
-    borderRadius: '8px',
-    margin: '16px',
-  },
-  summary: {
-    padding: '12px 16px',
-    backgroundColor: '#f5f5f5',
-    cursor: 'pointer',
-    fontSize: '1.25rem',
-    fontWeight: 600,
-    userSelect: 'none',
-  },
   listsContainer: {
     display: 'flex',
     gap: '16px',
