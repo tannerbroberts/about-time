@@ -203,6 +203,46 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
         segments,
     };
     try {
+        // Add back-references to all child templates (bidirectional linking)
+        const templates = getTemplates();
+        const updatedChildren = [];
+        for (const segment of segments) {
+            const childTemplate = getTemplateById(segment.templateId);
+            if (!childTemplate) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                success: false,
+                                error: `Child template ${segment.templateId} not found`,
+                                details: 'All segment templates must exist before creating the lane',
+                            }),
+                        },
+                    ],
+                };
+            }
+            // Check if this relationship already exists
+            const existingRef = childTemplate.references.find(ref => ref.parentId === template.id && ref.relationshipId === segment.relationshipId);
+            if (!existingRef) {
+                // Add back-reference to child template
+                childTemplate.references.push({
+                    parentId: template.id,
+                    relationshipId: segment.relationshipId,
+                });
+                // Update child template in storage
+                const childIndex = templates.findIndex(t => t.id === segment.templateId);
+                if (childIndex !== -1) {
+                    templates[childIndex] = childTemplate;
+                    updatedChildren.push(childTemplate.id);
+                }
+            }
+        }
+        // Save updated children
+        if (updatedChildren.length > 0) {
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        // Add the lane template
         addTemplate(template);
         return {
             content: [
@@ -212,6 +252,8 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
                         success: true,
                         message: `Created lane template: ${intent}`,
                         template,
+                        backlinksAdded: updatedChildren.length,
+                        note: 'Bidirectional links established between lane and child templates',
                     }, null, 2),
                 },
             ],
@@ -538,6 +580,17 @@ server.tool('add_segment_to_end', 'Add a new segment at the very end of the lane
             ],
         };
     }
+    // Add back-reference to child template (bidirectional linking)
+    const childTemplate = templateMap[childId];
+    if (childTemplate) {
+        const existingRef = childTemplate.references.find(ref => ref.parentId === laneId && ref.relationshipId === relationshipId);
+        if (!existingRef) {
+            childTemplate.references.push({
+                parentId: laneId,
+                relationshipId: relationshipId,
+            });
+        }
+    }
     saveTemplateMap(templateMap);
     return {
         content: [
@@ -551,6 +604,7 @@ server.tool('add_segment_to_end', 'Add a new segment at the very end of the lane
                         intent: result.intent,
                         segments: result.segments,
                     },
+                    note: 'Bidirectional link established',
                 }, null, 2),
             },
         ],
@@ -574,6 +628,17 @@ server.tool('push_segment_to_start', 'Add a new segment at offset 0 and shift al
             ],
         };
     }
+    // Add back-reference to child template (bidirectional linking)
+    const childTemplate = templateMap[childId];
+    if (childTemplate) {
+        const existingRef = childTemplate.references.find(ref => ref.parentId === laneId && ref.relationshipId === relationshipId);
+        if (!existingRef) {
+            childTemplate.references.push({
+                parentId: laneId,
+                relationshipId: relationshipId,
+            });
+        }
+    }
     saveTemplateMap(templateMap);
     return {
         content: [
@@ -587,6 +652,7 @@ server.tool('push_segment_to_start', 'Add a new segment at offset 0 and shift al
                         intent: result.intent,
                         segments: result.segments,
                     },
+                    note: 'Bidirectional link established',
                 }, null, 2),
             },
         ],
@@ -611,6 +677,17 @@ server.tool('insert_segment_at', 'Insert a segment at a specific offset and shif
             ],
         };
     }
+    // Add back-reference to child template (bidirectional linking)
+    const childTemplate = templateMap[childId];
+    if (childTemplate) {
+        const existingRef = childTemplate.references.find(ref => ref.parentId === laneId && ref.relationshipId === relationshipId);
+        if (!existingRef) {
+            childTemplate.references.push({
+                parentId: laneId,
+                relationshipId: relationshipId,
+            });
+        }
+    }
     saveTemplateMap(templateMap);
     return {
         content: [
@@ -624,6 +701,7 @@ server.tool('insert_segment_at', 'Insert a segment at a specific offset and shif
                         intent: result.intent,
                         segments: result.segments,
                     },
+                    note: 'Bidirectional link established',
                 }, null, 2),
             },
         ],
@@ -797,6 +875,14 @@ server.tool('create_passthrough_template', 'Analyze a lane\'s validation errors 
             const templateMap = getTemplateMap();
             const relationshipId = randomUUID();
             addSegmentToEnd(laneId, passthroughTemplate.id, relationshipId, templateMap);
+            // Add back-reference to child template (bidirectional linking)
+            const childTemplate = templateMap[passthroughTemplate.id];
+            if (childTemplate) {
+                childTemplate.references.push({
+                    parentId: laneId,
+                    relationshipId: relationshipId,
+                });
+            }
             fitLaneDurationToLast(laneId, templateMap);
             saveTemplateMap(templateMap);
         }
@@ -1096,6 +1182,89 @@ server.tool('add_recipe_metadata_to_lane', 'Add recipe metadata (source URL, ser
                         success: true,
                         message: `Added recipe metadata to lane: ${template.intent}`,
                         template: updatedTemplate,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Validate all lane templates
+server.tool('validate_all_lanes', 'Validate all lane templates in the library and report any validation errors. Useful for checking the health of all recipe lanes at once.', {}, async () => {
+    try {
+        const templates = getTemplates();
+        const laneTemplates = templates.filter(t => t.templateType === 'lane');
+        const templateMap = getTemplateMap();
+        if (laneTemplates.length === 0) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            message: 'No lane templates found in library',
+                            totalLanes: 0,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        const results = laneTemplates.map(lane => {
+            const validation = validateLane(lane, templateMap);
+            return {
+                id: lane.id,
+                intent: lane.intent,
+                isValid: validation.isValid,
+                contractInputs: validation.contractInputs,
+                contractOutputs: validation.contractOutputs,
+                errorCount: validation.errors.length,
+                errors: validation.errors.map((err) => ({
+                    type: err.type,
+                    message: err.message,
+                    ...(err.busyTemplate ? {
+                        busyTemplate: {
+                            id: err.busyTemplate.id,
+                            intent: err.busyTemplate.intent,
+                        }
+                    } : {}),
+                })),
+                firstBusy: validation.firstBusy ? {
+                    id: validation.firstBusy.id,
+                    intent: validation.firstBusy.intent,
+                } : null,
+                lastBusy: validation.lastBusy ? {
+                    id: validation.lastBusy.id,
+                    intent: validation.lastBusy.intent,
+                } : null,
+            };
+        });
+        const validLanes = results.filter(r => r.isValid);
+        const invalidLanes = results.filter(r => !r.isValid);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        summary: {
+                            totalLanes: laneTemplates.length,
+                            validLanes: validLanes.length,
+                            invalidLanes: invalidLanes.length,
+                            totalErrors: results.reduce((sum, r) => sum + r.errorCount, 0),
+                        },
+                        lanes: results,
                     }, null, 2),
                 },
             ],

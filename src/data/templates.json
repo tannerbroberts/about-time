@@ -2039,6 +2039,90 @@
           "quick"
         ]
       }
+    },
+    {
+      "templateType": "busy",
+      "id": "cfabe036-373e-4273-9a03-8c73cff7baea",
+      "intent": "Get water from tap",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [
+        {
+          "parentId": "fd76c30f-c274-4867-8d30-6a3b65b8bf3d",
+          "relationshipId": "f785164b-a398-4b29-bfb9-0fb40a14e268"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "water_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "b2b0e61e-12dc-4598-9cab-db39598bc821",
+      "intent": "Boil water in kettle",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "fd76c30f-c274-4867-8d30-6a3b65b8bf3d",
+          "relationshipId": "911eb4fc-5706-4fd3-a056-43cd9805db31"
+        }
+      ],
+      "willConsume": {
+        "water_cups": 1
+      },
+      "willProduce": {
+        "boiling_water_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "000883a9-7316-4e8d-ac9e-9bd2443cd0bc",
+      "intent": "Pour water into teapot",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [
+        {
+          "parentId": "fd76c30f-c274-4867-8d30-6a3b65b8bf3d",
+          "relationshipId": "29de0965-9070-4e07-980d-92bfba95e700"
+        }
+      ],
+      "willConsume": {
+        "boiling_water_cups": 1
+      },
+      "willProduce": {
+        "teapot_ready": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "fd76c30f-c274-4867-8d30-6a3b65b8bf3d",
+      "intent": "Make hot water for tea",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 135000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "cfabe036-373e-4273-9a03-8c73cff7baea",
+          "relationshipId": "f785164b-a398-4b29-bfb9-0fb40a14e268",
+          "offset": 0
+        },
+        {
+          "templateId": "b2b0e61e-12dc-4598-9cab-db39598bc821",
+          "relationshipId": "911eb4fc-5706-4fd3-a056-43cd9805db31",
+          "offset": 10000
+        },
+        {
+          "templateId": "000883a9-7316-4e8d-ac9e-9bd2443cd0bc",
+          "relationshipId": "29de0965-9070-4e07-980d-92bfba95e700",
+          "offset": 130000
+        }
+      ]
     }
   ]
 }
