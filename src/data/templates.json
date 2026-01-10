@@ -2123,6 +2123,2371 @@
           "offset": 130000
         }
       ]
+    },
+    {
+      "templateType": "busy",
+      "id": "cb3e853a-8439-489b-8193-afaab9d2253d",
+      "intent": "Travel to grocery store (30 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [
+        {
+          "parentId": "61a0681b-4587-4a3a-bc67-12d6158bf10d",
+          "relationshipId": "3aa6d1b5-6df1-46aa-9f7c-ec53800c4958"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "at_store": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "3a2af420-077e-4189-98aa-114ff009f861",
+      "intent": "Purchase all curry ingredients ($20.50)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "61a0681b-4587-4a3a-bc67-12d6158bf10d",
+          "relationshipId": "1170f429-582b-44f1-b022-9f28a91f88d9"
+        }
+      ],
+      "willConsume": {
+        "dollars_usd": 20.5,
+        "at_store": 1
+      },
+      "willProduce": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "5f3ea2d0-3fd2-4c23-b943-933bb03a60e4",
+      "intent": "Travel home from store (30 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [
+        {
+          "parentId": "61a0681b-4587-4a3a-bc67-12d6158bf10d",
+          "relationshipId": "3b4298f7-1de4-48c4-b143-e307059356f3"
+        }
+      ],
+      "willConsume": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2
+      },
+      "willProduce": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2,
+        "at_home": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "61a0681b-4587-4a3a-bc67-12d6158bf10d",
+      "intent": "Shop for curry ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 4800000,
+      "references": [
+        {
+          "parentId": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+          "relationshipId": "29878c78-1e77-4a73-9e04-45b8a0ac8862"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "cb3e853a-8439-489b-8193-afaab9d2253d",
+          "relationshipId": "3aa6d1b5-6df1-46aa-9f7c-ec53800c4958",
+          "offset": 0
+        },
+        {
+          "templateId": "3a2af420-077e-4189-98aa-114ff009f861",
+          "relationshipId": "1170f429-582b-44f1-b022-9f28a91f88d9",
+          "offset": 1800000
+        },
+        {
+          "templateId": "5f3ea2d0-3fd2-4c23-b943-933bb03a60e4",
+          "relationshipId": "3b4298f7-1de4-48c4-b143-e307059356f3",
+          "offset": 3000000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "7777b4e8-2a0f-470a-b1dc-01d826a15e40",
+      "intent": "Dice chicken into bite-sized pieces",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "3697a034-0b4e-4fa0-a3b5-590956d3b13e"
+        }
+      ],
+      "willConsume": {
+        "chicken_breast_lbs": 1.5
+      },
+      "willProduce": {
+        "diced_chicken_lbs": 1.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "5ed7ab02-e527-4a1b-9609-995253ecc13b",
+      "intent": "Chop bell pepper into strips",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "ee4c0876-18cf-4078-89a9-676dc92f12a6"
+        }
+      ],
+      "willConsume": {
+        "bell_pepper_count": 1
+      },
+      "willProduce": {
+        "chopped_bell_pepper_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "43fbc53f-e9ed-4c19-b293-9f4b265a8f18",
+      "intent": "Slice onion",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "0d3d6758-1911-4561-a692-e8a5e05897f7"
+        }
+      ],
+      "willConsume": {
+        "onion_count": 1
+      },
+      "willProduce": {
+        "sliced_onion_cups": 0.75
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "9d33ba1d-b9bf-457b-84df-b88b06af72ba",
+      "intent": "Mince garlic and ginger",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "5cc87fec-49fb-404f-a399-351514a0b6c3"
+        }
+      ],
+      "willConsume": {
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1
+      },
+      "willProduce": {
+        "minced_aromatics_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "de822620-b4c8-4acc-aed7-24d23f2b476d",
+      "intent": "Rinse jasmine rice",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "3a352fa5-3e1a-4e81-9eb6-5fa033ad4fca"
+        }
+      ],
+      "willConsume": {
+        "jasmine_rice_cups": 2
+      },
+      "willProduce": {
+        "rinsed_rice_cups": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ce9d3a5d-d2ad-46c8-b988-70351d254374",
+      "intent": "Measure and organize curry paste and coconut milk",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "cf988710-6f5c-487e-8052-80b834ee0187"
+        }
+      ],
+      "willConsume": {
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1
+      },
+      "willProduce": {
+        "curry_paste_ready_tbsp": 2,
+        "coconut_milk_ready_cups": 1.5
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "4ac78171-ba20-4364-b831-e10083308bf4",
+      "intent": "Prepare all curry ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1080000,
+      "references": [
+        {
+          "parentId": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+          "relationshipId": "ebec6ea2-3080-4595-bdff-ed27b434fbf1"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "7777b4e8-2a0f-470a-b1dc-01d826a15e40",
+          "relationshipId": "3697a034-0b4e-4fa0-a3b5-590956d3b13e",
+          "offset": 0
+        },
+        {
+          "templateId": "5ed7ab02-e527-4a1b-9609-995253ecc13b",
+          "relationshipId": "ee4c0876-18cf-4078-89a9-676dc92f12a6",
+          "offset": 300000
+        },
+        {
+          "templateId": "43fbc53f-e9ed-4c19-b293-9f4b265a8f18",
+          "relationshipId": "0d3d6758-1911-4561-a692-e8a5e05897f7",
+          "offset": 480000
+        },
+        {
+          "templateId": "9d33ba1d-b9bf-457b-84df-b88b06af72ba",
+          "relationshipId": "5cc87fec-49fb-404f-a399-351514a0b6c3",
+          "offset": 660000
+        },
+        {
+          "templateId": "de822620-b4c8-4acc-aed7-24d23f2b476d",
+          "relationshipId": "3a352fa5-3e1a-4e81-9eb6-5fa033ad4fca",
+          "offset": 840000
+        },
+        {
+          "templateId": "ce9d3a5d-d2ad-46c8-b988-70351d254374",
+          "relationshipId": "cf988710-6f5c-487e-8052-80b834ee0187",
+          "offset": 960000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "2079b1b4-2c73-4f50-a589-c664221003cb",
+      "intent": "Cook jasmine rice in rice cooker (20 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "1396c086-a081-4d25-997f-64d949a38b4f"
+        }
+      ],
+      "willConsume": {
+        "rinsed_rice_cups": 2
+      },
+      "willProduce": {
+        "cooked_rice_servings": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "91089291-defc-4db6-a362-5ce31c3b1b5c",
+      "intent": "Heat oil in large pan over medium-high heat",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "822f371b-4eb4-48b2-9e1c-6e999bd6656a"
+        }
+      ],
+      "willConsume": {
+        "vegetable_oil_tbsp": 2
+      },
+      "willProduce": {
+        "hot_oil_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7287a300-2c1c-43c6-96b1-d7f93ed03a5d",
+      "intent": "Sauté aromatics until fragrant (2 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "61dea770-c021-45a6-8fcb-5c46a4abe53b"
+        }
+      ],
+      "willConsume": {
+        "hot_oil_in_pan": 1,
+        "minced_aromatics_tbsp": 2
+      },
+      "willProduce": {
+        "aromatic_oil_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "cf60dd04-8474-4853-84de-3a565bc207f1",
+      "intent": "Add curry paste and cook for 1 minute",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "9dcd5ecb-c193-4a63-bd18-a0d6f0449ad5"
+        }
+      ],
+      "willConsume": {
+        "aromatic_oil_in_pan": 1,
+        "curry_paste_ready_tbsp": 2
+      },
+      "willProduce": {
+        "curry_base_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "863f21d9-56df-4123-85f2-421addfbfaaa",
+      "intent": "Add chicken and cook until no longer pink (5-7 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 360000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "8e5f5fb3-7db2-4e13-8941-46b3fcdf2815"
+        }
+      ],
+      "willConsume": {
+        "curry_base_in_pan": 1,
+        "diced_chicken_lbs": 1.5
+      },
+      "willProduce": {
+        "chicken_curry_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7e942fe7-afed-4ccb-be85-fad0138aeaa1",
+      "intent": "Add coconut milk and bring to simmer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "4fe9d761-3340-430e-bfaf-89e8e16cab2e"
+        }
+      ],
+      "willConsume": {
+        "chicken_curry_in_pan": 1,
+        "coconut_milk_ready_cups": 1.5
+      },
+      "willProduce": {
+        "simmering_curry_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "dc9493b6-0b85-4d56-8e78-5a0b5ff17ba4",
+      "intent": "Add vegetables, fish sauce, and sugar",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "acb00060-eb5f-49a2-ab31-c6bf2e2efcb9"
+        }
+      ],
+      "willConsume": {
+        "simmering_curry_in_pan": 1,
+        "chopped_bell_pepper_cups": 1,
+        "sliced_onion_cups": 0.75,
+        "bamboo_shoots_cups": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1
+      },
+      "willProduce": {
+        "curry_with_vegetables_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "92f5c2b2-4199-40a5-b681-9556ef876eea",
+      "intent": "Simmer curry for 10 minutes until vegetables tender",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "references": [
+        {
+          "parentId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "7d6b15a6-6a86-4c29-a009-93eda68771ef"
+        }
+      ],
+      "willConsume": {
+        "curry_with_vegetables_in_pan": 1
+      },
+      "willProduce": {
+        "finished_green_curry_servings": 4
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "fa72287f-4cc9-4f31-ba67-54a141549576",
+      "intent": "Cook green curry and rice",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 2760000,
+      "references": [
+        {
+          "parentId": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+          "relationshipId": "4988027b-db2e-4b88-9de5-104058c1b088"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "2079b1b4-2c73-4f50-a589-c664221003cb",
+          "relationshipId": "1396c086-a081-4d25-997f-64d949a38b4f",
+          "offset": 0
+        },
+        {
+          "templateId": "91089291-defc-4db6-a362-5ce31c3b1b5c",
+          "relationshipId": "822f371b-4eb4-48b2-9e1c-6e999bd6656a",
+          "offset": 1200000
+        },
+        {
+          "templateId": "7287a300-2c1c-43c6-96b1-d7f93ed03a5d",
+          "relationshipId": "61dea770-c021-45a6-8fcb-5c46a4abe53b",
+          "offset": 1320000
+        },
+        {
+          "templateId": "cf60dd04-8474-4853-84de-3a565bc207f1",
+          "relationshipId": "9dcd5ecb-c193-4a63-bd18-a0d6f0449ad5",
+          "offset": 1440000
+        },
+        {
+          "templateId": "863f21d9-56df-4123-85f2-421addfbfaaa",
+          "relationshipId": "8e5f5fb3-7db2-4e13-8941-46b3fcdf2815",
+          "offset": 1500000
+        },
+        {
+          "templateId": "7e942fe7-afed-4ccb-be85-fad0138aeaa1",
+          "relationshipId": "4fe9d761-3340-430e-bfaf-89e8e16cab2e",
+          "offset": 1860000
+        },
+        {
+          "templateId": "dc9493b6-0b85-4d56-8e78-5a0b5ff17ba4",
+          "relationshipId": "acb00060-eb5f-49a2-ab31-c6bf2e2efcb9",
+          "offset": 2040000
+        },
+        {
+          "templateId": "92f5c2b2-4199-40a5-b681-9556ef876eea",
+          "relationshipId": "7d6b15a6-6a86-4c29-a009-93eda68771ef",
+          "offset": 2160000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "b403a01b-fb2c-494e-b53f-aa628fd06df6",
+      "intent": "Plate curry over rice in 4 bowls",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+          "relationshipId": "0cd6cbf2-4a67-4d89-a0ab-ecf7a97338f1"
+        }
+      ],
+      "willConsume": {
+        "finished_green_curry_servings": 4,
+        "cooked_rice_servings": 4
+      },
+      "willProduce": {
+        "plated_curry_meals": 4
+      },
+      "nutrition": {
+        "servings": 4,
+        "perServing": {
+          "calories_kcal": 520,
+          "protein_g": 35,
+          "carbs_g": 48,
+          "fat_g": 20,
+          "fiber_g": 3,
+          "sodium_mg": 680
+        }
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "653ef265-6bbb-492d-a801-e49be0e5e1a7",
+      "intent": "Eat green curry meal (20 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+          "relationshipId": "55150069-3c9d-4f8d-b6d8-b098f3cf1955"
+        }
+      ],
+      "willConsume": {
+        "plated_curry_meals": 4
+      },
+      "willProduce": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720,
+        "dirty_plates_count": 4,
+        "dirty_utensils_count": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "42207a25-1be2-467a-8623-1fefb9f52367",
+      "intent": "Wash plates and utensils",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "83b36a46-f3b6-492c-93e8-936cc832f643",
+          "relationshipId": "d8649f45-34c2-456a-a6da-8da92e399ba3"
+        }
+      ],
+      "willConsume": {
+        "dirty_plates_count": 4,
+        "dirty_utensils_count": 4
+      },
+      "willProduce": {
+        "clean_dishes_count": 8
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "1d07a7af-41d3-4a3d-be9e-47473eba9036",
+      "intent": "Wash cooking pans and rice cooker",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "83b36a46-f3b6-492c-93e8-936cc832f643",
+          "relationshipId": "25dda050-6c69-408b-bcba-3f5b155e377d"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "clean_cookware_count": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "e352aa02-6948-4a3d-93c5-e9bb0973da43",
+      "intent": "Wipe down counters and stove",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "83b36a46-f3b6-492c-93e8-936cc832f643",
+          "relationshipId": "ff624a18-2c6c-417e-b47d-5ddef3010bbe"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "clean_kitchen": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "e37608a0-6853-4bd8-884e-01a6e35da3dc",
+      "intent": "Take out trash",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "83b36a46-f3b6-492c-93e8-936cc832f643",
+          "relationshipId": "4479d7d8-8c10-4d3a-b627-f674a6c40f14"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "trash_removed": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "83b36a46-f3b6-492c-93e8-936cc832f643",
+      "intent": "Clean up kitchen after meal",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 900000,
+      "references": [
+        {
+          "parentId": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+          "relationshipId": "a46e8d2c-04ff-4aa7-9c63-16ab98e122f2"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "42207a25-1be2-467a-8623-1fefb9f52367",
+          "relationshipId": "d8649f45-34c2-456a-a6da-8da92e399ba3",
+          "offset": 0
+        },
+        {
+          "templateId": "1d07a7af-41d3-4a3d-be9e-47473eba9036",
+          "relationshipId": "25dda050-6c69-408b-bcba-3f5b155e377d",
+          "offset": 300000
+        },
+        {
+          "templateId": "e352aa02-6948-4a3d-93c5-e9bb0973da43",
+          "relationshipId": "ff624a18-2c6c-417e-b47d-5ddef3010bbe",
+          "offset": 600000
+        },
+        {
+          "templateId": "e37608a0-6853-4bd8-884e-01a6e35da3dc",
+          "relationshipId": "4479d7d8-8c10-4d3a-b627-f674a6c40f14",
+          "offset": 780000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "3d43ca42-d872-4008-9389-e4f75535ccb9",
+      "intent": "Indian Green Curry with Chicken and Rice - Complete meal preparation",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 11040000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "61a0681b-4587-4a3a-bc67-12d6158bf10d",
+          "relationshipId": "29878c78-1e77-4a73-9e04-45b8a0ac8862",
+          "offset": 0
+        },
+        {
+          "templateId": "4ac78171-ba20-4364-b831-e10083308bf4",
+          "relationshipId": "ebec6ea2-3080-4595-bdff-ed27b434fbf1",
+          "offset": 4800000
+        },
+        {
+          "templateId": "fa72287f-4cc9-4f31-ba67-54a141549576",
+          "relationshipId": "4988027b-db2e-4b88-9de5-104058c1b088",
+          "offset": 5880000
+        },
+        {
+          "templateId": "b403a01b-fb2c-494e-b53f-aa628fd06df6",
+          "relationshipId": "0cd6cbf2-4a67-4d89-a0ab-ecf7a97338f1",
+          "offset": 8640000
+        },
+        {
+          "templateId": "653ef265-6bbb-492d-a801-e49be0e5e1a7",
+          "relationshipId": "55150069-3c9d-4f8d-b6d8-b098f3cf1955",
+          "offset": 8940000
+        },
+        {
+          "templateId": "83b36a46-f3b6-492c-93e8-936cc832f643",
+          "relationshipId": "a46e8d2c-04ff-4aa7-9c63-16ab98e122f2",
+          "offset": 10140000
+        }
+      ],
+      "recipeMetadata": {
+        "sourceUrl": "Common knowledge - Indian/Thai fusion green curry",
+        "servings": 4,
+        "prepTime": 1080000,
+        "cookTime": 2760000,
+        "difficulty": "medium",
+        "cuisine": "Indian",
+        "tags": [
+          "curry",
+          "chicken",
+          "indian",
+          "coconut",
+          "rice",
+          "dinner"
+        ]
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "9494e3bd-6335-4fbb-9fd2-17a4f7696fdf",
+      "intent": "Prepare to go shopping with money",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [
+        {
+          "parentId": "7f580131-46c7-4ff7-bf38-5d4f45f038c4",
+          "relationshipId": "e8732630-23d9-41fe-9b70-385af1e73d57"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "ready_to_shop_with_dollars_usd": 20.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "86ba5bfd-bce5-4384-b134-279d3362d337",
+      "intent": "Travel to grocery store (30 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [
+        {
+          "parentId": "7f580131-46c7-4ff7-bf38-5d4f45f038c4",
+          "relationshipId": "6bf062a2-599a-420f-958d-0636e68f73e0"
+        }
+      ],
+      "willConsume": {
+        "ready_to_shop_with_dollars_usd": 20.5
+      },
+      "willProduce": {
+        "at_store_with_dollars_usd": 20.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "164319dd-12ea-4e0b-bbcd-9c1a8c5c77bc",
+      "intent": "Purchase all curry ingredients ($20.50)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "7f580131-46c7-4ff7-bf38-5d4f45f038c4",
+          "relationshipId": "d1eb0b19-51bc-4366-acb4-ed3fda289e63"
+        }
+      ],
+      "willConsume": {
+        "at_store_with_dollars_usd": 20.5
+      },
+      "willProduce": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "b55570ab-5cbb-4277-b566-210213df2da8",
+      "intent": "Travel home from store (30 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [
+        {
+          "parentId": "7f580131-46c7-4ff7-bf38-5d4f45f038c4",
+          "relationshipId": "c9323e75-6878-42f0-8db8-2ea265046c87"
+        }
+      ],
+      "willConsume": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2
+      },
+      "willProduce": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2,
+        "at_home": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "7f580131-46c7-4ff7-bf38-5d4f45f038c4",
+      "intent": "Shop for curry ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 4860000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "ab3af280-669c-4180-b05b-c59f49c6dced"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "9494e3bd-6335-4fbb-9fd2-17a4f7696fdf",
+          "relationshipId": "e8732630-23d9-41fe-9b70-385af1e73d57",
+          "offset": 0
+        },
+        {
+          "templateId": "86ba5bfd-bce5-4384-b134-279d3362d337",
+          "relationshipId": "6bf062a2-599a-420f-958d-0636e68f73e0",
+          "offset": 60000
+        },
+        {
+          "templateId": "164319dd-12ea-4e0b-bbcd-9c1a8c5c77bc",
+          "relationshipId": "d1eb0b19-51bc-4366-acb4-ed3fda289e63",
+          "offset": 1860000
+        },
+        {
+          "templateId": "b55570ab-5cbb-4277-b566-210213df2da8",
+          "relationshipId": "c9323e75-6878-42f0-8db8-2ea265046c87",
+          "offset": 3060000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "aaff81d2-1bf2-4405-87ee-3d49d71ccb99",
+      "intent": "Dice chicken into bite-sized pieces",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "782f04b1-72fa-46bd-becc-925cb7d83750"
+        }
+      ],
+      "willConsume": {
+        "chicken_breast_lbs": 1.5
+      },
+      "willProduce": {
+        "diced_chicken_lbs": 1.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "a660b073-d586-4408-a18d-f6e2c9f517e5",
+      "intent": "Chop bell pepper into strips",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "eb8a8c06-a76f-4884-944f-8cd4ff8d6800"
+        }
+      ],
+      "willConsume": {
+        "bell_pepper_count": 1
+      },
+      "willProduce": {
+        "chopped_bell_pepper_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "0a1790c2-7ee8-4b6e-a251-fdd0d400db38",
+      "intent": "Slice onion",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "8129cc92-2528-49eb-b404-81007bd174da"
+        }
+      ],
+      "willConsume": {
+        "onion_count": 1
+      },
+      "willProduce": {
+        "sliced_onion_cups": 0.75
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "5782ff37-64ad-428f-bd6d-f777513df530",
+      "intent": "Mince garlic and ginger",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "e5201049-20fb-4b83-999d-1f6ee81d366f"
+        }
+      ],
+      "willConsume": {
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1
+      },
+      "willProduce": {
+        "minced_aromatics_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "54ce7897-e7bc-4395-80a2-e93d5ed355bb",
+      "intent": "Rinse jasmine rice",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "51475700-6c5b-4bb0-89f8-7019720c961c"
+        }
+      ],
+      "willConsume": {
+        "jasmine_rice_cups": 2
+      },
+      "willProduce": {
+        "rinsed_rice_cups": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "dda35483-d14e-400e-8bf0-fd27fbf6a34a",
+      "intent": "Measure and organize curry paste and coconut milk",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "5eb1c3e1-2b25-40f5-8b30-e0d10a3e6c1d"
+        }
+      ],
+      "willConsume": {
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1
+      },
+      "willProduce": {
+        "curry_paste_ready_tbsp": 2,
+        "coconut_milk_ready_cups": 1.5
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+      "intent": "Prepare all curry ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1080000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "da642498-62f6-49ad-9866-e7ed57460269"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "aaff81d2-1bf2-4405-87ee-3d49d71ccb99",
+          "relationshipId": "782f04b1-72fa-46bd-becc-925cb7d83750",
+          "offset": 0
+        },
+        {
+          "templateId": "a660b073-d586-4408-a18d-f6e2c9f517e5",
+          "relationshipId": "eb8a8c06-a76f-4884-944f-8cd4ff8d6800",
+          "offset": 300000
+        },
+        {
+          "templateId": "0a1790c2-7ee8-4b6e-a251-fdd0d400db38",
+          "relationshipId": "8129cc92-2528-49eb-b404-81007bd174da",
+          "offset": 480000
+        },
+        {
+          "templateId": "5782ff37-64ad-428f-bd6d-f777513df530",
+          "relationshipId": "e5201049-20fb-4b83-999d-1f6ee81d366f",
+          "offset": 660000
+        },
+        {
+          "templateId": "54ce7897-e7bc-4395-80a2-e93d5ed355bb",
+          "relationshipId": "51475700-6c5b-4bb0-89f8-7019720c961c",
+          "offset": 840000
+        },
+        {
+          "templateId": "dda35483-d14e-400e-8bf0-fd27fbf6a34a",
+          "relationshipId": "5eb1c3e1-2b25-40f5-8b30-e0d10a3e6c1d",
+          "offset": 960000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "5f7ea082-7b03-4a24-a530-cac533093742",
+      "intent": "Cook jasmine rice in rice cooker (20 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "6fb0cbb8-2cd3-4ac3-bbb4-3f9773ea7117"
+        }
+      ],
+      "willConsume": {
+        "rinsed_rice_cups": 2
+      },
+      "willProduce": {
+        "cooked_rice_servings": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "2638cfa9-c609-4efc-b9d3-c443e27c7a70",
+      "intent": "Heat oil in large pan over medium-high heat",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "ae2e17a6-915b-4174-b437-41c373b4d763"
+        }
+      ],
+      "willConsume": {
+        "vegetable_oil_tbsp": 2
+      },
+      "willProduce": {
+        "hot_oil_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "20ba29a3-f135-4207-9f29-fea559b809a1",
+      "intent": "Sauté aromatics until fragrant (2 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "9fd7af6d-487d-4a3b-acf5-0a7ee46aaa8b"
+        }
+      ],
+      "willConsume": {
+        "hot_oil_in_pan": 1,
+        "minced_aromatics_tbsp": 2
+      },
+      "willProduce": {
+        "aromatic_oil_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "27558ed4-f5a6-42a6-a86f-6ea03015d390",
+      "intent": "Add curry paste and cook for 1 minute",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "0bb5ef58-8db3-415f-b78f-1391837a9c2e"
+        }
+      ],
+      "willConsume": {
+        "aromatic_oil_in_pan": 1,
+        "curry_paste_ready_tbsp": 2
+      },
+      "willProduce": {
+        "curry_base_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bef028fa-5968-48bf-90d7-6161fd6a5d32",
+      "intent": "Add chicken and cook until no longer pink (5-7 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 360000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "84c71dc1-6ba2-4fe2-8b6f-f37c55edd14e"
+        }
+      ],
+      "willConsume": {
+        "curry_base_in_pan": 1,
+        "diced_chicken_lbs": 1.5
+      },
+      "willProduce": {
+        "chicken_curry_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "51be6caa-e444-4446-9a4e-70c740a58f2f",
+      "intent": "Add coconut milk and bring to simmer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "a402b76b-1589-46cf-b363-f2c679aee4c2"
+        }
+      ],
+      "willConsume": {
+        "chicken_curry_in_pan": 1,
+        "coconut_milk_ready_cups": 1.5
+      },
+      "willProduce": {
+        "simmering_curry_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "1c3d002b-d227-4865-b270-2cd100365953",
+      "intent": "Add vegetables, fish sauce, and sugar",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "c26839d4-4cb4-4370-8493-1f067cd686e3"
+        }
+      ],
+      "willConsume": {
+        "simmering_curry_in_pan": 1,
+        "chopped_bell_pepper_cups": 1,
+        "sliced_onion_cups": 0.75,
+        "bamboo_shoots_cups": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1
+      },
+      "willProduce": {
+        "curry_with_vegetables_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "590c98d3-9db4-4053-96c6-00bef559f447",
+      "intent": "Simmer curry for 10 minutes until vegetables tender",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "references": [
+        {
+          "parentId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "e806ff4d-4c7e-4cee-859b-8b01673f0ecf"
+        }
+      ],
+      "willConsume": {
+        "curry_with_vegetables_in_pan": 1
+      },
+      "willProduce": {
+        "finished_green_curry_servings": 4
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+      "intent": "Cook green curry and rice",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 2760000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "d484a524-b6b3-4026-9a50-cdf925145783"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "5f7ea082-7b03-4a24-a530-cac533093742",
+          "relationshipId": "6fb0cbb8-2cd3-4ac3-bbb4-3f9773ea7117",
+          "offset": 0
+        },
+        {
+          "templateId": "2638cfa9-c609-4efc-b9d3-c443e27c7a70",
+          "relationshipId": "ae2e17a6-915b-4174-b437-41c373b4d763",
+          "offset": 1200000
+        },
+        {
+          "templateId": "20ba29a3-f135-4207-9f29-fea559b809a1",
+          "relationshipId": "9fd7af6d-487d-4a3b-acf5-0a7ee46aaa8b",
+          "offset": 1320000
+        },
+        {
+          "templateId": "27558ed4-f5a6-42a6-a86f-6ea03015d390",
+          "relationshipId": "0bb5ef58-8db3-415f-b78f-1391837a9c2e",
+          "offset": 1440000
+        },
+        {
+          "templateId": "bef028fa-5968-48bf-90d7-6161fd6a5d32",
+          "relationshipId": "84c71dc1-6ba2-4fe2-8b6f-f37c55edd14e",
+          "offset": 1500000
+        },
+        {
+          "templateId": "51be6caa-e444-4446-9a4e-70c740a58f2f",
+          "relationshipId": "a402b76b-1589-46cf-b363-f2c679aee4c2",
+          "offset": 1860000
+        },
+        {
+          "templateId": "1c3d002b-d227-4865-b270-2cd100365953",
+          "relationshipId": "c26839d4-4cb4-4370-8493-1f067cd686e3",
+          "offset": 2040000
+        },
+        {
+          "templateId": "590c98d3-9db4-4053-96c6-00bef559f447",
+          "relationshipId": "e806ff4d-4c7e-4cee-859b-8b01673f0ecf",
+          "offset": 2160000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "1f2cbbdd-9d1a-4f37-a0bf-a105bcd9bd29",
+      "intent": "Plate curry over rice in 4 bowls",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "dfd62e59-dcc3-4420-88f8-210b1e3c382c"
+        }
+      ],
+      "willConsume": {
+        "finished_green_curry_servings": 4,
+        "cooked_rice_servings": 4
+      },
+      "willProduce": {
+        "plated_curry_meals": 4
+      },
+      "nutrition": {
+        "servings": 4,
+        "perServing": {
+          "calories_kcal": 520,
+          "protein_g": 35,
+          "carbs_g": 48,
+          "fat_g": 20,
+          "fiber_g": 3,
+          "sodium_mg": 680
+        }
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "715dc8cb-feaa-4ba6-9338-a289a8018793",
+      "intent": "Eat green curry meal (20 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "73ea5468-8743-49de-a7d4-35cca8ea203d"
+        }
+      ],
+      "willConsume": {
+        "plated_curry_meals": 4
+      },
+      "willProduce": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720,
+        "dirty_plates_count": 4,
+        "dirty_utensils_count": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7d6347cb-3fca-4484-8b63-897623f0ae4e",
+      "intent": "Wash plates and utensils",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "f9d464ce-aa5c-4a0d-8b58-e459d27f6501",
+          "relationshipId": "84251314-7e16-40e8-8afb-2e04953df57d"
+        }
+      ],
+      "willConsume": {
+        "dirty_plates_count": 4,
+        "dirty_utensils_count": 4
+      },
+      "willProduce": {
+        "clean_dishes_count": 8
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "d91114d2-0b5e-4df6-887e-55dfe98c8fd2",
+      "intent": "Wash cooking pans and rice cooker",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "f9d464ce-aa5c-4a0d-8b58-e459d27f6501",
+          "relationshipId": "aec9246f-0004-40a4-8d6f-640a249fb2c0"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "clean_cookware_count": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "e74a22f5-2069-4fed-bdee-0f429af95c34",
+      "intent": "Wipe down counters and stove",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "f9d464ce-aa5c-4a0d-8b58-e459d27f6501",
+          "relationshipId": "be2c29fa-1d8c-4ce3-90fa-dcaadf74c0c3"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "clean_kitchen": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "3b76eab2-ecfd-4a5e-9433-9ea9513fce8f",
+      "intent": "Take out trash",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "f9d464ce-aa5c-4a0d-8b58-e459d27f6501",
+          "relationshipId": "5bb483e8-f67a-4912-b544-31a3eeb38e2e"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "trash_removed": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "f9d464ce-aa5c-4a0d-8b58-e459d27f6501",
+      "intent": "Clean up kitchen after meal",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 900000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "d8988c1a-6749-42cf-b034-89e3c2ace6b6"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "7d6347cb-3fca-4484-8b63-897623f0ae4e",
+          "relationshipId": "84251314-7e16-40e8-8afb-2e04953df57d",
+          "offset": 0
+        },
+        {
+          "templateId": "d91114d2-0b5e-4df6-887e-55dfe98c8fd2",
+          "relationshipId": "aec9246f-0004-40a4-8d6f-640a249fb2c0",
+          "offset": 300000
+        },
+        {
+          "templateId": "e74a22f5-2069-4fed-bdee-0f429af95c34",
+          "relationshipId": "be2c29fa-1d8c-4ce3-90fa-dcaadf74c0c3",
+          "offset": 600000
+        },
+        {
+          "templateId": "3b76eab2-ecfd-4a5e-9433-9ea9513fce8f",
+          "relationshipId": "5bb483e8-f67a-4912-b544-31a3eeb38e2e",
+          "offset": 780000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "becaa7bb-4460-469a-b20e-805976515936",
+      "intent": "Meal complete - nutrition consumed",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [
+        {
+          "parentId": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+          "relationshipId": "83db93b6-ff03-4bfc-a276-f1d973505320"
+        }
+      ],
+      "willConsume": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720,
+        "clean_dishes_count": 8,
+        "clean_cookware_count": 2,
+        "clean_kitchen": 1,
+        "trash_removed": 1,
+        "at_home": 1
+      },
+      "willProduce": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "1ec38cc3-0fb9-4241-a4d0-ec8523fa8986",
+      "intent": "Indian Green Curry with Chicken and Rice - Complete meal preparation",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 11105000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "7f580131-46c7-4ff7-bf38-5d4f45f038c4",
+          "relationshipId": "ab3af280-669c-4180-b05b-c59f49c6dced",
+          "offset": 0
+        },
+        {
+          "templateId": "c8627896-11e9-4368-99d8-0eafa5ea8c63",
+          "relationshipId": "da642498-62f6-49ad-9866-e7ed57460269",
+          "offset": 4860000
+        },
+        {
+          "templateId": "21ffa7c2-f7ae-4394-9648-40c68a01a053",
+          "relationshipId": "d484a524-b6b3-4026-9a50-cdf925145783",
+          "offset": 5940000
+        },
+        {
+          "templateId": "1f2cbbdd-9d1a-4f37-a0bf-a105bcd9bd29",
+          "relationshipId": "dfd62e59-dcc3-4420-88f8-210b1e3c382c",
+          "offset": 8700000
+        },
+        {
+          "templateId": "715dc8cb-feaa-4ba6-9338-a289a8018793",
+          "relationshipId": "73ea5468-8743-49de-a7d4-35cca8ea203d",
+          "offset": 9000000
+        },
+        {
+          "templateId": "f9d464ce-aa5c-4a0d-8b58-e459d27f6501",
+          "relationshipId": "d8988c1a-6749-42cf-b034-89e3c2ace6b6",
+          "offset": 10200000
+        },
+        {
+          "templateId": "becaa7bb-4460-469a-b20e-805976515936",
+          "relationshipId": "83db93b6-ff03-4bfc-a276-f1d973505320",
+          "offset": 11100000
+        }
+      ],
+      "recipeMetadata": {
+        "sourceUrl": "Common knowledge - Indian/Thai fusion green curry",
+        "servings": 4,
+        "prepTime": 1080000,
+        "cookTime": 2760000,
+        "difficulty": "medium",
+        "cuisine": "Indian",
+        "tags": [
+          "curry",
+          "chicken",
+          "indian",
+          "coconut",
+          "rice",
+          "dinner"
+        ]
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "296f2444-199c-405e-a076-c22328b7f783",
+      "intent": "Prepare to go shopping with $20.50",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [
+        {
+          "parentId": "ded19a76-cfa3-4557-9c71-dae810c7cb7d",
+          "relationshipId": "481548ed-f28f-4054-9640-5e7d2a88dae3"
+        }
+      ],
+      "willConsume": {
+        "dollars_usd": 20.5
+      },
+      "willProduce": {
+        "ready_to_shop_with_dollars_usd": 20.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "acfcd620-651c-463f-b87b-c0f4b79cb3e4",
+      "intent": "Travel to grocery store (30 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [
+        {
+          "parentId": "ded19a76-cfa3-4557-9c71-dae810c7cb7d",
+          "relationshipId": "eaed07cf-ce71-4b8c-b50d-4a6279e07490"
+        }
+      ],
+      "willConsume": {
+        "ready_to_shop_with_dollars_usd": 20.5
+      },
+      "willProduce": {
+        "at_store_with_dollars_usd": 20.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7331d5a7-4e0b-451b-9960-2364fd82f4c2",
+      "intent": "Purchase all curry ingredients ($20.50)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "ded19a76-cfa3-4557-9c71-dae810c7cb7d",
+          "relationshipId": "365dbed6-f60b-4102-997a-d281dee36e82"
+        }
+      ],
+      "willConsume": {
+        "at_store_with_dollars_usd": 20.5
+      },
+      "willProduce": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "6c3dedb7-5f78-4393-8875-db9cd9bab28c",
+      "intent": "Travel home from store (30 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1800000,
+      "references": [
+        {
+          "parentId": "ded19a76-cfa3-4557-9c71-dae810c7cb7d",
+          "relationshipId": "1b1a094f-b59c-40aa-bff4-2a7a535e3307"
+        }
+      ],
+      "willConsume": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2
+      },
+      "willProduce": {
+        "chicken_breast_lbs": 1.5,
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1,
+        "bell_pepper_count": 1,
+        "onion_count": 1,
+        "bamboo_shoots_cups": 1,
+        "jasmine_rice_cups": 2,
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1,
+        "vegetable_oil_tbsp": 2,
+        "at_home": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "ded19a76-cfa3-4557-9c71-dae810c7cb7d",
+      "intent": "Shop for curry ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 4860000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "624c87dc-5f44-470c-8df7-4e124814ef6f"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "296f2444-199c-405e-a076-c22328b7f783",
+          "relationshipId": "481548ed-f28f-4054-9640-5e7d2a88dae3",
+          "offset": 0
+        },
+        {
+          "templateId": "acfcd620-651c-463f-b87b-c0f4b79cb3e4",
+          "relationshipId": "eaed07cf-ce71-4b8c-b50d-4a6279e07490",
+          "offset": 60000
+        },
+        {
+          "templateId": "7331d5a7-4e0b-451b-9960-2364fd82f4c2",
+          "relationshipId": "365dbed6-f60b-4102-997a-d281dee36e82",
+          "offset": 1860000
+        },
+        {
+          "templateId": "6c3dedb7-5f78-4393-8875-db9cd9bab28c",
+          "relationshipId": "1b1a094f-b59c-40aa-bff4-2a7a535e3307",
+          "offset": 3060000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "4b4ae8fd-244a-4fb1-bec8-895c7061997c",
+      "intent": "Dice chicken into bite-sized pieces",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "82c94212-cdbf-4aa5-bd64-f1e95274bf91"
+        }
+      ],
+      "willConsume": {
+        "chicken_breast_lbs": 1.5
+      },
+      "willProduce": {
+        "diced_chicken_lbs": 1.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "14a1480e-2f7e-4725-8372-91806448eee4",
+      "intent": "Chop bell pepper into strips",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "7b9efdc8-1cc7-41ff-ac2d-b99aa3fe83f0"
+        }
+      ],
+      "willConsume": {
+        "bell_pepper_count": 1
+      },
+      "willProduce": {
+        "chopped_bell_pepper_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "9578c3cf-4514-4310-a99f-1ae768039eec",
+      "intent": "Slice onion",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "4a728512-c1c0-4151-8ed2-ab36b6875a7a"
+        }
+      ],
+      "willConsume": {
+        "onion_count": 1
+      },
+      "willProduce": {
+        "sliced_onion_cups": 0.75
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "8203cbd6-4c48-408b-8ef5-8ff743cfcc70",
+      "intent": "Mince garlic and ginger",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "bb7443cb-248c-4c6f-add1-f852335b14ca"
+        }
+      ],
+      "willConsume": {
+        "garlic_cloves": 3,
+        "ginger_tbsp": 1
+      },
+      "willProduce": {
+        "minced_aromatics_tbsp": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "6c3eb272-5135-40cb-9cba-5e6917ab7b57",
+      "intent": "Rinse jasmine rice",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "bec3ba29-f880-4a4a-8acd-405f668cc741"
+        }
+      ],
+      "willConsume": {
+        "jasmine_rice_cups": 2
+      },
+      "willProduce": {
+        "rinsed_rice_cups": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "4d80a746-feea-4fd0-abea-1cecf6630932",
+      "intent": "Measure and organize curry paste and coconut milk",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "3d63350c-9fca-47db-8f52-15c38d463f00"
+        }
+      ],
+      "willConsume": {
+        "green_curry_paste_tbsp": 2,
+        "coconut_milk_cans": 1
+      },
+      "willProduce": {
+        "curry_paste_ready_tbsp": 2,
+        "coconut_milk_ready_cups": 1.5
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "def82c60-bc42-475a-a454-b60892c42efd",
+      "intent": "Prepare all curry ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1080000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "cd235b51-81e0-48a6-9707-c15479ce0132"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "4b4ae8fd-244a-4fb1-bec8-895c7061997c",
+          "relationshipId": "82c94212-cdbf-4aa5-bd64-f1e95274bf91",
+          "offset": 0
+        },
+        {
+          "templateId": "14a1480e-2f7e-4725-8372-91806448eee4",
+          "relationshipId": "7b9efdc8-1cc7-41ff-ac2d-b99aa3fe83f0",
+          "offset": 300000
+        },
+        {
+          "templateId": "9578c3cf-4514-4310-a99f-1ae768039eec",
+          "relationshipId": "4a728512-c1c0-4151-8ed2-ab36b6875a7a",
+          "offset": 480000
+        },
+        {
+          "templateId": "8203cbd6-4c48-408b-8ef5-8ff743cfcc70",
+          "relationshipId": "bb7443cb-248c-4c6f-add1-f852335b14ca",
+          "offset": 660000
+        },
+        {
+          "templateId": "6c3eb272-5135-40cb-9cba-5e6917ab7b57",
+          "relationshipId": "bec3ba29-f880-4a4a-8acd-405f668cc741",
+          "offset": 840000
+        },
+        {
+          "templateId": "4d80a746-feea-4fd0-abea-1cecf6630932",
+          "relationshipId": "3d63350c-9fca-47db-8f52-15c38d463f00",
+          "offset": 960000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "227774d3-6316-4673-a0d3-c05e87d1908d",
+      "intent": "Cook jasmine rice in rice cooker (20 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "5d63ee96-3877-4399-90d4-b0ab49092c84"
+        }
+      ],
+      "willConsume": {
+        "rinsed_rice_cups": 2
+      },
+      "willProduce": {
+        "cooked_rice_servings": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "74c562a9-53d0-41cf-b8e8-b6678c12eca1",
+      "intent": "Heat oil in large pan over medium-high heat",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "cefe9c6c-9c73-43dd-b57e-2fb5e26c9b60"
+        }
+      ],
+      "willConsume": {
+        "vegetable_oil_tbsp": 2
+      },
+      "willProduce": {
+        "hot_oil_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "9404fede-cc46-4c35-bf2b-67f782d879a0",
+      "intent": "Sauté aromatics until fragrant (2 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "6a270999-cb28-4e96-a9d0-3066a58fad77"
+        }
+      ],
+      "willConsume": {
+        "hot_oil_in_pan": 1,
+        "minced_aromatics_tbsp": 2
+      },
+      "willProduce": {
+        "aromatic_oil_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "24b2a7f1-cafe-48f4-8cd1-724ed8dc20d6",
+      "intent": "Add curry paste and cook for 1 minute",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "bef63e16-9ada-4db6-afb7-dc86b65e973e"
+        }
+      ],
+      "willConsume": {
+        "aromatic_oil_in_pan": 1,
+        "curry_paste_ready_tbsp": 2
+      },
+      "willProduce": {
+        "curry_base_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "5109f2ee-b067-4831-8c79-edee95b0b6c3",
+      "intent": "Add chicken and cook until no longer pink (5-7 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 360000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "ca54ee19-aa51-4eec-9b2e-68d4658fb942"
+        }
+      ],
+      "willConsume": {
+        "curry_base_in_pan": 1,
+        "diced_chicken_lbs": 1.5
+      },
+      "willProduce": {
+        "chicken_curry_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ad3cfbc5-6b22-4886-aa04-8bab6b383a7f",
+      "intent": "Add coconut milk and bring to simmer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "5c89e011-16b4-437f-be4f-61d2c6b7927f"
+        }
+      ],
+      "willConsume": {
+        "chicken_curry_in_pan": 1,
+        "coconut_milk_ready_cups": 1.5
+      },
+      "willProduce": {
+        "simmering_curry_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "401772fa-9b5e-4bc2-b589-938c2145ea63",
+      "intent": "Add vegetables, fish sauce, and sugar",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "ba20bbed-51c2-4e7b-acee-ccbfbbc01989"
+        }
+      ],
+      "willConsume": {
+        "simmering_curry_in_pan": 1,
+        "chopped_bell_pepper_cups": 1,
+        "sliced_onion_cups": 0.75,
+        "bamboo_shoots_cups": 1,
+        "fish_sauce_tbsp": 1,
+        "brown_sugar_tsp": 1
+      },
+      "willProduce": {
+        "curry_with_vegetables_in_pan": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ac6d1786-15bb-4a44-ac33-0ee8fd4aedc4",
+      "intent": "Simmer curry for 10 minutes until vegetables tender",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 600000,
+      "references": [
+        {
+          "parentId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "301fb596-7e94-4911-92a8-2c329d1e7c45"
+        }
+      ],
+      "willConsume": {
+        "curry_with_vegetables_in_pan": 1
+      },
+      "willProduce": {
+        "finished_green_curry_servings": 4
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "29478a03-1da1-4188-9f93-3433602c3a9f",
+      "intent": "Cook green curry and rice",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 2760000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "69701f4a-fe26-41b7-a571-b83f67529fc9"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "227774d3-6316-4673-a0d3-c05e87d1908d",
+          "relationshipId": "5d63ee96-3877-4399-90d4-b0ab49092c84",
+          "offset": 0
+        },
+        {
+          "templateId": "74c562a9-53d0-41cf-b8e8-b6678c12eca1",
+          "relationshipId": "cefe9c6c-9c73-43dd-b57e-2fb5e26c9b60",
+          "offset": 1200000
+        },
+        {
+          "templateId": "9404fede-cc46-4c35-bf2b-67f782d879a0",
+          "relationshipId": "6a270999-cb28-4e96-a9d0-3066a58fad77",
+          "offset": 1320000
+        },
+        {
+          "templateId": "24b2a7f1-cafe-48f4-8cd1-724ed8dc20d6",
+          "relationshipId": "bef63e16-9ada-4db6-afb7-dc86b65e973e",
+          "offset": 1440000
+        },
+        {
+          "templateId": "5109f2ee-b067-4831-8c79-edee95b0b6c3",
+          "relationshipId": "ca54ee19-aa51-4eec-9b2e-68d4658fb942",
+          "offset": 1500000
+        },
+        {
+          "templateId": "ad3cfbc5-6b22-4886-aa04-8bab6b383a7f",
+          "relationshipId": "5c89e011-16b4-437f-be4f-61d2c6b7927f",
+          "offset": 1860000
+        },
+        {
+          "templateId": "401772fa-9b5e-4bc2-b589-938c2145ea63",
+          "relationshipId": "ba20bbed-51c2-4e7b-acee-ccbfbbc01989",
+          "offset": 2040000
+        },
+        {
+          "templateId": "ac6d1786-15bb-4a44-ac33-0ee8fd4aedc4",
+          "relationshipId": "301fb596-7e94-4911-92a8-2c329d1e7c45",
+          "offset": 2160000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "14bf12e4-5b86-4b1d-843d-2d94d2f940d9",
+      "intent": "Plate curry over rice in 4 bowls",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "92c945f3-1c9a-48fa-8bd0-4305ea5e7a9d"
+        }
+      ],
+      "willConsume": {
+        "finished_green_curry_servings": 4,
+        "cooked_rice_servings": 4
+      },
+      "willProduce": {
+        "plated_curry_meals": 4
+      },
+      "nutrition": {
+        "servings": 4,
+        "perServing": {
+          "calories_kcal": 520,
+          "protein_g": 35,
+          "carbs_g": 48,
+          "fat_g": 20,
+          "fiber_g": 3,
+          "sodium_mg": 680
+        }
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "edb52587-6c78-4eca-8894-431d3be42db3",
+      "intent": "Eat green curry meal (20 minutes)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1200000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "4908cbd7-b0f3-4e59-bf6a-ed67f27e1f64"
+        }
+      ],
+      "willConsume": {
+        "plated_curry_meals": 4
+      },
+      "willProduce": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720,
+        "dirty_plates_count": 4,
+        "dirty_utensils_count": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "5c545877-b089-4e32-9d1c-2bb934299547",
+      "intent": "Wash plates and utensils",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "d50f8824-3f03-481e-a9f5-8c73d0eb4862",
+          "relationshipId": "0e58c4e0-6aef-4e8d-b4e3-d62550683141"
+        }
+      ],
+      "willConsume": {
+        "dirty_plates_count": 4,
+        "dirty_utensils_count": 4
+      },
+      "willProduce": {
+        "clean_dishes_count": 8
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ac2b5e63-6e6b-46bc-a180-8515e93b84b0",
+      "intent": "Wash cooking pans and rice cooker",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [
+        {
+          "parentId": "d50f8824-3f03-481e-a9f5-8c73d0eb4862",
+          "relationshipId": "7ef6a207-a2e7-4226-813e-5f5b17c1d3d7"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "clean_cookware_count": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "dd19a9b6-1d3c-4323-b17f-02668aa8ec4c",
+      "intent": "Wipe down counters and stove",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [
+        {
+          "parentId": "d50f8824-3f03-481e-a9f5-8c73d0eb4862",
+          "relationshipId": "b42b26b8-15b4-4dc6-bcc0-b9eaffd0b467"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "clean_kitchen": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "a42800a7-95ff-409b-9eee-7ddd1058e993",
+      "intent": "Take out trash",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [
+        {
+          "parentId": "d50f8824-3f03-481e-a9f5-8c73d0eb4862",
+          "relationshipId": "dea7d352-8122-427f-b3ea-a8bd3c6aa1cc"
+        }
+      ],
+      "willConsume": {},
+      "willProduce": {
+        "trash_removed": 1
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "d50f8824-3f03-481e-a9f5-8c73d0eb4862",
+      "intent": "Clean up kitchen after meal",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 900000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "e1dac85a-2408-4711-b30c-088a232eb592"
+        }
+      ],
+      "segments": [
+        {
+          "templateId": "5c545877-b089-4e32-9d1c-2bb934299547",
+          "relationshipId": "0e58c4e0-6aef-4e8d-b4e3-d62550683141",
+          "offset": 0
+        },
+        {
+          "templateId": "ac2b5e63-6e6b-46bc-a180-8515e93b84b0",
+          "relationshipId": "7ef6a207-a2e7-4226-813e-5f5b17c1d3d7",
+          "offset": 300000
+        },
+        {
+          "templateId": "dd19a9b6-1d3c-4323-b17f-02668aa8ec4c",
+          "relationshipId": "b42b26b8-15b4-4dc6-bcc0-b9eaffd0b467",
+          "offset": 600000
+        },
+        {
+          "templateId": "a42800a7-95ff-409b-9eee-7ddd1058e993",
+          "relationshipId": "dea7d352-8122-427f-b3ea-a8bd3c6aa1cc",
+          "offset": 780000
+        }
+      ]
+    },
+    {
+      "templateType": "busy",
+      "id": "2b0f2357-df67-4f03-9e21-dab308cd76ec",
+      "intent": "Meal complete - nutrition consumed",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [
+        {
+          "parentId": "6d816b91-5e58-454d-9359-169fde958dbd",
+          "relationshipId": "6cfd8217-637b-4087-9a81-9d73804935bb"
+        }
+      ],
+      "willConsume": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720,
+        "clean_dishes_count": 8,
+        "clean_cookware_count": 2,
+        "clean_kitchen": 1,
+        "trash_removed": 1,
+        "at_home": 1
+      },
+      "willProduce": {
+        "calories_kcal": 2080,
+        "protein_g": 140,
+        "carbs_g": 192,
+        "fat_g": 80,
+        "fiber_g": 12,
+        "sodium_mg": 2720
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "6d816b91-5e58-454d-9359-169fde958dbd",
+      "intent": "Indian Green Curry with Chicken and Rice - Complete meal preparation",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 11105000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "ded19a76-cfa3-4557-9c71-dae810c7cb7d",
+          "relationshipId": "624c87dc-5f44-470c-8df7-4e124814ef6f",
+          "offset": 0
+        },
+        {
+          "templateId": "def82c60-bc42-475a-a454-b60892c42efd",
+          "relationshipId": "cd235b51-81e0-48a6-9707-c15479ce0132",
+          "offset": 4860000
+        },
+        {
+          "templateId": "29478a03-1da1-4188-9f93-3433602c3a9f",
+          "relationshipId": "69701f4a-fe26-41b7-a571-b83f67529fc9",
+          "offset": 5940000
+        },
+        {
+          "templateId": "14bf12e4-5b86-4b1d-843d-2d94d2f940d9",
+          "relationshipId": "92c945f3-1c9a-48fa-8bd0-4305ea5e7a9d",
+          "offset": 8700000
+        },
+        {
+          "templateId": "edb52587-6c78-4eca-8894-431d3be42db3",
+          "relationshipId": "4908cbd7-b0f3-4e59-bf6a-ed67f27e1f64",
+          "offset": 9000000
+        },
+        {
+          "templateId": "d50f8824-3f03-481e-a9f5-8c73d0eb4862",
+          "relationshipId": "e1dac85a-2408-4711-b30c-088a232eb592",
+          "offset": 10200000
+        },
+        {
+          "templateId": "2b0f2357-df67-4f03-9e21-dab308cd76ec",
+          "relationshipId": "6cfd8217-637b-4087-9a81-9d73804935bb",
+          "offset": 11100000
+        }
+      ],
+      "recipeMetadata": {
+        "sourceUrl": "Common knowledge - Indian/Thai fusion green curry",
+        "servings": 4,
+        "prepTime": 1080000,
+        "cookTime": 2760000,
+        "difficulty": "medium",
+        "cuisine": "Indian",
+        "tags": [
+          "curry",
+          "chicken",
+          "indian",
+          "coconut",
+          "rice",
+          "dinner"
+        ]
+      }
     }
   ]
 }
