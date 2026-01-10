@@ -1827,6 +1827,218 @@
         "fat_g": 50,
         "sodium_mg": 2432
       }
+    },
+    {
+      "templateType": "busy",
+      "id": "e6b22b8f-61da-4615-82d3-de68b7aba3fd",
+      "intent": "Get frozen berries cups from kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "frozen_berries_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7d80bb6f-7290-4a42-82ce-42b04b1bf231",
+      "intent": "Get banana count from kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "banana_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "caf9d3ed-12c6-410e-8b72-417c7f8977d1",
+      "intent": "Get protein powder scoops from kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "protein_powder_scoops": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "e2ae4a7a-d8f1-40dd-817b-037a98f2c372",
+      "intent": "Get almond milk cups from kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "almond_milk_cups": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "f599613c-5793-42ed-8042-013dd80f03c0",
+      "intent": "Get honey tbsp from kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "honey_tbsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "6bd2c466-b82c-4de7-9af3-9454d3caf834",
+      "intent": "Get ice cubes from kitchen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "ice_cubes": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "d65a6590-d4c4-4ad8-815a-3a61449eed4d",
+      "intent": "Add all ingredients to blender and blend until smooth",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "frozen_berries_cups": 1,
+        "banana_count": 1,
+        "protein_powder_scoops": 1,
+        "almond_milk_cups": 1,
+        "honey_tbsp": 1,
+        "ice_cubes": 4
+      },
+      "willProduce": {
+        "berry_smoothie_servings": 1
+      },
+      "nutrition": {
+        "servings": 1,
+        "perServing": {
+          "calories_kcal": 320,
+          "protein_g": 25,
+          "carbs_g": 45,
+          "fat_g": 5,
+          "fiber_g": 8,
+          "sugar_g": 28
+        }
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "9ee5e06f-ce4d-48ee-a34b-408ce94a9640",
+      "intent": "Berry protein smoothie ready to drink with complete nutrition info",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [],
+      "willConsume": {
+        "berry_smoothie_servings": 1
+      },
+      "willProduce": {
+        "berry_smoothie_servings": 1,
+        "calories_kcal": 320,
+        "protein_g": 25,
+        "carbs_g": 45,
+        "fat_g": 5,
+        "fiber_g": 8,
+        "sugar_g": 28
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "4e2c1862-60b4-426a-9824-b6240710269c",
+      "intent": "Gather all smoothie ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "e6b22b8f-61da-4615-82d3-de68b7aba3fd",
+          "relationshipId": "48c1ac24-e271-46d9-92d3-06f5c3a562ca",
+          "offset": 0
+        },
+        {
+          "templateId": "7d80bb6f-7290-4a42-82ce-42b04b1bf231",
+          "relationshipId": "3d62e269-a14d-4e32-ba66-34a68da6dc45",
+          "offset": 15000
+        },
+        {
+          "templateId": "caf9d3ed-12c6-410e-8b72-417c7f8977d1",
+          "relationshipId": "b99b7788-e7f4-4edc-aa11-3f66baa07ebb",
+          "offset": 25000
+        },
+        {
+          "templateId": "e2ae4a7a-d8f1-40dd-817b-037a98f2c372",
+          "relationshipId": "4fb0abb2-79f9-4057-9fdf-79bfee1fcf83",
+          "offset": 35000
+        },
+        {
+          "templateId": "f599613c-5793-42ed-8042-013dd80f03c0",
+          "relationshipId": "f563b071-09cc-4d02-a60b-039d79f39d6b",
+          "offset": 45000
+        },
+        {
+          "templateId": "6bd2c466-b82c-4de7-9af3-9454d3caf834",
+          "relationshipId": "c89ace88-e3eb-49aa-8634-57f2b596f871",
+          "offset": 55000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "1a7ff48a-140f-4455-9f72-5161fc7a034b",
+      "intent": "Berry Protein Smoothie (1 serving)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 125000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "4e2c1862-60b4-426a-9824-b6240710269c",
+          "relationshipId": "953731c6-9b12-47b1-9810-70916cae6e45",
+          "offset": 0
+        },
+        {
+          "templateId": "d65a6590-d4c4-4ad8-815a-3a61449eed4d",
+          "relationshipId": "213514a9-f364-44b1-8aef-d4f4827ac514",
+          "offset": 60000
+        },
+        {
+          "templateId": "9ee5e06f-ce4d-48ee-a34b-408ce94a9640",
+          "relationshipId": "63b82b43-2b00-404e-af08-c29609b57d1b",
+          "offset": 120000
+        }
+      ],
+      "recipeMetadata": {
+        "sourceUrl": "Common knowledge recipe",
+        "servings": 1,
+        "prepTime": 300000,
+        "cookTime": 0,
+        "difficulty": "easy",
+        "cuisine": "American",
+        "tags": [
+          "smoothie",
+          "breakfast",
+          "protein",
+          "healthy",
+          "quick"
+        ]
+      }
     }
   ]
 }
