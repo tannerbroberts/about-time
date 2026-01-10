@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { getTemplates, getVocabulary, addTemplate, getTemplateById, getTemplateMap, saveTemplateMap, } from './storage.js';
+import { getTemplates, getVocabulary, addTemplate, getTemplateById, saveLibrary, getTemplateMap, saveTemplateMap, } from './storage.js';
 import { applyLaneLayout, packSegments, equallyDistributeSegments, distributeSegmentOffsetsByInterval, fitLaneDurationToLast, insertGap, addSegmentToEnd, pushSegmentToStart, insertSegmentAt, visualizeLane, visualizeLaneIds, validateLane, validateVariableNames, } from '@tannerbroberts/about-time-core';
 // Create server instance
 const server = new McpServer({
@@ -821,6 +821,281 @@ server.tool('create_passthrough_template', 'Analyze a lane\'s validation errors 
                                 message: e.message,
                             })),
                         },
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Add nutrition metadata to template
+server.tool('add_nutrition_to_template', 'Add nutrition metadata to an existing busy template. This allows tracking nutritional information (calories, macros, micronutrients) for recipes. Note: This adds metadata but does NOT create output variables - use create_nutrition_summary_template for that.', {
+    templateId: z.string().describe('ID of the busy template to add nutrition to'),
+    servings: z.number().optional().describe('Number of servings this nutrition data represents'),
+    nutritionPerServing: z.object({
+        calories_kcal: z.number().optional().describe('Calories per serving in kcal'),
+        protein_g: z.number().optional().describe('Protein per serving in grams'),
+        carbs_g: z.number().optional().describe('Carbohydrates per serving in grams'),
+        fat_g: z.number().optional().describe('Fat per serving in grams'),
+        fiber_g: z.number().optional().describe('Fiber per serving in grams'),
+        sugar_g: z.number().optional().describe('Sugar per serving in grams'),
+        sodium_mg: z.number().optional().describe('Sodium per serving in milligrams'),
+        potassium_mg: z.number().optional().describe('Potassium per serving in milligrams'),
+        calcium_mg: z.number().optional().describe('Calcium per serving in milligrams'),
+        iron_mg: z.number().optional().describe('Iron per serving in milligrams'),
+        vitamin_c_mg: z.number().optional().describe('Vitamin C per serving in milligrams'),
+        vitamin_a_mcg: z.number().optional().describe('Vitamin A per serving in micrograms'),
+        vitamin_d_mcg: z.number().optional().describe('Vitamin D per serving in micrograms'),
+    }).describe('Nutritional information per serving'),
+}, async ({ templateId, servings, nutritionPerServing }) => {
+    try {
+        const template = getTemplateById(templateId);
+        if (!template) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: `Template with ID ${templateId} not found`,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        if (template.templateType !== 'busy') {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Can only add nutrition to busy templates, not lanes',
+                            hint: 'Use add_recipe_metadata_to_lane for lane-level metadata',
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        // Add nutrition metadata to the template
+        const updatedTemplate = {
+            ...template,
+            nutrition: {
+                servings,
+                perServing: nutritionPerServing,
+            },
+        };
+        // Save updated template
+        saveTemplateMap(getTemplateMap());
+        const templates = getTemplates();
+        const index = templates.findIndex((t) => t.id === templateId);
+        if (index !== -1) {
+            templates[index] = updatedTemplate;
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Added nutrition metadata to template: ${template.intent}`,
+                        template: updatedTemplate,
+                        reminder: 'Nutrition metadata is now stored, but to create nutrition OUTPUT variables in willProduce, use create_nutrition_summary_template',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Create nutrition summary template
+server.tool('create_nutrition_summary_template', 'Create a passthrough busy template that consumes a finished dish and produces nutrition output variables (calories_kcal, protein_g, etc.). This allows nutrition facts to flow through the lane state system as outputs.', {
+    intent: z.string().describe('Human-readable description (e.g., "Miso ramen ready to serve with nutrition info")'),
+    estimatedDuration: z.number().describe('Duration in milliseconds (usually short, like 5000ms)'),
+    consumeVariable: z.string().describe('Variable name of the finished dish to consume (e.g., "miso_ramen_bowls")'),
+    consumeQuantity: z.number().describe('Quantity of the variable to consume (e.g., 2)'),
+    produceVariable: z.string().describe('Variable name of the finished dish to produce (usually same as consume)'),
+    produceQuantity: z.number().describe('Quantity of the variable to produce (usually same as consume)'),
+    totalNutrition: z.object({
+        calories_kcal: z.number().optional().describe('Total calories in kcal'),
+        protein_g: z.number().optional().describe('Total protein in grams'),
+        carbs_g: z.number().optional().describe('Total carbohydrates in grams'),
+        fat_g: z.number().optional().describe('Total fat in grams'),
+        fiber_g: z.number().optional().describe('Total fiber in grams'),
+        sugar_g: z.number().optional().describe('Total sugar in grams'),
+        sodium_mg: z.number().optional().describe('Total sodium in milligrams'),
+        potassium_mg: z.number().optional().describe('Total potassium in milligrams'),
+        calcium_mg: z.number().optional().describe('Total calcium in milligrams'),
+        iron_mg: z.number().optional().describe('Total iron in milligrams'),
+        vitamin_c_mg: z.number().optional().describe('Total vitamin C in milligrams'),
+        vitamin_a_mcg: z.number().optional().describe('Total vitamin A in micrograms'),
+        vitamin_d_mcg: z.number().optional().describe('Total vitamin D in micrograms'),
+    }).describe('Total nutritional values to produce as output variables'),
+    authorId: z.string().optional().describe('Author ID (defaults to "agent")'),
+    version: z.string().optional().describe('SemVer version (defaults to "0.0.0")'),
+}, async ({ intent, estimatedDuration, consumeVariable, consumeQuantity, produceVariable, produceQuantity, totalNutrition, authorId, version }) => {
+    try {
+        // Build willConsume and willProduce StateLedgers
+        const willConsume = {
+            [consumeVariable]: consumeQuantity,
+        };
+        const willProduce = {
+            [produceVariable]: produceQuantity,
+            ...totalNutrition, // Add all nutrition values as produce variables
+        };
+        // Validate nutrition variable names
+        // Note: These should pass validation since they follow substance_unit pattern
+        const produceResult = validateVariableNames(willProduce);
+        if (produceResult.errors.length > 0) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Variable naming validation failed for nutrition variables',
+                            details: produceResult.errors,
+                            hint: 'Nutrition variables should follow the pattern: calories_kcal, protein_g, carbs_g, fat_g, sodium_mg, etc.',
+                            workaround: 'If validation fails, the @tannerbroberts/about-time-core package may need updating to recognize nutrition variables',
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        const template = {
+            templateType: 'busy',
+            id: randomUUID(),
+            intent,
+            authorId: authorId ?? 'agent',
+            version: version ?? '0.0.0',
+            estimatedDuration,
+            references: [],
+            willConsume,
+            willProduce,
+        };
+        addTemplate(template);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Created nutrition summary template: ${intent}`,
+                        template,
+                        nutritionOutputs: Object.keys(totalNutrition).filter((k) => totalNutrition[k] !== undefined),
+                        usage: 'Add this template as the final segment in your recipe lane to produce nutrition outputs',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Add recipe metadata to lane
+server.tool('add_recipe_metadata_to_lane', 'Add recipe metadata (source URL, servings, tags, etc.) to a lane template. This helps document and categorize recipe lanes.', {
+    laneId: z.string().describe('ID of the lane template to add metadata to'),
+    sourceUrl: z.string().optional().describe('URL of the recipe source'),
+    servings: z.number().optional().describe('Number of servings the recipe makes'),
+    prepTime: z.number().optional().describe('Preparation time in milliseconds'),
+    cookTime: z.number().optional().describe('Cooking time in milliseconds'),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional().describe('Recipe difficulty level'),
+    cuisine: z.string().optional().describe('Cuisine type (e.g., "Japanese", "Italian")'),
+    tags: z.array(z.string()).optional().describe('Tags for categorization (e.g., ["soup", "vegetarian", "quick"])'),
+}, async ({ laneId, sourceUrl, servings, prepTime, cookTime, difficulty, cuisine, tags }) => {
+    try {
+        const template = getTemplateById(laneId);
+        if (!template) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: `Template with ID ${laneId} not found`,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        if (template.templateType !== 'lane') {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Can only add recipe metadata to lane templates, not busy templates',
+                            hint: 'Use add_nutrition_to_template for busy template nutrition data',
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        // Add recipe metadata to the template
+        const updatedTemplate = {
+            ...template,
+            recipeMetadata: {
+                sourceUrl,
+                servings,
+                prepTime,
+                cookTime,
+                difficulty,
+                cuisine,
+                tags,
+            },
+        };
+        // Save updated template
+        const templates = getTemplates();
+        const index = templates.findIndex((t) => t.id === laneId);
+        if (index !== -1) {
+            templates[index] = updatedTemplate;
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Added recipe metadata to lane: ${template.intent}`,
+                        template: updatedTemplate,
                     }, null, 2),
                 },
             ],

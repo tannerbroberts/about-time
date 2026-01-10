@@ -34,15 +34,46 @@ export interface Segment {
   offset: Duration;
 }
 
+export interface RecipeMetadata {
+  sourceUrl?: string;
+  servings?: number;
+  prepTime?: Duration;
+  cookTime?: Duration;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  cuisine?: string;
+  tags?: string[];
+}
+
 export interface LaneTemplate extends BaseTemplate {
   templateType: 'lane';
   segments: Segment[];
+  recipeMetadata?: RecipeMetadata;
+}
+
+export interface NutritionData {
+  servings?: number;
+  perServing?: {
+    calories_kcal?: number;
+    protein_g?: number;
+    carbs_g?: number;
+    fat_g?: number;
+    fiber_g?: number;
+    sugar_g?: number;
+    sodium_mg?: number;
+    potassium_mg?: number;
+    calcium_mg?: number;
+    iron_mg?: number;
+    vitamin_c_mg?: number;
+    vitamin_a_mcg?: number;
+    vitamin_d_mcg?: number;
+  };
 }
 
 export interface BusyTemplate extends BaseTemplate {
   templateType: 'busy';
   willConsume: StateLedger;
   willProduce: StateLedger;
+  nutrition?: NutritionData;
 }
 
 export type Template = LaneTemplate | BusyTemplate;

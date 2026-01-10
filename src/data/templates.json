@@ -1577,6 +1577,16 @@
       },
       "willProduce": {
         "miso_ramen_bowls": 2
+      },
+      "nutrition": {
+        "servings": 2,
+        "perServing": {
+          "calories_kcal": 433,
+          "protein_g": 19,
+          "carbs_g": 37,
+          "fat_g": 25,
+          "sodium_mg": 1216
+        }
       }
     },
     {
@@ -1753,7 +1763,7 @@
       "intent": "Homemade Miso Ramen (2 servings) - Source: https://www.justonecookbook.com/homemade-chashu-miso-ramen/",
       "authorId": "agent",
       "version": "0.0.0",
-      "estimatedDuration": 1405000,
+      "estimatedDuration": 1410000,
       "references": [],
       "segments": [
         {
@@ -1775,8 +1785,48 @@
           "templateId": "baf55e8e-501b-4209-836e-b4fd9f8d0c4a",
           "relationshipId": "144388e7-bb04-4c78-b23b-d2f1505c4830",
           "offset": 1345000
+        },
+        {
+          "templateId": "6babf9f7-3ff8-412d-9866-ad377dbf113d",
+          "relationshipId": "fa2be756-a1a7-4798-8cde-39dc8cdd5b06",
+          "offset": 1405000
         }
-      ]
+      ],
+      "recipeMetadata": {
+        "sourceUrl": "https://www.justonecookbook.com/homemade-chashu-miso-ramen/",
+        "servings": 2,
+        "prepTime": 600000,
+        "cookTime": 900000,
+        "difficulty": "medium",
+        "cuisine": "Japanese",
+        "tags": [
+          "soup",
+          "ramen",
+          "pork",
+          "asian",
+          "noodles"
+        ]
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "6babf9f7-3ff8-412d-9866-ad377dbf113d",
+      "intent": "Miso ramen ready to serve with complete nutrition info",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 5000,
+      "references": [],
+      "willConsume": {
+        "miso_ramen_bowls": 2
+      },
+      "willProduce": {
+        "miso_ramen_bowls": 2,
+        "calories_kcal": 866,
+        "protein_g": 38,
+        "carbs_g": 74,
+        "fat_g": 50,
+        "sodium_mg": 2432
+      }
     }
   ]
 }
