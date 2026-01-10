@@ -1174,6 +1174,609 @@
         "washed_small_bowl_count": 1,
         "washed_wooden_spoon_count": 1
       }
+    },
+    {
+      "templateType": "busy",
+      "id": "ffd4d3d0-600f-4473-a782-b9494af692a4",
+      "intent": "Gather garlic cloves from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "garlic_cloves": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "003761dd-7903-4e1d-95e0-c1605793553c",
+      "intent": "Gather fresh ginger from fridge",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "ginger_tsp": 0.5
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "e12e3510-b5c9-4d4c-90b8-37af2b5f17a3",
+      "intent": "Gather shallot from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "shallot_count": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "0fd022e7-6405-487b-89a7-565a33d7f7b0",
+      "intent": "Gather toasted sesame seeds from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "sesame_seeds_tbsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "0f4241e8-330a-4a76-a0e5-076aeccbb47e",
+      "intent": "Get sesame oil from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "sesame_oil_tbsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ddc7783f-d34e-47c0-9a22-c76abd10a05c",
+      "intent": "Get ground pork from fridge",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "ground_pork_lb": 0.25
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ef0960a5-8f2d-48bc-99c5-0ede8cfec71b",
+      "intent": "Get doubanjiang (spicy chili bean paste) from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "doubanjiang_tsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "d55267ee-20d5-4eba-98d9-585e23a64be2",
+      "intent": "Get miso paste from fridge",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "miso_tbsp": 3
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ba97b428-f43e-4074-857e-01d21a25a1e8",
+      "intent": "Gather sugar from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "sugar_tbsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "66eb146f-821e-4b3b-863f-8e24b8ea7f5c",
+      "intent": "Get sake from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "sake_tbsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "5aaeb8cd-e103-46eb-81c9-82c27eb747e1",
+      "intent": "Get chicken stock from fridge",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "chicken_stock_cups": 4
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "fb68e93e-7e33-4ddc-b859-9c5f64b76568",
+      "intent": "Get kosher salt from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "salt_tsp": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "83f32a21-febb-4d98-875f-123bb5aaf434",
+      "intent": "Get white pepper from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 10000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "white_pepper_tsp": 0.25
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "a74cfbc0-1ad4-499a-b752-3747f55cff39",
+      "intent": "Get fresh ramen noodles from pantry",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 15000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "ramen_noodles_servings": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "1acdbce4-b838-4969-b3b4-1dd49fb77bd0",
+      "intent": "Mince 2 garlic cloves",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 45000,
+      "references": [],
+      "willConsume": {
+        "garlic_cloves": 2
+      },
+      "willProduce": {
+        "minced_garlic_batch": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "c3a34ff0-cf3a-4d6f-b5e9-51f520da6e7a",
+      "intent": "Grate fresh ginger",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "ginger_tsp": 0.5
+      },
+      "willProduce": {
+        "grated_ginger_batch": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "c5f5e0b5-e53f-4257-ac70-5592aa934143",
+      "intent": "Mince shallot",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 45000,
+      "references": [],
+      "willConsume": {
+        "shallot_count": 1
+      },
+      "willProduce": {
+        "minced_shallot_batch": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "4e3afc83-7bf8-427b-9c4c-b9956d1fcae2",
+      "intent": "Heat sesame oil in large pot over medium heat",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "sesame_oil_tbsp": 1
+      },
+      "willProduce": {
+        "hot_oil_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "c83639e6-96a9-43e4-8aa3-9c4ce538add7",
+      "intent": "Sauté garlic, ginger, and shallot until fragrant (1-2 min)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 90000,
+      "references": [],
+      "willConsume": {
+        "hot_oil_in_pot": 1,
+        "minced_garlic_batch": 1,
+        "grated_ginger_batch": 1,
+        "minced_shallot_batch": 1,
+        "sesame_seeds_tbsp": 1
+      },
+      "willProduce": {
+        "aromatic_base_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7bfe21e8-dbf6-4997-8844-10cbc339cf03",
+      "intent": "Add ground pork and cook until browned (3-4 min)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 210000,
+      "references": [],
+      "willConsume": {
+        "aromatic_base_in_pot": 1,
+        "ground_pork_lb": 0.25
+      },
+      "willProduce": {
+        "pork_aromatic_mix_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "fe5eb469-afa7-453a-815b-838f868fca17",
+      "intent": "Add doubanjiang and miso, stir to combine",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "pork_aromatic_mix_in_pot": 1,
+        "doubanjiang_tsp": 1,
+        "miso_tbsp": 3
+      },
+      "willProduce": {
+        "flavored_pork_base_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "74a7138b-0312-4c27-ac02-c0f630a3e17b",
+      "intent": "Add sugar and sake, stir well",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 20000,
+      "references": [],
+      "willConsume": {
+        "flavored_pork_base_in_pot": 1,
+        "sugar_tbsp": 1,
+        "sake_tbsp": 1
+      },
+      "willProduce": {
+        "seasoned_pork_base_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "ae1ac9f7-b3c4-4e01-b093-fd5e89db5eab",
+      "intent": "Pour in chicken stock and bring to simmer",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 180000,
+      "references": [],
+      "willConsume": {
+        "seasoned_pork_base_in_pot": 1,
+        "chicken_stock_cups": 4
+      },
+      "willProduce": {
+        "simmering_broth_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "7e66b6d8-a98f-4e9f-bbc7-681054d74272",
+      "intent": "Season broth with salt and white pepper to taste",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "simmering_broth_in_pot": 1,
+        "salt_tsp": 1,
+        "white_pepper_tsp": 0.25
+      },
+      "willProduce": {
+        "finished_ramen_broth_in_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "08a345de-1f3e-4537-af65-9ab4cad0082f",
+      "intent": "Boil water in separate pot for noodles",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 300000,
+      "references": [],
+      "willConsume": {},
+      "willProduce": {
+        "boiling_water_pot": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "bd14ca68-f030-4605-b8b2-ea6fee94496d",
+      "intent": "Cook ramen noodles until al dente (15 sec less than package)",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [],
+      "willConsume": {
+        "boiling_water_pot": 1,
+        "ramen_noodles_servings": 2
+      },
+      "willProduce": {
+        "cooked_noodles_batch": 1
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "def80861-2782-464b-b429-839d2c7a50cc",
+      "intent": "Drain noodles thoroughly",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 30000,
+      "references": [],
+      "willConsume": {
+        "cooked_noodles_batch": 1
+      },
+      "willProduce": {
+        "drained_noodles_servings": 2
+      }
+    },
+    {
+      "templateType": "busy",
+      "id": "baf55e8e-501b-4209-836e-b4fd9f8d0c4a",
+      "intent": "Divide noodles between 2 bowls and ladle hot broth over top",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 60000,
+      "references": [],
+      "willConsume": {
+        "drained_noodles_servings": 2,
+        "finished_ramen_broth_in_pot": 1
+      },
+      "willProduce": {
+        "miso_ramen_bowls": 2
+      }
+    },
+    {
+      "templateType": "lane",
+      "id": "73967bb2-fb28-4fbd-83df-0826412fa491",
+      "intent": "Gather all ramen ingredients",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 155000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "ffd4d3d0-600f-4473-a782-b9494af692a4",
+          "relationshipId": "207aa25e-e71a-45bd-8c4e-187909663328",
+          "offset": 0
+        },
+        {
+          "templateId": "003761dd-7903-4e1d-95e0-c1605793553c",
+          "relationshipId": "54f789de-c3f1-45f4-a507-62a54db1f6ff",
+          "offset": 10000
+        },
+        {
+          "templateId": "e12e3510-b5c9-4d4c-90b8-37af2b5f17a3",
+          "relationshipId": "ea131699-e004-4c90-8790-b61a6d8c3d83",
+          "offset": 20000
+        },
+        {
+          "templateId": "0fd022e7-6405-487b-89a7-565a33d7f7b0",
+          "relationshipId": "0c41a508-0e5e-4521-8716-09d6af8f3725",
+          "offset": 30000
+        },
+        {
+          "templateId": "0f4241e8-330a-4a76-a0e5-076aeccbb47e",
+          "relationshipId": "505070fb-b8f7-448a-a9ed-eac7a30253c5",
+          "offset": 40000
+        },
+        {
+          "templateId": "ddc7783f-d34e-47c0-9a22-c76abd10a05c",
+          "relationshipId": "eb5b0c36-b532-429f-be89-536697c571b5",
+          "offset": 50000
+        },
+        {
+          "templateId": "ef0960a5-8f2d-48bc-99c5-0ede8cfec71b",
+          "relationshipId": "f045a49e-0b37-4f3d-bf7d-033e997cb3c0",
+          "offset": 65000
+        },
+        {
+          "templateId": "d55267ee-20d5-4eba-98d9-585e23a64be2",
+          "relationshipId": "549a58a2-8acf-4fec-8dcc-b12d660ccd7b",
+          "offset": 75000
+        },
+        {
+          "templateId": "ba97b428-f43e-4074-857e-01d21a25a1e8",
+          "relationshipId": "fbd549a6-beca-4cc6-b0b9-e70b8e897a33",
+          "offset": 85000
+        },
+        {
+          "templateId": "66eb146f-821e-4b3b-863f-8e24b8ea7f5c",
+          "relationshipId": "745435b1-86ff-4ef2-9492-7e5b63bef719",
+          "offset": 95000
+        },
+        {
+          "templateId": "5aaeb8cd-e103-46eb-81c9-82c27eb747e1",
+          "relationshipId": "000dff90-bd7c-4eb3-bea8-35c2c1bfda36",
+          "offset": 105000
+        },
+        {
+          "templateId": "fb68e93e-7e33-4ddc-b859-9c5f64b76568",
+          "relationshipId": "97bedcb3-f681-45e5-8f4c-7ef19fad7a9a",
+          "offset": 120000
+        },
+        {
+          "templateId": "83f32a21-febb-4d98-875f-123bb5aaf434",
+          "relationshipId": "5395fb5a-4147-40e4-8861-44c23c160a3e",
+          "offset": 130000
+        },
+        {
+          "templateId": "a74cfbc0-1ad4-499a-b752-3747f55cff39",
+          "relationshipId": "5d153c7d-b70c-43a7-b59d-d79e5be0b584",
+          "offset": 140000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "7d5a12d8-4b75-4dd5-aa70-628e0f664ad3",
+      "intent": "Prep aromatics for ramen",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 120000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "1acdbce4-b838-4969-b3b4-1dd49fb77bd0",
+          "relationshipId": "8ba51d64-24d0-4788-aa72-90b14162256f",
+          "offset": 0
+        },
+        {
+          "templateId": "c3a34ff0-cf3a-4d6f-b5e9-51f520da6e7a",
+          "relationshipId": "66ba3b97-15d2-4762-a102-c1c7721ecbbe",
+          "offset": 45000
+        },
+        {
+          "templateId": "c5f5e0b5-e53f-4257-ac70-5592aa934143",
+          "relationshipId": "d97dcb09-e5da-428b-bdf3-60272e6094c3",
+          "offset": 75000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "3fb2fc85-222f-4767-82c5-5da32b92c0c3",
+      "intent": "Cook ramen broth and noodles",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1070000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "4e3afc83-7bf8-427b-9c4c-b9956d1fcae2",
+          "relationshipId": "75eca20a-7210-4a87-8444-b266b494a28f",
+          "offset": 0
+        },
+        {
+          "templateId": "c83639e6-96a9-43e4-8aa3-9c4ce538add7",
+          "relationshipId": "67c76766-39c3-4c4d-8679-a7f7cf50df39",
+          "offset": 60000
+        },
+        {
+          "templateId": "7bfe21e8-dbf6-4997-8844-10cbc339cf03",
+          "relationshipId": "9c631fbc-c865-4068-8801-e70c067e8bdd",
+          "offset": 150000
+        },
+        {
+          "templateId": "fe5eb469-afa7-453a-815b-838f868fca17",
+          "relationshipId": "7f2b9a5d-eef2-401d-9629-2da7db3134bb",
+          "offset": 360000
+        },
+        {
+          "templateId": "74a7138b-0312-4c27-ac02-c0f630a3e17b",
+          "relationshipId": "13937ea4-c1c3-494b-b69b-8a391f42a322",
+          "offset": 390000
+        },
+        {
+          "templateId": "ae1ac9f7-b3c4-4e01-b093-fd5e89db5eab",
+          "relationshipId": "859e6fab-e92e-4455-b396-347d25984a81",
+          "offset": 410000
+        },
+        {
+          "templateId": "7e66b6d8-a98f-4e9f-bbc7-681054d74272",
+          "relationshipId": "1f0f03db-f6d8-43c7-b434-f61d82d11ebc",
+          "offset": 590000
+        },
+        {
+          "templateId": "08a345de-1f3e-4537-af65-9ab4cad0082f",
+          "relationshipId": "8ea4781f-50ea-4059-bae0-01dfb2199593",
+          "offset": 620000
+        },
+        {
+          "templateId": "bd14ca68-f030-4605-b8b2-ea6fee94496d",
+          "relationshipId": "f04271e0-a0be-4c10-853e-76dc95b87654",
+          "offset": 920000
+        },
+        {
+          "templateId": "def80861-2782-464b-b429-839d2c7a50cc",
+          "relationshipId": "20f61373-9cf5-4796-a6e4-2b8223e84e29",
+          "offset": 1040000
+        }
+      ]
+    },
+    {
+      "templateType": "lane",
+      "id": "e52faa6c-0755-47ab-887f-dc0341bef880",
+      "intent": "Homemade Miso Ramen (2 servings) - Source: https://www.justonecookbook.com/homemade-chashu-miso-ramen/",
+      "authorId": "agent",
+      "version": "0.0.0",
+      "estimatedDuration": 1405000,
+      "references": [],
+      "segments": [
+        {
+          "templateId": "73967bb2-fb28-4fbd-83df-0826412fa491",
+          "relationshipId": "7c8b6f0c-194b-4962-bd19-b92608a15dbf",
+          "offset": 0
+        },
+        {
+          "templateId": "7d5a12d8-4b75-4dd5-aa70-628e0f664ad3",
+          "relationshipId": "518217cb-370d-4406-85ea-1594103c776e",
+          "offset": 155000
+        },
+        {
+          "templateId": "3fb2fc85-222f-4767-82c5-5da32b92c0c3",
+          "relationshipId": "6852d818-d82c-45bc-ac0d-9e3b3a275eec",
+          "offset": 275000
+        },
+        {
+          "templateId": "baf55e8e-501b-4209-836e-b4fd9f8d0c4a",
+          "relationshipId": "144388e7-bb04-4c78-b23b-d2f1505c4830",
+          "offset": 1345000
+        }
+      ]
     }
   ]
 }
