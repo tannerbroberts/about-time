@@ -4,6 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { getTemplates, getVocabulary, addTemplate, getTemplateById, saveLibrary, getTemplateMap, saveTemplateMap, } from './storage.js';
+import { validateLaneSegmentDurations, formatDurationViolationErrors, } from './durationValidation.js';
 import { applyLaneLayout, packSegments, equallyDistributeSegments, distributeSegmentOffsetsByInterval, fitLaneDurationToLast, insertGap, addSegmentToEnd, pushSegmentToStart, insertSegmentAt, visualizeLane, visualizeLaneIds, validateLane, validateVariableNames, } from '@tannerbroberts/about-time-core';
 // Create server instance
 const server = new McpServer({
@@ -165,6 +166,174 @@ server.tool('create_busy_template', 'Create a new busy template (an atomic activ
         };
     }
 });
+// Tool: Analyze process intent for inputs/outputs
+server.tool('analyze_process_intent', 'Analyze a natural language process description and suggest appropriate input/output variables. This is domain-agnostic and works for any process (cooking, manufacturing, software development, etc.). Returns suggestions that can be used with create_busy_template or create_lane_template.', {
+    processDescription: z.string().describe('Natural language description of the process or action (e.g., "chop vegetables", "compile code", "brew coffee")'),
+    domain: z.string().optional().describe('Optional domain hint (e.g., "cooking", "software", "manufacturing") to improve suggestions'),
+}, async ({ processDescription, domain }) => {
+    const description = processDescription.toLowerCase();
+    const domainHint = domain?.toLowerCase() || '';
+    // Extract potential substances/entities (nouns)
+    const suggestions = {
+        suggestedInputs: [],
+        suggestedOutputs: [],
+        domainInferred: domainHint || 'general',
+        confidenceLevel: 'medium',
+        notes: [],
+    };
+    // Check for common patterns
+    const hasVerb = (verbs) => verbs.some(v => description.includes(v));
+    const hasNoun = (nouns) => nouns.some(n => description.includes(n));
+    // Cooking domain heuristics
+    if (domainHint === 'cooking' || hasVerb(['chop', 'slice', 'dice', 'mix', 'stir', 'cook', 'bake', 'fry', 'boil', 'simmer', 'sauté'])) {
+        suggestions.domainInferred = 'cooking';
+        suggestions.confidenceLevel = 'high';
+        // Common cooking inputs/outputs
+        if (hasNoun(['vegetable', 'onion', 'carrot', 'celery', 'pepper'])) {
+            suggestions.suggestedInputs.push({
+                variable: 'vegetables_cups',
+                quantity: 2,
+                reasoning: 'Common cooking input for vegetable-based processes',
+            });
+            if (hasVerb(['chop', 'dice', 'slice'])) {
+                suggestions.suggestedOutputs.push({
+                    variable: 'chopped_vegetables_cups',
+                    quantity: 2,
+                    reasoning: 'Chopping/dicing produces prepared vegetables',
+                });
+            }
+        }
+        if (hasNoun(['water', 'broth', 'stock'])) {
+            suggestions.suggestedInputs.push({
+                variable: 'water_cups',
+                quantity: 4,
+                reasoning: 'Liquid is commonly used in cooking processes',
+            });
+        }
+        if (hasVerb(['mix', 'stir', 'combine', 'blend'])) {
+            suggestions.notes.push('Mixing operations typically consume multiple ingredients and produce a mixture');
+            suggestions.suggestedOutputs.push({
+                variable: 'mixture',
+                quantity: 1,
+                reasoning: 'Mixing produces a combined mixture',
+            });
+        }
+        if (hasVerb(['cook', 'bake', 'fry', 'boil', 'simmer'])) {
+            suggestions.notes.push('Heating operations transform ingredients into cooked food');
+            suggestions.suggestedOutputs.push({
+                variable: 'cooked_food',
+                quantity: 1,
+                reasoning: 'Cooking transforms raw ingredients',
+            });
+        }
+    }
+    // Software domain heuristics
+    else if (domainHint === 'software' || hasVerb(['compile', 'build', 'test', 'deploy', 'debug', 'refactor', 'code'])) {
+        suggestions.domainInferred = 'software';
+        suggestions.confidenceLevel = 'high';
+        if (hasVerb(['compile', 'build'])) {
+            suggestions.suggestedInputs.push({
+                variable: 'source_files',
+                quantity: 1,
+                reasoning: 'Compilation requires source code files',
+            });
+            suggestions.suggestedOutputs.push({
+                variable: 'binary_executable',
+                quantity: 1,
+                reasoning: 'Compilation produces executable binary',
+            });
+        }
+        if (hasVerb(['test'])) {
+            suggestions.suggestedInputs.push({
+                variable: 'code_under_test',
+                quantity: 1,
+                reasoning: 'Testing requires code to test',
+            });
+            suggestions.suggestedOutputs.push({
+                variable: 'test_results',
+                quantity: 1,
+                reasoning: 'Testing produces test results/reports',
+            });
+        }
+    }
+    // Manufacturing domain heuristics
+    else if (domainHint === 'manufacturing' || hasVerb(['assemble', 'cut', 'shape', 'mold', 'weld', 'fabricate'])) {
+        suggestions.domainInferred = 'manufacturing';
+        suggestions.confidenceLevel = 'high';
+        if (hasVerb(['cut', 'shape'])) {
+            suggestions.suggestedInputs.push({
+                variable: 'raw_material_units',
+                quantity: 1,
+                reasoning: 'Shaping operations require raw materials',
+            });
+            suggestions.suggestedOutputs.push({
+                variable: 'shaped_parts_units',
+                quantity: 1,
+                reasoning: 'Shaping produces formed components',
+            });
+        }
+        if (hasVerb(['assemble'])) {
+            suggestions.suggestedInputs.push({
+                variable: 'components_count',
+                quantity: 5,
+                reasoning: 'Assembly requires multiple components',
+            });
+            suggestions.suggestedOutputs.push({
+                variable: 'assembled_product',
+                quantity: 1,
+                reasoning: 'Assembly produces finished product',
+            });
+        }
+    }
+    // Generic process heuristics
+    else {
+        suggestions.confidenceLevel = 'low';
+        suggestions.notes.push('Could not infer specific domain. Providing generic suggestions.');
+        suggestions.notes.push('Consider specifying a domain (cooking, software, manufacturing, etc.) for better suggestions.');
+        // Generic transformation pattern
+        suggestions.suggestedInputs.push({
+            variable: 'input_material',
+            quantity: 1,
+            reasoning: 'Generic input for transformation process',
+        });
+        suggestions.suggestedOutputs.push({
+            variable: 'output_product',
+            quantity: 1,
+            reasoning: 'Generic output from transformation',
+        });
+    }
+    // General notes
+    suggestions.notes.push('Review and adjust variable names to match your vocabulary (use get_vocabulary to see existing variables).');
+    suggestions.notes.push('Ensure measurable substances include units (e.g., "water_cups", "flour_grams").');
+    suggestions.notes.push('Use these suggestions with create_busy_template by providing willConsume and willProduce.');
+    // If no suggestions were made, add a helpful message
+    if (suggestions.suggestedInputs.length === 0 && suggestions.suggestedOutputs.length === 0) {
+        suggestions.notes.push('Unable to infer specific inputs/outputs. Consider:');
+        suggestions.notes.push('- What materials/resources does this process consume?');
+        suggestions.notes.push('- What does this process produce or transform?');
+        suggestions.notes.push('- What state changes occur during this process?');
+    }
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify({
+                    processDescription,
+                    domain: suggestions.domainInferred,
+                    confidenceLevel: suggestions.confidenceLevel,
+                    suggestedInputs: suggestions.suggestedInputs,
+                    suggestedOutputs: suggestions.suggestedOutputs,
+                    notes: suggestions.notes,
+                    nextSteps: [
+                        'Review the suggestions and adjust variable names/quantities as needed',
+                        'Use create_busy_template with willConsume and willProduce based on these suggestions',
+                        'Check existing vocabulary with get_vocabulary to maintain naming consistency',
+                    ],
+                }, null, 2),
+            },
+        ],
+    };
+});
 // Tool: Create lane template
 server.tool('create_lane_template', 'Create a new lane template (a container for sequencing other templates). Offsets are in milliseconds relative to lane start.', {
     intent: z.string().describe('Human-readable description of the overall workflow'),
@@ -203,6 +372,25 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
         segments,
     };
     try {
+        // Validate duration constraints (1/10th rule)
+        const templateMap = new Map(Object.entries(getTemplateMap()));
+        const durationValidation = validateLaneSegmentDurations(template, templateMap);
+        if (!durationValidation.isValid) {
+            const errorMessages = formatDurationViolationErrors(durationValidation.violations);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Duration constraint violation',
+                            details: 'One or more segments violate the 1/10th minimum duration rule',
+                            violations: errorMessages,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
         // Add back-references to all child templates (bidirectional linking)
         const templates = getTemplates();
         const updatedChildren = [];
@@ -254,6 +442,366 @@ server.tool('create_lane_template', 'Create a new lane template (a container for
                         template,
                         backlinksAdded: updatedChildren.length,
                         note: 'Bidirectional links established between lane and child templates',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Update template duration
+server.tool('update_template_duration', 'Update the estimated duration of a template. This operation validates the 1/10th duration rule: (1) If the template is a lane, all child segments must be at least 1/10th of the new duration. (2) The template must remain at least 1/10th the duration of all parent lanes that reference it.', {
+    templateId: z.string().describe('The ID of the template to update'),
+    newDuration: z.number().describe('The new estimated duration in milliseconds'),
+}, async ({ templateId, newDuration }) => {
+    // Validate duration is positive
+    if (newDuration <= 0) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Invalid duration',
+                        details: 'newDuration must be greater than 0.',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    const template = getTemplateById(templateId);
+    if (!template) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: `Template ${templateId} not found`,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    const templateMap = new Map(Object.entries(getTemplateMap()));
+    try {
+        // Import validation functions
+        const { validateLaneDurationChange, validateTemplateReferences, formatDurationViolationErrors, } = await import('./durationValidation.js');
+        // If this is a lane template, validate that all child segments still meet the 1/10th rule
+        if (template.templateType === 'lane') {
+            const childValidation = validateLaneDurationChange(template, newDuration, templateMap);
+            if (!childValidation.isValid) {
+                const errorMessages = formatDurationViolationErrors(childValidation.violations);
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                success: false,
+                                error: 'Duration constraint violation',
+                                details: `Change to template "${template.intent}" would violate the 1/10th duration rule for child segments.`,
+                                violations: errorMessages,
+                            }, null, 2),
+                        },
+                    ],
+                };
+            }
+        }
+        // Validate that this template still meets the 1/10th rule in all parent lanes
+        const parentValidation = validateTemplateReferences(template, newDuration, templateMap);
+        if (!parentValidation.isValid) {
+            const errorMessages = formatDurationViolationErrors(parentValidation.violations);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Duration constraint violation',
+                            details: `Change to template "${template.intent}" affects parent lanes. The template cannot be less than 1/10th the duration of its parent lanes.`,
+                            violations: errorMessages,
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        // Update the duration
+        template.estimatedDuration = newDuration;
+        // Save the updated template
+        const templates = getTemplates();
+        const index = templates.findIndex(t => t.id === templateId);
+        if (index !== -1) {
+            templates[index] = template;
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Updated duration for template: ${template.intent}`,
+                        template: {
+                            id: template.id,
+                            intent: template.intent,
+                            templateType: template.templateType,
+                            estimatedDuration: template.estimatedDuration,
+                        },
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Update template intent
+server.tool('update_intent', 'Update the intent (human-readable description) of any template. High specificity operation that only changes the intent field.', {
+    templateId: z.string().describe('The ID of the template to update'),
+    newIntent: z.string().describe('The new intent description'),
+}, async ({ templateId, newIntent }) => {
+    const template = getTemplateById(templateId);
+    if (!template) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: `Template ${templateId} not found`,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    try {
+        template.intent = newIntent;
+        // Save the updated template
+        const templates = getTemplates();
+        const index = templates.findIndex(t => t.id === templateId);
+        if (index !== -1) {
+            templates[index] = template;
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Updated intent for template ${templateId}`,
+                        template: {
+                            id: template.id,
+                            intent: template.intent,
+                            templateType: template.templateType,
+                        },
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Update consumption variables
+server.tool('update_consumption_variables', 'Update the willConsume variables for a busy template. This operation replaces the entire willConsume ledger. Use this to change what inputs a busy template requires.', {
+    templateId: z.string().describe('The ID of the busy template to update'),
+    willConsume: z.record(z.string(), z.number()).describe('New consumption ledger (variable name → quantity)'),
+}, async ({ templateId, willConsume }) => {
+    const template = getTemplateById(templateId);
+    if (!template) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: `Template ${templateId} not found`,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    if (template.templateType !== 'busy') {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: `Template ${templateId} is not a busy template (type: ${template.templateType})`,
+                        hint: 'Only busy templates have willConsume variables',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    try {
+        // Validate variable names
+        const validationResult = validateVariableNames(willConsume);
+        if (validationResult.errors.length > 0) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Invalid variable names',
+                            errors: validationResult.errors,
+                            hint: 'Variables for measurable substances must include units (e.g., "water_cups", "flour_grams")',
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        const busyTemplate = template;
+        busyTemplate.willConsume = willConsume;
+        // Save the updated template
+        const templates = getTemplates();
+        const index = templates.findIndex(t => t.id === templateId);
+        if (index !== -1) {
+            templates[index] = busyTemplate;
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Updated consumption variables for template: ${busyTemplate.intent}`,
+                        template: {
+                            id: busyTemplate.id,
+                            intent: busyTemplate.intent,
+                            willConsume: busyTemplate.willConsume,
+                        },
+                        note: 'Validate any parent lanes to ensure state flow is still correct',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    catch (error) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    }),
+                },
+            ],
+        };
+    }
+});
+// Tool: Update production variables
+server.tool('update_production_variables', 'Update the willProduce variables for a busy template. This operation replaces the entire willProduce ledger. Use this to change what outputs a busy template generates.', {
+    templateId: z.string().describe('The ID of the busy template to update'),
+    willProduce: z.record(z.string(), z.number()).describe('New production ledger (variable name → quantity)'),
+}, async ({ templateId, willProduce }) => {
+    const template = getTemplateById(templateId);
+    if (!template) {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: `Template ${templateId} not found`,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    if (template.templateType !== 'busy') {
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: `Template ${templateId} is not a busy template (type: ${template.templateType})`,
+                        hint: 'Only busy templates have willProduce variables',
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    try {
+        // Validate variable names
+        const validationResult = validateVariableNames(willProduce);
+        if (validationResult.errors.length > 0) {
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: false,
+                            error: 'Invalid variable names',
+                            errors: validationResult.errors,
+                            hint: 'Variables for measurable substances must include units (e.g., "water_cups", "flour_grams")',
+                        }, null, 2),
+                    },
+                ],
+            };
+        }
+        const busyTemplate = template;
+        busyTemplate.willProduce = willProduce;
+        // Save the updated template
+        const templates = getTemplates();
+        const index = templates.findIndex(t => t.id === templateId);
+        if (index !== -1) {
+            templates[index] = busyTemplate;
+            saveLibrary({ version: '1.0.0', templates });
+        }
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        message: `Updated production variables for template: ${busyTemplate.intent}`,
+                        template: {
+                            id: busyTemplate.id,
+                            intent: busyTemplate.intent,
+                            willProduce: busyTemplate.willProduce,
+                        },
+                        note: 'Validate any parent lanes to ensure state flow is still correct',
                     }, null, 2),
                 },
             ],
@@ -507,6 +1055,45 @@ server.tool('fit_lane_duration_to_last', 'Resize lane\'s estimatedDuration to ma
             ],
         };
     }
+    // Validate duration constraints (1/10th rule)
+    const templateMapForValidation = new Map(Object.entries(templateMap));
+    // Validate child segments
+    const childValidation = validateLaneSegmentDurations(result, templateMapForValidation);
+    if (!childValidation.isValid) {
+        const errorMessages = formatDurationViolationErrors(childValidation.violations);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Duration constraint violation',
+                        details: `Change to lane "${result.intent}" would violate the 1/10th duration rule for child segments.`,
+                        violations: errorMessages,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
+    // Import and validate parent references
+    const { validateTemplateReferences } = await import('./durationValidation.js');
+    const parentValidation = validateTemplateReferences(result, result.estimatedDuration, templateMapForValidation);
+    if (!parentValidation.isValid) {
+        const errorMessages = formatDurationViolationErrors(parentValidation.violations);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Duration constraint violation',
+                        details: `Change to lane "${result.intent}" affects parent lanes. The lane cannot be less than 1/10th the duration of its parent lanes.`,
+                        violations: errorMessages,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
     saveTemplateMap(templateMap);
     return {
         content: [
@@ -580,6 +1167,25 @@ server.tool('add_segment_to_end', 'Add a new segment at the very end of the lane
             ],
         };
     }
+    // Validate duration constraints (1/10th rule)
+    const templateMapForValidation = new Map(Object.entries(templateMap));
+    const durationValidation = validateLaneSegmentDurations(result, templateMapForValidation);
+    if (!durationValidation.isValid) {
+        const errorMessages = formatDurationViolationErrors(durationValidation.violations);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Duration constraint violation',
+                        details: `Attempt to add segment ${childId} to lane ${laneId} failed.`,
+                        violations: errorMessages,
+                    }, null, 2),
+                },
+            ],
+        };
+    }
     // Add back-reference to child template (bidirectional linking)
     const childTemplate = templateMap[childId];
     if (childTemplate) {
@@ -624,6 +1230,25 @@ server.tool('push_segment_to_start', 'Add a new segment at offset 0 and shift al
                 {
                     type: 'text',
                     text: JSON.stringify({ success: false, error: `Lane ${laneId} or child ${childId} not found, or lane is not a lane template` }),
+                },
+            ],
+        };
+    }
+    // Validate duration constraints (1/10th rule)
+    const templateMapForValidation = new Map(Object.entries(templateMap));
+    const durationValidation = validateLaneSegmentDurations(result, templateMapForValidation);
+    if (!durationValidation.isValid) {
+        const errorMessages = formatDurationViolationErrors(durationValidation.violations);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Duration constraint violation',
+                        details: `Attempt to add segment ${childId} to lane ${laneId} failed.`,
+                        violations: errorMessages,
+                    }, null, 2),
                 },
             ],
         };
@@ -673,6 +1298,25 @@ server.tool('insert_segment_at', 'Insert a segment at a specific offset and shif
                 {
                     type: 'text',
                     text: JSON.stringify({ success: false, error: `Lane ${laneId} or child ${childId} not found, or lane is not a lane template` }),
+                },
+            ],
+        };
+    }
+    // Validate duration constraints (1/10th rule)
+    const templateMapForValidation = new Map(Object.entries(templateMap));
+    const durationValidation = validateLaneSegmentDurations(result, templateMapForValidation);
+    if (!durationValidation.isValid) {
+        const errorMessages = formatDurationViolationErrors(durationValidation.violations);
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: false,
+                        error: 'Duration constraint violation',
+                        details: `Attempt to add segment ${childId} to lane ${laneId} failed.`,
+                        violations: errorMessages,
+                    }, null, 2),
                 },
             ],
         };
@@ -883,7 +1527,48 @@ server.tool('create_passthrough_template', 'Analyze a lane\'s validation errors 
                     relationshipId: relationshipId,
                 });
             }
-            fitLaneDurationToLast(laneId, templateMap);
+            const laneAfterFit = fitLaneDurationToLast(laneId, templateMap);
+            // Validate duration constraints after fitting (1/10th rule)
+            if (laneAfterFit) {
+                const templateMapForValidation = new Map(Object.entries(templateMap));
+                // Validate child segments
+                const childValidation = validateLaneSegmentDurations(laneAfterFit, templateMapForValidation);
+                if (!childValidation.isValid) {
+                    const errorMessages = formatDurationViolationErrors(childValidation.violations);
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: JSON.stringify({
+                                    success: false,
+                                    error: 'Duration constraint violation',
+                                    details: `After fitting lane duration, the 1/10th duration rule would be violated.`,
+                                    violations: errorMessages,
+                                }, null, 2),
+                            },
+                        ],
+                    };
+                }
+                // Validate parent references
+                const { validateTemplateReferences } = await import('./durationValidation.js');
+                const parentValidation = validateTemplateReferences(laneAfterFit, laneAfterFit.estimatedDuration, templateMapForValidation);
+                if (!parentValidation.isValid) {
+                    const errorMessages = formatDurationViolationErrors(parentValidation.violations);
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: JSON.stringify({
+                                    success: false,
+                                    error: 'Duration constraint violation',
+                                    details: `After fitting lane duration, the lane would violate the 1/10th duration rule in parent lanes.`,
+                                    violations: errorMessages,
+                                }, null, 2),
+                            },
+                        ],
+                    };
+                }
+            }
             saveTemplateMap(templateMap);
         }
         // Re-validate to show updated state
