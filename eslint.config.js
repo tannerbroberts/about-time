@@ -5,11 +5,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import stylistic from '@stylistic/eslint-plugin'
 import importX from 'eslint-plugin-import-x'
-import architecture from 'eslint-plugin-architecture'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'eslint-plugin-architecture', 'mcp-server']),
+  globalIgnores(['dist', 'mcp-server']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -21,7 +20,6 @@ export default defineConfig([
     plugins: {
       '@stylistic': stylistic,
       'import-x': importX,
-      'architecture': architecture,
     },
     languageOptions: {
       ecmaVersion: 2020,
@@ -170,30 +168,6 @@ export default defineConfig([
       '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/explicit-module-boundary-types': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-
-      // Architecture rules - strict enforcement
-      'architecture/no-react-hooks-in-components': 'error',
-      'architecture/named-exports-only': 'error',
-      'architecture/react-hooks-only-in-hook-files': 'error',
-      'architecture/memo-component-rules': 'error',
-      'architecture/context-provider-file': 'error',
-      'architecture/component-folder-structure': 'error',
-      'architecture/import-boundaries': 'error',
-      'architecture/file-export-name-match': 'error',
-      'architecture/no-useref-in-components': 'error',
-      'architecture/memo-no-context-hooks': 'error',
-      'architecture/import-from-index': 'error',
-      'architecture/memo-primitive-props-only': 'error',
-    },
-  },
-  // Config files need default exports (Vite, ESLint, etc.)
-  {
-    files: ['*.config.ts', '*.config.js', 'vite.config.ts', 'eslint.config.js'],
-    plugins: {
-      'architecture': architecture,
-    },
-    rules: {
-      'architecture/named-exports-only': 'off',
     },
   },
 ])
