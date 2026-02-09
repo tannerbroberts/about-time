@@ -1,11 +1,16 @@
 export const DefaultAppState = {
   sidePanelOpen: false,
+  activeTab: 'build' as 'build' | 'schedule' | 'track',
 };
 
-export type AppActionType = 'TOGGLE_SIDE_PANEL';
+export type AppActionType = 'TOGGLE_SIDE_PANEL' | 'SET_ACTIVE_TAB';
 
-export type AppAction = {
-  type: AppActionType;
+export type AppAction = | {
+  type: 'TOGGLE_SIDE_PANEL';
+}
+| {
+  type: 'SET_ACTIVE_TAB';
+  tab: 'build' | 'schedule' | 'track';
 };
 
 export type AppContextValue = {
@@ -14,13 +19,20 @@ export type AppContextValue = {
 };
 
 export const reducer = (state: typeof DefaultAppState, action: AppAction): typeof DefaultAppState => {
-  if (action.type === 'TOGGLE_SIDE_PANEL') {
-    return {
-      ...state,
-      sidePanelOpen: !state.sidePanelOpen,
-    };
-  }
+  switch (action.type) {
+    case 'TOGGLE_SIDE_PANEL':
+      return {
+        ...state,
+        sidePanelOpen: !state.sidePanelOpen,
+      };
 
-  // Return the current state for unhandled actions
-  throw new Error(`Unhandled action type: ${action.type}`);
+    case 'SET_ACTIVE_TAB':
+      return {
+        ...state,
+        activeTab: action.tab,
+      };
+
+    default:
+      throw new Error(`Unhandled action type: ${(action as AppAction).type}`);
+  }
 };
