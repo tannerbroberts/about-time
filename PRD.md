@@ -33,7 +33,7 @@ The application leverages the about-time-core library's template system:
 
 **TODO**: See [PRD-Build.md](./PRD-Build.md) for complete Build feature specification.
 
-**Summary**: Create and manage reusable meal templates with complete nutritional profiles using AI-assisted creation and a dense template library interface.
+**Summary**: Create and manage reusable meal templates with complete nutritional profiles using manual form-based creation and a filterable template library interface.
 
 ---
 
@@ -55,68 +55,127 @@ The application leverages the about-time-core library's template system:
 
 ## UI/UX Design Specifications
 
-### Navigation Structure
+### Visual Design Specification
 
-**Top Tab Bar Navigation**
-- Persistent horizontal tab bar at the top of the application
-- Three tabs: **Build** | **Schedule** | **Execute**
-- Always visible for easy context switching
-- Active tab highlighted with color accent
-- Responsive: Collapses to icons on mobile
+**Complete design specification clarified with user on 2026-02-09**
 
-### Visual Design System
+#### Navigation Structure
 
-**Style: Colorful & Playful**
-- Vibrant, approachable color palette
-- Clean typography with personality
-- Smooth animations and transitions
-- Generous whitespace balanced with visual interest
-- Food-centric iconography and illustrations
+**Mobile-First Design**
+- Application optimized for phone usage (especially Execute view)
+- Bottom navigation bar with three tabs: **Build** | **Schedule** | **Execute**
+- Active tab has filled background color
+- Standard 44pt minimum touch targets (Apple HIG standard)
+- Responsive across mobile, tablet, and desktop
 
-**Theme Support**
-- **Auto-detect dark mode** following system preference
-- Automatic switching between light/dark themes
-- Color palette adapts while maintaining brand personality
-- High contrast ratios for accessibility
+#### Color & Theme
 
-**Color Strategy** (to be defined during implementation):
-- Primary action colors
-- Meal type color coding (optional: breakfast/lunch/dinner)
-- Macro visualization colors
-- Success/warning/error states
-- Neutral backgrounds and surfaces
+**Color Palette**
+- **Primary colors**: Fresh/healthy greens and blues
+- **Application**: Subtle accents (primary colors in key spots, mostly neutral backgrounds)
+- **Template colors**: User-assigned per template (custom color chosen by user or auto-assigned)
+- **Theme support**: Auto-detect dark mode following system preference
+
+#### Typography
+
+**Font Style**
+- **Headings & UI**: Rounded sans-serif (friendly) - import Nunito or Quicksand
+- **Form labels**: Bold weight
+- **Input fields**: Normal weight
+- **Base fallback**: System fonts (-apple-system, Segoe UI, Roboto, etc.)
+
+#### Component Styling
+
+**Cards & Containers**
+- **Template cards**: Flat with subtle borders
+- **Modals on mobile**: Full-screen takeover
+- **Modal backdrop**: Solid color (opaque background)
+- **Spacing**: Comfortable density (balanced spacing, good for touch targets)
+
+**Icons**
+- **Style**: Material Design icons (@mui/icons-material)
+- **Usage**: Consistent with MUI component library
+
+#### Interactions & States
+
+**Interactive Elements**
+- **Hover/Focus states**: Shadow depth change + border highlight
+- **Animations**: Quick & snappy (fast linear animations)
+- **Touch targets**: 44pt minimum for all interactive elements
+
+**Feedback States**
+- **Form validation errors**: Inline below field with red text
+- **Success messages**: Snackbar notification (brief toast at bottom/top)
+- **Empty states**: Illustration/icon + call-to-action button
+
+#### Template-Specific Components
+
+**Library & Filtering**
+- **Filter system**: Always-visible filter inputs with "save filter" button at bottom
+- **Filter picker**: Filter name dropdown at top to select pre-saved filters
+- **Filters**: Saved permanently, shared across application, selection saved per context
+- **Library display**: Shown in modals, filtered by context (e.g., duration constraints)
+
+**Nutrition Display**
+- **Template cards**: Variable count indicator
+  - Shows number of variables on BusyTemplate
+  - If single variable: show name and numerical value
+  - Don't sum variables, just indicate count
+
+**Hierarchy Viewer (Template Editor)**
+- **Visual style**: Colored blocks with nesting levels showing time and depth
+- **Time axis**: Continuous ruler with time labels (0min, 5min, 10min, etc.)
+- **Empty space**: Dashed outline region showing placement areas
+- **Breadcrumbs**: Horizontal with arrows (A → B → C → D)
+- **Vertical space**: Level depth clamp set by user with "+X" indicators above segments that have additional clamped levels
+- **Change impact visualization**:
+  - Pulse/flash animation on affected instances
+  - Badge showing count ("5 of 50")
+  - Outline/border on affected segments
 
 ### 1. BUILD Section UI
 
 **Template Library Display**
-- **Dense template rows** in list format
-- Each row shows:
-  - Template name (bold, prominent)
-  - Quick macro summary (calories, protein, carbs, fats)
+- **Shown in modal dialogs**, context-aware
+- Flat cards with subtle borders
+- Each card shows:
+  - Template name (bold, rounded sans-serif font)
+  - Variable count indicator (or single variable name + value)
   - Template type badge (Busy/Lane)
-  - Quick action buttons (edit, duplicate, delete)
-- Search bar at top with live filtering
-- Sort options: Recent, Name, Calories, Protein
-- Scroll performance optimized for hundreds of templates
+  - User-assigned color for identification
+- Advanced filter system:
+  - Always-visible filter inputs
+  - Filter name picker dropdown at top
+  - "Save filter" button at bottom
+  - Filters saved permanently, selection per context
+- Comfortable spacing, 44pt touch targets
 
 **Template Creation Interface**
-- **AI-Assisted Creation** as primary method
-- Natural language input: "High protein breakfast with eggs and toast"
-- AI suggests:
-  - Estimated nutrition values
-  - Preparation time
-  - Common variations
-- Manual override available for all fields
+- **Manual form-based creation** as primary method
+- Full-screen modal on mobile
+- Form fields:
+  - Basic Info: Name (required), Duration (required), Description
+  - Macros: Calories, Protein, Carbs, Fats
+  - Micros: Fiber, Sodium, Sugar (optional)
+  - Resources: Prep Time, Cost
+- Bold labels, normal weight inputs
+- Inline error messages below fields (red text)
 - Iterative refinement approach:
-  - Start with basic template
+  - Start with basic template (name + duration)
   - Add details progressively
   - Save at any stage
+- Snackbar notification on successful save
 
-**Template Editor**
-- Inline editing for quick adjustments
-- Full editor modal for comprehensive changes
+**Template Editor (Hierarchy Viewer)**
+- Full-screen modal interface on mobile
+- Two regions: Hierarchy Viewer + Properties Panel
+- Colored blocks showing time and nesting depth
+- Continuous ruler with time labels
+- Breadcrumb lineage path (A → B → C)
+- Change impact visualization (pulse/flash + badge)
+- Dashed outline for empty segment spaces
+- Level depth clamp with "+X" indicators
 - Real-time validation feedback
-- Preview of how template appears in schedules
 
 ### 2. SCHEDULE Section UI
 
@@ -250,10 +309,10 @@ Custom ▼
 - Undo option appears briefly
 - Updates nutrition totals immediately
 
-**Responsive Design**
-- Desktop: Three-column layout (nav, content, details panel)
-- Tablet: Two-column layout (nav + content, details overlay)
-- Mobile: Single column, bottom navigation, swipe gestures
+**Responsive Design (Mobile-First)**
+- **Mobile (Primary)**: Single column, bottom navigation bar, full-screen modals, swipe gestures, optimized touch targets (44pt minimum)
+- **Tablet**: Adapted mobile layout with more spacing, some modals become overlays
+- **Desktop**: Expanded layouts with side panels, hover states more prominent
 
 **Loading States**
 - Skeleton screens for content loading
@@ -261,24 +320,29 @@ Custom ▼
 - Clear error messages with recovery actions
 
 **Empty States**
-- Friendly illustrations and messaging
-- Clear call-to-action to get started
-- Sample templates offered for new users
+- Illustration or icon showing context (no templates, no schedule, etc.)
+- Call-to-action button for primary action
+- Friendly, approachable messaging
+- Material Design icons for visual clarity
 
 ### Animation & Transitions
 
+**Animation Style**: Quick & snappy (fast linear animations)
+
 **Key Animations**:
-- Smooth tab switching (slide transition)
-- Meal card entry/exit (scale + fade)
-- Countdown number updates (flip animation)
-- Progress bar fills (smooth ease)
-- FAB pulse (attention grabber)
-- Success celebrations (confetti on goals hit)
+- Tab switching (quick slide transition)
+- Meal card entry/exit (fast scale + fade)
+- Countdown number updates (snap change)
+- Progress bar fills (linear ease)
+- Change impact visualization (pulse/flash on affected instances)
+- Success feedback (brief snackbar, no elaborate celebrations)
+- Modal open/close (fast fade/slide)
 
 **Performance**:
 - 60fps target for all animations
 - Reduced motion support for accessibility
 - Hardware acceleration for transforms
+- Fast, efficient animations prioritized over elaborate effects
 
 ---
 
@@ -328,9 +392,10 @@ WeeklySchedule (LaneTemplate)
 The application consists of three main sections accessible via a top tab bar:
 
 ### 1. BUILD Section
-- **Dense template library** with search and filtering
-- **AI-assisted creation** interface for rapid template building
-- Inline editing for quick tweaks
+- **Filterable template library** with advanced filter system
+- **Manual form-based creation** with progressive refinement
+- Context-aware library display (modal-based)
+- Hierarchy viewer for template composition
 - Template management and organization
 
 ### 2. SCHEDULE Section
@@ -492,9 +557,10 @@ Estimate the nutrition information in JSON format:
 
 ### Phase 1 (MVP Core)
 **Build Section**:
-- AI-assisted template creation (natural language → nutrition data)
-- Dense template library with basic search
-- Manual override for all AI suggestions
+- Manual form-based template creation
+- Advanced filter system with save/load functionality
+- Context-aware library display in modals
+- Hierarchy viewer for template composition
 - LocalStorage persistence
 
 **Schedule Section**:
@@ -510,9 +576,11 @@ Estimate the nutrition information in JSON format:
 - Today's timeline view
 
 **Theme & Navigation**:
-- Top tab bar navigation
+- Bottom navigation bar (mobile-first)
 - Auto-detect dark mode
-- Colorful & playful base design system
+- Fresh/healthy greens and blues with subtle accents
+- Rounded sans-serif typography
+- Material Design icons
 
 ### Phase 2 (Enhanced Features)
 - Advanced layout operations (justify, distribute, gaps)

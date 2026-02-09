@@ -168,6 +168,40 @@ function calculateDayNutrition(laneId: string, templates: TemplateMap): Nutritio
 
 ## UI/UX Design Specifications
 
+### Visual Design Specification
+
+**Complete design specification clarified with user on 2026-02-09**
+
+**Mobile-First Design**
+- Optimized for phone usage
+- Bottom navigation bar access to Schedule tab
+- Full-screen modal takeover for inline scheduler
+- 44pt minimum touch targets for all interactive elements
+- Swipe gestures for day navigation
+
+**Color & Theme**
+- Fresh/healthy greens and blues color palette
+- Subtle accents (primary colors in key spots, neutral backgrounds)
+- User-assigned template colors in meal blocks
+- Auto-detect dark mode following system preference
+
+**Typography**
+- Rounded sans-serif font (friendly) - Nunito or Quicksand
+- Bold labels, normal weight inputs
+- System font fallback
+
+**Interactions**
+- Shadow depth change + border highlight on hover/focus
+- Quick & snappy animations (fast linear)
+- Inline error messages below fields (red text)
+- Snackbar notifications for success states
+
+**Meal Blocks on Calendar**
+- Flat with subtle borders
+- Display template name and key nutrition
+- User-assigned template color for identification
+- Comfortable spacing for touch targets
+
 ### Primary Interface
 
 **Iterative design approach**: Start with clean calendar base, refine based on user feedback.

@@ -199,6 +199,56 @@ function getNextScheduledMeal(
 
 ## UI/UX Design Specifications
 
+### Visual Design Specification
+
+**Complete design specification clarified with user on 2026-02-09**
+
+**Mobile-First Design (Priority)**
+- **Execute view is the primary mobile interface**
+- Optimized specifically for phone usage throughout the day
+- Bottom navigation bar access to Execute tab
+- 44pt minimum touch targets for all interactive elements
+- Large, clear displays for at-a-glance viewing
+
+**Color & Theme**
+- Fresh/healthy greens and blues color palette
+- Subtle accents (primary colors in key spots, neutral backgrounds)
+- Color-coded progress indicators:
+  - Green: On track (within 10% of goal at current time)
+  - Yellow: Close (within 20% but not on track)
+  - Red: Over or significantly under
+- Auto-detect dark mode following system preference
+
+**Typography**
+- Rounded sans-serif font (friendly) - Nunito or Quicksand
+- Large countdown timer text (prominent)
+- Bold section headers (Macros, Micros, Custom)
+- Normal weight for nutrition values
+- System font fallback
+
+**Component Styling**
+- Flat cards with subtle borders
+- Progress bars for nutrition tracking
+- Collapsible sections for micros/custom variables
+- Comfortable spacing optimized for touch
+
+**Interactions**
+- Shadow depth change + border highlight on meal cards
+- Quick & snappy animations (fast linear)
+- Large tap targets for checkboxes and action buttons
+- Satisfying completion animation when checking off meals
+- Snackbar notifications for success states (meal completed)
+
+**Empty States**
+- Illustration/icon showing no schedule for today
+- Call-to-action button to Schedule tab
+- Friendly messaging encouraging planning
+
+**Material Design Icons**
+- Consistent @mui/icons-material throughout
+- Icons for water logging, caffeine tracking, quick actions
+- Clear, recognizable symbols
+
 ### Header: Next Meal Countdown
 
 **Most Prominent Element**:
