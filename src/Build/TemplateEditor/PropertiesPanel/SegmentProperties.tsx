@@ -15,6 +15,13 @@ export function SegmentProperties({ focusedItem, parentLineage }: SegmentPropert
   const templates = useBuildStore((state) => state.templates);
   const updateTemplate = useBuildStore((state) => state.updateTemplate);
 
+  // Track the initial offset when this segment was first selected
+  // This allows us to distinguish between user edits and switching to a different segment instance
+  const initialOffsetRef = React.useRef<number | undefined>(focusedItem.offset);
+  const [segmentKey, setSegmentKey] = React.useState(
+    `${focusedItem.templateId}:${focusedItem.offset ?? 'base'}`,
+  );
+
   const [offsetMinutes, setOffsetMinutes] = React.useState(
     focusedItem.offset !== undefined ? Math.round(focusedItem.offset / 60000) : 0,
   );
@@ -24,9 +31,19 @@ export function SegmentProperties({ focusedItem, parentLineage }: SegmentPropert
   const parentTemplate = parentItem ? (templates[parentItem.templateId] as Template) : null;
   const isParentLane = parentTemplate?.templateType === 'lane';
 
+  // Detect when we switch to a different segment instance
+  // We consider it a switch if the templateId changes OR if the offset changes by a significant amount
+  // relative to what we initially captured (indicating a click on a different instance, not a user edit)
   React.useEffect(() => {
-    setOffsetMinutes(focusedItem.offset !== undefined ? Math.round(focusedItem.offset / 60000) : 0);
-  }, [focusedItem.offset]);
+    const currentKey = `${focusedItem.templateId}:${focusedItem.offset ?? 'base'}`;
+    const didSwitchSegment = currentKey !== segmentKey;
+
+    if (didSwitchSegment) {
+      initialOffsetRef.current = focusedItem.offset;
+      setSegmentKey(currentKey);
+      setOffsetMinutes(focusedItem.offset !== undefined ? Math.round(focusedItem.offset / 60000) : 0);
+    }
+  }, [focusedItem, segmentKey]);
 
   const handleOffsetChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const minutes = parseInt(e.target.value, 10);

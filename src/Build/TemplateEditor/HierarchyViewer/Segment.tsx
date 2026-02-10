@@ -17,15 +17,22 @@ export interface SegmentProps {
   depth: number;
   lineage: FocusPathItem[];
   baseDuration: number;
+  cumulativeOffset: number;
 }
 
-const SegmentComponent: React.FC<SegmentProps> = ({ templateId, offset, depth, lineage, baseDuration }) => {
+const SegmentComponent: React.FC<SegmentProps> = ({
+  templateId,
+  offset: _offset,
+  depth,
+  lineage,
+  baseDuration,
+  cumulativeOffset,
+}) => {
   const template = useBuildStore((state) => state.templates[templateId]) as Template | undefined;
   const maxDepth = useBuildStore((state) => state.maxDepth);
   const focusedLineage = useBuildStore((state) => state.focusedLineage);
   const setFocusedLineage = useBuildStore((state) => state.setFocusedLineage);
   const templates = useBuildStore((state) => state.templates);
-  const isAddingSegment = useBuildStore((state) => state.isAddingSegment);
 
   if (!template) {
     return null;
@@ -35,7 +42,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({ templateId, offset, depth, l
   const focusedLineageKey = generateLineageKey(focusedLineage);
   const isFocused = currentLineageKey === focusedLineageKey;
 
-  const leftPercent = calculateSegmentPosition(offset, baseDuration);
+  const leftPercent = calculateSegmentPosition(cumulativeOffset, baseDuration);
   const widthPercent = calculateSegmentWidth(template.estimatedDuration, baseDuration);
 
   const handleClick = (e: React.MouseEvent): void => {
@@ -53,8 +60,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({ templateId, offset, depth, l
     hiddenLevels = countNestedLevels(templateId, templates);
   }
 
-  // Calculate empty regions if this template is focused and in add segment mode
-  const emptyRegions = isFocused && isAddingSegment && shouldRenderChildren && template.templateType === 'lane'
+  // Calculate empty regions if this template is focused (only for lane templates)
+  const emptyRegions = isFocused && shouldRenderChildren && template.templateType === 'lane'
     ? calculateEmptyRegions(segments, template.estimatedDuration, templates)
     : [];
 
@@ -124,6 +131,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({ templateId, offset, depth, l
             depth={depth + 1}
             lineage={[...lineage, { templateId: segment.templateId, offset: segment.offset }]}
             baseDuration={baseDuration}
+            cumulativeOffset={cumulativeOffset + segment.offset}
           />
         ))}
 
@@ -134,6 +142,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({ templateId, offset, depth, l
           end={region.end}
           baseDuration={baseDuration}
           depth={depth}
+          cumulativeOffset={cumulativeOffset}
         />
       ))}
     </>

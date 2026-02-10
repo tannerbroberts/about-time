@@ -1,4 +1,3 @@
-import AddIcon from '@mui/icons-material/Add';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Box from '@mui/material/Box';
@@ -19,17 +18,12 @@ export function ActionButtons({ template, focusedItem, parentLineage }: ActionBu
   const templates = useBuildStore((state) => state.templates);
   const createTemplate = useBuildStore((state) => state.createTemplate);
   const updateTemplate = useBuildStore((state) => state.updateTemplate);
-  const toggleAddSegmentMode = useBuildStore((state) => state.toggleAddSegmentMode);
   const setFocusedLineage = useBuildStore((state) => state.setFocusedLineage);
 
   const isSegment = focusedItem.offset !== undefined;
   const parentItem = parentLineage.length > 0 ? parentLineage[parentLineage.length - 1] : null;
   const parentTemplate = parentItem ? (templates[parentItem.templateId] as Template) : null;
   const isParentLane = parentTemplate?.templateType === 'lane';
-
-  const handleAddSegment = (): void => {
-    toggleAddSegmentMode();
-  };
 
   const handleDuplicate = (): void => {
     const newId = crypto.randomUUID();
@@ -64,21 +58,8 @@ export function ActionButtons({ template, focusedItem, parentLineage }: ActionBu
     }
   };
 
-  const isLaneTemplate = template.templateType === 'lane';
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {isLaneTemplate && (
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddSegment}
-          fullWidth
-        >
-          Add Segment
-        </Button>
-      )}
-
       <Button
         variant="outlined"
         startIcon={<ContentCopyIcon />}

@@ -113,7 +113,6 @@ export function TemplateForm(): React.ReactElement {
         estimatedDuration: durationMinutes * 60000, // Convert minutes to ms
         references: [],
         segments: [],
-        layoutType: 'parallel',
       };
 
       if (editingTemplateId) {

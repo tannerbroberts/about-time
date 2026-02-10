@@ -19,8 +19,8 @@ export function PropertiesPanel(): React.ReactElement {
 
   if (focusedLineage.length === 0) {
     return (
-      <Paper sx={{ padding: 3, height: '100%' }}>
-        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+      <Paper sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center', padding: 3 }}>
           Select a template or segment to view properties
         </Typography>
       </Paper>
@@ -32,8 +32,8 @@ export function PropertiesPanel(): React.ReactElement {
 
   if (!template) {
     return (
-      <Paper sx={{ padding: 3, height: '100%' }}>
-        <Typography variant="body2" color="error">
+      <Paper sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="body2" color="error" sx={{ padding: 3 }}>
           Template not found
         </Typography>
       </Paper>
@@ -44,31 +44,33 @@ export function PropertiesPanel(): React.ReactElement {
   const parentLineage = focusedLineage.slice(0, -1);
 
   return (
-    <Paper sx={{ padding: 3, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          {isBaseTemplate ? 'Base Template Properties' : 'Segment Properties'}
-        </Typography>
-        <InstanceCounterBadge templateId={template.id} currentLineage={focusedLineage} />
+    <Paper sx={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ padding: 3 }}>
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            {isBaseTemplate ? 'Base Template Properties' : 'Segment Properties'}
+          </Typography>
+          <InstanceCounterBadge templateId={template.id} currentLineage={focusedLineage} />
+        </Box>
+
+        <Divider sx={{ marginTop: 3, marginBottom: 3 }} />
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <TemplateProperties template={template} />
+
+          {!isBaseTemplate && (
+            <SegmentProperties focusedItem={focusedItem} parentLineage={parentLineage} />
+          )}
+
+          {template.templateType === 'busy' && (
+            <BusyProperties template={template as BusyTemplate} />
+          )}
+        </Box>
+
+        <Divider sx={{ marginTop: 3, marginBottom: 3 }} />
+
+        <ActionButtons template={template} focusedItem={focusedItem} parentLineage={parentLineage} />
       </Box>
-
-      <Divider />
-
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <TemplateProperties template={template} />
-
-        {!isBaseTemplate && (
-          <SegmentProperties focusedItem={focusedItem} parentLineage={parentLineage} />
-        )}
-
-        {template.templateType === 'busy' && (
-          <BusyProperties template={template as BusyTemplate} />
-        )}
-      </Box>
-
-      <Divider />
-
-      <ActionButtons template={template} focusedItem={focusedItem} parentLineage={parentLineage} />
     </Paper>
   );
 }

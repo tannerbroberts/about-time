@@ -32,6 +32,8 @@ export interface BuildState {
   isSegmentAddModalOpen: boolean;
   isAddingSegment: boolean;
   selectedRegion: { start: number; end: number } | null;
+  isSegmentAddOverlayOpen: boolean;
+  overlayPosition: { x: number; y: number } | null;
 }
 
 export interface BuildActions {
@@ -61,6 +63,8 @@ export interface BuildActions {
   openSegmentAddModal: (region: { start: number; end: number }) => void;
   closeSegmentAddModal: () => void;
   toggleAddSegmentMode: () => void;
+  openSegmentAddOverlay: (region: { start: number; end: number }, position: { x: number; y: number }) => void;
+  closeSegmentAddOverlay: () => void;
 }
 
 export type BuildStore = BuildState & BuildActions;
@@ -80,6 +84,8 @@ const defaultState: BuildState = {
   isSegmentAddModalOpen: false,
   isAddingSegment: false,
   selectedRegion: null,
+  isSegmentAddOverlayOpen: false,
+  overlayPosition: null,
 };
 
 export const useBuildStore = create<BuildStore>((set) => ({
@@ -208,6 +214,21 @@ export const useBuildStore = create<BuildStore>((set) => ({
       isAddingSegment: !state.isAddingSegment,
       selectedRegion: state.isAddingSegment ? null : state.selectedRegion,
     }));
+  },
+
+  openSegmentAddOverlay: (region, position): void => {
+    set({
+      isSegmentAddOverlayOpen: true,
+      selectedRegion: region,
+      overlayPosition: position,
+    });
+  },
+
+  closeSegmentAddOverlay: (): void => {
+    set({
+      isSegmentAddOverlayOpen: false,
+      overlayPosition: null,
+    });
   },
 }));
 

@@ -17,7 +17,6 @@ export function EmptyState({ onChooseTemplate }: EmptyStateProps): React.ReactEl
         justifyContent: 'center',
         height: '100%',
         gap: 3,
-        padding: 4,
       }}
     >
       <Box

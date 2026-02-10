@@ -17,11 +17,13 @@ export function TemplateProperties({ template }: TemplatePropertiesProps): React
     Math.round(template.estimatedDuration / 60000),
   );
 
-  // Sync local state when template changes from external updates
+  // Only sync local state when switching to a different template
+  // This prevents resetting the form while the user is actively editing
   React.useEffect(() => {
     setName(template.intent || '');
     setDurationMinutes(Math.round(template.estimatedDuration / 60000));
-  }, [template.id, template.intent, template.estimatedDuration]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template.id]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newName = e.target.value;

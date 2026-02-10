@@ -7,6 +7,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { HierarchyViewer } from './HierarchyViewer';
 import { PropertiesPanel } from './PropertiesPanel';
 import { SegmentAddModal } from './SegmentAddModal';
+import { SegmentAddOverlay } from './SegmentAddOverlay';
 
 export function TemplateEditor(): React.ReactElement {
   const isTemplateEditorOpen = useBuildStore((state) => state.isTemplateEditorOpen);
@@ -19,7 +20,7 @@ export function TemplateEditor(): React.ReactElement {
     <>
       <Box
         sx={{
-          height: '100vh',
+          height: 'calc(100vh - 56px)', // Account for bottom navigation (56px)
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -51,6 +52,7 @@ export function TemplateEditor(): React.ReactElement {
       </Box>
 
       <SegmentAddModal />
+      <SegmentAddOverlay />
     </>
   );
 }

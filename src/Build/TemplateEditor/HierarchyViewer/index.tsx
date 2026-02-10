@@ -33,7 +33,7 @@ export function HierarchyViewer(): React.ReactElement {
   const innerWidth = `${97 * zoomLevel}%`;
 
   return (
-    <Stack spacing={2} sx={{ height: '100%', padding: 2 }}>
+    <Stack spacing={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <Paper sx={{ padding: 2, display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
         <ZoomControls />
         <DepthControls />
@@ -46,6 +46,8 @@ export function HierarchyViewer(): React.ReactElement {
           overflowX: 'auto',
           overflowY: 'hidden',
           padding: 2,
+          paddingBottom: '50px', // Space for ruler at bottom
+          minHeight: 0,
         }}
       >
         <Box
@@ -54,7 +56,6 @@ export function HierarchyViewer(): React.ReactElement {
             width: innerWidth,
             minWidth: '100%',
             height: '100%',
-            paddingBottom: '40px', // Space for ruler
           }}
         >
           <Segment
@@ -63,8 +64,22 @@ export function HierarchyViewer(): React.ReactElement {
             depth={0}
             lineage={[{ templateId: baseTemplate.id }]}
             baseDuration={baseTemplate.estimatedDuration}
+            cumulativeOffset={0}
           />
+        </Box>
 
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '40px',
+            backgroundColor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
           <Ruler duration={baseTemplate.estimatedDuration} />
         </Box>
       </Paper>

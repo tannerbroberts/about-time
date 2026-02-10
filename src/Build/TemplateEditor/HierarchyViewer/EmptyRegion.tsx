@@ -9,17 +9,18 @@ export interface EmptyRegionProps {
   end: number;
   baseDuration: number;
   depth: number;
+  cumulativeOffset: number;
 }
 
-export function EmptyRegion({ start, end, baseDuration, depth }: EmptyRegionProps): React.ReactElement {
-  const openSegmentAddModal = useBuildStore((state) => state.openSegmentAddModal);
+export function EmptyRegion({ start, end, baseDuration, depth, cumulativeOffset }: EmptyRegionProps): React.ReactElement {
+  const openSegmentAddOverlay = useBuildStore((state) => state.openSegmentAddOverlay);
 
-  const leftPercent = calculateSegmentPosition(start, baseDuration);
+  const leftPercent = calculateSegmentPosition(cumulativeOffset + start, baseDuration);
   const widthPercent = calculateSegmentWidth(end - start, baseDuration);
 
   const handleClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    openSegmentAddModal({ start, end });
+    openSegmentAddOverlay({ start, end }, { x: e.clientX, y: e.clientY });
   };
 
   return (
