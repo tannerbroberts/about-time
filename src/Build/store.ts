@@ -34,6 +34,9 @@ export interface BuildState {
   selectedRegion: { start: number; end: number } | null;
   isSegmentAddOverlayOpen: boolean;
   overlayPosition: { x: number; y: number } | null;
+
+  // Base template selection state
+  isBaseTemplateSelectionOpen: boolean;
 }
 
 export interface BuildActions {
@@ -65,6 +68,11 @@ export interface BuildActions {
   toggleAddSegmentMode: () => void;
   openSegmentAddOverlay: (region: { start: number; end: number }, position: { x: number; y: number }) => void;
   closeSegmentAddOverlay: () => void;
+
+  // Base template selection actions
+  openBaseTemplateSelection: () => void;
+  closeBaseTemplateSelection: () => void;
+  selectBaseTemplate: (templateId: string) => void;
 }
 
 export type BuildStore = BuildState & BuildActions;
@@ -86,6 +94,7 @@ const defaultState: BuildState = {
   selectedRegion: null,
   isSegmentAddOverlayOpen: false,
   overlayPosition: null,
+  isBaseTemplateSelectionOpen: false,
 };
 
 export const useBuildStore = create<BuildStore>((set) => ({
@@ -228,6 +237,23 @@ export const useBuildStore = create<BuildStore>((set) => ({
     set({
       isSegmentAddOverlayOpen: false,
       overlayPosition: null,
+    });
+  },
+
+  // Base template selection actions
+  openBaseTemplateSelection: (): void => {
+    set({ isBaseTemplateSelectionOpen: true });
+  },
+
+  closeBaseTemplateSelection: (): void => {
+    set({ isBaseTemplateSelectionOpen: false });
+  },
+
+  selectBaseTemplate: (templateId): void => {
+    set({
+      selectedBaseTemplateId: templateId,
+      focusedLineage: [{ templateId }],
+      isBaseTemplateSelectionOpen: false,
     });
   },
 }));

@@ -15,12 +15,14 @@ import React from 'react';
 
 interface TemplateCardProps {
   template: Template;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onCompose?: (id: string) => void;
+  selectionMode?: boolean;
+  onSelect?: (id: string) => void;
 }
 
-export function TemplateCard({ template, onEdit, onDelete, onCompose }: TemplateCardProps): React.ReactElement {
+export function TemplateCard({ template, onEdit, onDelete, onCompose, selectionMode, onSelect }: TemplateCardProps): React.ReactElement {
   const durationMinutes = Math.round(template.estimatedDuration / 60000);
   const templateType = template.templateType === 'busy' ? 'Busy' : 'Lane';
   const chipColor = template.templateType === 'busy' ? 'primary' : 'success';
@@ -31,8 +33,28 @@ export function TemplateCard({ template, onEdit, onDelete, onCompose }: Template
   const consumeCount = busyTemplate.willConsume ? Object.keys(busyTemplate.willConsume).length : 0;
   const totalVariables = produceCount + consumeCount;
 
+  const handleCardClick = (): void => {
+    if (selectionMode && onSelect) {
+      onSelect(template.id);
+    }
+  };
+
   return (
-    <Card sx={{ marginBottom: 2 }}>
+    <Card
+      sx={{
+        marginBottom: 2,
+        cursor: selectionMode ? 'pointer' : 'default',
+        transition: 'box-shadow 0.1s linear, border-color 0.1s linear',
+        '&:hover': selectionMode ? {
+          boxShadow: 4,
+          borderColor: 'primary.main',
+        } : {},
+        '&:active': selectionMode ? {
+          boxShadow: 2,
+        } : {},
+      }}
+      onClick={handleCardClick}
+    >
       <CardContent>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" marginBottom={1}>
           <Typography variant="h6" component="div">
@@ -53,40 +75,46 @@ export function TemplateCard({ template, onEdit, onDelete, onCompose }: Template
           </Box>
         )}
       </CardContent>
-      <CardActions sx={{ justifyContent: 'flex-end', padding: 2, paddingTop: 0 }}>
-        {onCompose && (
-          <Tooltip title="Open in Editor">
-            <IconButton
-              size="small"
-              color="secondary"
-              onClick={(): void => onCompose(template.id)}
-              aria-label="Open template in editor"
-            >
-              <AccountTreeIcon />
-            </IconButton>
-          </Tooltip>
-        )}
-        <Tooltip title="Edit Properties">
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={(): void => onEdit(template.id)}
-            aria-label="Edit template"
-          >
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Delete">
-          <IconButton
-            size="small"
-            color="error"
-            onClick={(): void => onDelete(template.id)}
-            aria-label="Delete template"
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      </CardActions>
+      {!selectionMode && (
+        <CardActions sx={{ justifyContent: 'flex-end', padding: 2, paddingTop: 0 }}>
+          {onCompose && (
+            <Tooltip title="Open in Editor">
+              <IconButton
+                size="small"
+                color="secondary"
+                onClick={(): void => onCompose(template.id)}
+                aria-label="Open template in editor"
+              >
+                <AccountTreeIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {onEdit && (
+            <Tooltip title="Edit Properties">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={(): void => onEdit(template.id)}
+                aria-label="Edit template"
+              >
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {onDelete && (
+            <Tooltip title="Delete">
+              <IconButton
+                size="small"
+                color="error"
+                onClick={(): void => onDelete(template.id)}
+                aria-label="Delete template"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </CardActions>
+      )}
     </Card>
   );
 }

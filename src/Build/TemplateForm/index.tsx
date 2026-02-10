@@ -42,6 +42,9 @@ export function TemplateForm(): React.ReactElement {
   const [willConsume, setWillConsume] = React.useState<Record<string, number>>({});
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  // Ref for focusing name input
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
+
   // Reset form when dialog opens/closes or when editing template changes
   React.useEffect(() => {
     if (isTemplateFormOpen && editingTemplate) {
@@ -65,6 +68,14 @@ export function TemplateForm(): React.ReactElement {
     }
     setErrors({});
   }, [isTemplateFormOpen, editingTemplate]);
+
+  const handleTemplateTypeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setTemplateType(e.target.value as 'busy' | 'lane');
+    // Focus name input after selecting template type
+    setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 0);
+  };
 
   const handleClose = (): void => {
     closeTemplateForm();
@@ -138,7 +149,7 @@ export function TemplateForm(): React.ReactElement {
         </Toolbar>
       </AppBar>
 
-      <DialogContent>
+      <DialogContent sx={{ paddingBottom: '80px' }}>
         <Stack spacing={4} sx={{ maxWidth: 600, margin: '0 auto', paddingTop: 2 }}>
           {!editingTemplateId && (
             <FormControl>
@@ -146,7 +157,7 @@ export function TemplateForm(): React.ReactElement {
               <RadioGroup
                 aria-labelledby="template-type-label"
                 value={templateType}
-                onChange={(e): void => setTemplateType(e.target.value as 'busy' | 'lane')}
+                onChange={handleTemplateTypeChange}
               >
                 <FormControlLabel
                   value="busy"
@@ -167,6 +178,8 @@ export function TemplateForm(): React.ReactElement {
             durationMinutes={durationMinutes}
             errors={errors}
             onChange={handleFieldChange}
+            onSubmit={handleSave}
+            nameInputRef={nameInputRef}
           />
 
           {templateType === 'busy' && (
@@ -192,7 +205,17 @@ export function TemplateForm(): React.ReactElement {
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ padding: 2 }}>
+      <DialogActions
+        sx={{
+          padding: 2,
+          position: 'sticky',
+          bottom: 0,
+          backgroundColor: 'background.paper',
+          borderTop: 1,
+          borderColor: 'divider',
+          zIndex: 1,
+        }}
+      >
         <Button onClick={handleClose}>Cancel</Button>
         <Button onClick={handleSave} variant="contained">
           {editingTemplateId ? 'Save Changes' : 'Create'}

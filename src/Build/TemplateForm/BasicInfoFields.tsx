@@ -7,9 +7,17 @@ interface BasicInfoFieldsProps {
   durationMinutes: number;
   errors: Record<string, string>;
   onChange: (field: string, value: string | number) => void;
+  onSubmit?: () => void;
+  nameInputRef?: React.RefObject<HTMLInputElement>;
 }
 
-export function BasicInfoFields({ name, durationMinutes, errors, onChange }: BasicInfoFieldsProps): React.ReactElement {
+export function BasicInfoFields({ name, durationMinutes, errors, onChange, onSubmit, nameInputRef }: BasicInfoFieldsProps): React.ReactElement {
+  const handleDurationKeyPress = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key === 'Enter' && onSubmit) {
+      onSubmit();
+    }
+  };
+
   return (
     <Stack spacing={2}>
       <TextField
@@ -20,12 +28,14 @@ export function BasicInfoFields({ name, durationMinutes, errors, onChange }: Bas
         helperText={errors.name}
         required
         fullWidth
+        inputRef={nameInputRef}
       />
       <TextField
         label="Duration (minutes)"
         type="number"
         value={durationMinutes || ''}
         onChange={(e): void => onChange('durationMinutes', parseFloat(e.target.value) || 0)}
+        onKeyPress={handleDurationKeyPress}
         error={Boolean(errors.durationMinutes)}
         helperText={errors.durationMinutes}
         required
