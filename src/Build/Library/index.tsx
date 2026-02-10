@@ -4,28 +4,35 @@ import Container from '@mui/material/Container';
 import Fab from '@mui/material/Fab';
 import React from 'react';
 
-import { useBuildContext } from '../useContext';
+import { useBuildStore } from '../store';
 
 import { EmptyState } from './EmptyState';
 import { TemplateCard } from './TemplateCard';
 
 export function Library(): React.ReactElement {
-  const { state, dispatch } = useBuildContext();
+  const templates = useBuildStore((state) => state.templates);
+  const openTemplateForm = useBuildStore((state) => state.openTemplateForm);
+  const deleteTemplate = useBuildStore((state) => state.deleteTemplate);
+  const openTemplateEditor = useBuildStore((state) => state.openTemplateEditor);
 
-  const templateArray = Object.values(state.templates);
+  const templateArray = Object.values(templates);
   const hasTemplates = templateArray.length > 0;
 
   const handleCreateClick = (): void => {
-    dispatch({ type: 'OPEN_TEMPLATE_FORM' });
+    openTemplateForm();
   };
 
   const handleEditClick = (templateId: string): void => {
-    dispatch({ type: 'OPEN_TEMPLATE_FORM', templateId });
+    openTemplateForm(templateId);
+  };
+
+  const handleComposeClick = (templateId: string): void => {
+    openTemplateEditor(templateId);
   };
 
   const handleDeleteClick = (templateId: string): void => {
     if (window.confirm('Are you sure you want to delete this template?')) {
-      dispatch({ type: 'DELETE_TEMPLATE', id: templateId });
+      deleteTemplate(templateId);
     }
   };
 
@@ -41,6 +48,7 @@ export function Library(): React.ReactElement {
               template={template}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
+              onCompose={handleComposeClick}
             />
           ))}
         </Box>

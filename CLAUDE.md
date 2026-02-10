@@ -34,7 +34,7 @@ This is a React + TypeScript application using Vite. The codebase enforces stric
 
 ### State Management Pattern
 
-All components with state follow this folder structure pattern (see `App/` as reference):
+**Standard Pattern**: Most components with state follow this folder structure pattern (see `App/` as reference):
 
 ```
 ComponentName/
@@ -51,3 +51,26 @@ ComponentName/
 - `Provider.tsx`: Exports the Provider as a named export (e.g., `export const ComponentNameProvider = Context.Provider`)
 - `useContext.ts`: Provides type-safe access to context with error handling if used outside provider. Named with component prefix (e.g., `useAppContext` for App component)
 - `index.tsx`: The component itself, which calls `useReducer(reducer, DefaultState)` and wraps children in the Provider
+
+**Exception - Build Feature**: The Build feature uses **Zustand** instead of the standard useReducer+Context pattern due to the need for fine-grained reactivity in the recursive template visualization. This allows individual segment components to subscribe only to their specific template data, preventing unnecessary re-renders in the complex nested hierarchy.
+
+**Rationale for Zustand in Build:**
+- Recursive visualization can render 100+ nested segment components
+- With Context+useReducer, any template change re-renders the entire tree
+- Zustand enables fine-grained selectors: `useBuildStore(state => state.templates[templateId])`
+- Only the specific segment that changed re-renders, not siblings or ancestors
+- Performance gain is critical for interactive 2D hierarchy editing
+
+**Usage pattern:**
+```typescript
+// ❌ Bad: Subscribes to entire state, re-renders on any change
+const state = useBuildStore();
+
+// ✅ Good: Subscribes only to specific template
+const template = useBuildStore(state => state.templates[templateId]);
+
+// ✅ Good: Subscribes to specific action
+const updateTemplate = useBuildStore(state => state.updateTemplate);
+```
+
+See PRD-Build.md for complete Zustand store specification.

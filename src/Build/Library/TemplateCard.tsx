@@ -1,25 +1,35 @@
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import type { Template } from '@tannerbroberts/about-time-core';
+import type { BusyTemplate, Template } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 interface TemplateCardProps {
   template: Template;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onCompose?: (id: string) => void;
 }
 
-export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps): React.ReactElement {
+export function TemplateCard({ template, onEdit, onDelete, onCompose }: TemplateCardProps): React.ReactElement {
   const durationMinutes = Math.round(template.estimatedDuration / 60000);
-  const templateType = template.type === 'BusyTemplate' ? 'Busy' : 'Lane';
-  const chipColor = template.type === 'BusyTemplate' ? 'primary' : 'success';
+  const templateType = template.templateType === 'busy' ? 'Busy' : 'Lane';
+  const chipColor = template.templateType === 'busy' ? 'primary' : 'success';
+
+  // Count variables for BusyTemplate
+  const busyTemplate = template as BusyTemplate;
+  const produceCount = busyTemplate.willProduce ? Object.keys(busyTemplate.willProduce).length : 0;
+  const consumeCount = busyTemplate.willConsume ? Object.keys(busyTemplate.willConsume).length : 0;
+  const totalVariables = produceCount + consumeCount;
 
   return (
     <Card sx={{ marginBottom: 2 }}>
@@ -33,24 +43,49 @@ export function TemplateCard({ template, onEdit, onDelete }: TemplateCardProps):
         <Typography variant="body2" color="text.secondary">
           Duration: {durationMinutes} min
         </Typography>
+        {totalVariables > 0 && (
+          <Box sx={{ marginTop: 1 }}>
+            <Typography variant="caption" color="text.secondary">
+              {produceCount > 0 && `Produces: ${produceCount} variable${produceCount > 1 ? 's' : ''}`}
+              {produceCount > 0 && consumeCount > 0 && ' • '}
+              {consumeCount > 0 && `Consumes: ${consumeCount} variable${consumeCount > 1 ? 's' : ''}`}
+            </Typography>
+          </Box>
+        )}
       </CardContent>
       <CardActions sx={{ justifyContent: 'flex-end', padding: 2, paddingTop: 0 }}>
-        <IconButton
-          size="small"
-          color="primary"
-          onClick={(): void => onEdit(template.id)}
-          aria-label="Edit template"
-        >
-          <EditIcon />
-        </IconButton>
-        <IconButton
-          size="small"
-          color="error"
-          onClick={(): void => onDelete(template.id)}
-          aria-label="Delete template"
-        >
-          <DeleteIcon />
-        </IconButton>
+        {onCompose && (
+          <Tooltip title="Open in Editor">
+            <IconButton
+              size="small"
+              color="secondary"
+              onClick={(): void => onCompose(template.id)}
+              aria-label="Open template in editor"
+            >
+              <AccountTreeIcon />
+            </IconButton>
+          </Tooltip>
+        )}
+        <Tooltip title="Edit Properties">
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(): void => onEdit(template.id)}
+            aria-label="Edit template"
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton
+            size="small"
+            color="error"
+            onClick={(): void => onDelete(template.id)}
+            aria-label="Delete template"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       </CardActions>
     </Card>
   );

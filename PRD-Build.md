@@ -230,6 +230,32 @@ Templates are uniquely identified by breadcrumb path:
 - Enables editing specific instances in recursive expansion
 - Last breadcrumb element becomes focused
 
+**Lineage Path Data Structure**:
+```typescript
+// Stored in editor.focusPath
+type FocusPath = FocusPathItem[];
+
+interface FocusPathItem {
+  templateId: string;
+  offset?: number; // undefined for base template, number for segments
+}
+
+// Example focus path:
+[
+  { templateId: 'A' }, // Base template (no offset)
+  { templateId: 'B', offset: 120000 }, // First segment
+  { templateId: 'C', offset: 60000 },  // Nested segment
+  { templateId: 'E', offset: 0 }       // Focused element
+]
+```
+
+**React Key Generation**:
+- Keys use lineage path converted to string format
+- Format: `"A→B[120000]→C[60000]→E[0]"`
+- Ensures stable identity for React reconciliation
+- Each visual instance has unique key even if same template appears multiple times
+- Prevents incorrect DOM reuse when segment order changes
+
 ### Adding Segments Workflow
 
 1. **Focus**: Select target template (base or segment)
@@ -258,6 +284,12 @@ Editing template D shows: "showing 5 of 50 total"
 - 5 D instances visible in current recursive expansion
 - 50 total segments across all templates reference D
 - All 50 will update when changes are saved
+
+**Re-rendering Behavior**:
+- There is NO separate "update the rest" operation
+- Single source of truth: The template definition in the store
+- Changes to template D automatically update ALL visible segments referencing D via Zustand subscriptions
+- React reconciliation handles efficient DOM updates using lineage path keys
 
 ### Template Library Integration
 
@@ -382,39 +414,123 @@ Editing template D shows: "showing 5 of 50 total"
 - Friendly, approachable messaging
 - Material Design icons throughout
 
+### Technical Rendering Specification
+
+**Recursive Component Architecture**:
+- Single `<Segment>` component renders recursively with React.memo optimization
+- Each instance subscribes to `state.templates.get(templateId)` via Zustand selector
+- Component renders child segments recursively until depth clamp reached
+- React keys use lineage path strings: `"A→B[120000]→C[60000]→E[0]"`
+
+**Zoom & Positioning System**:
+- **Default zoom**: Base template fills 97% of viewport width (no horizontal scrollbar)
+- **User controls**: Pinch/slider to zoom (max 3X zoom in, no zoom out allowed)
+- **Offset-to-pixels conversion**: `(offset_ms / baseDuration_ms) * (viewportWidth * 0.97 * zoomLevel)`
+- **Horizontal scroll**: Container scrolls when zoomed beyond viewport width
+- **Vertical positioning**: Segments stack by depth level (bottom to top)
+
+**Depth Clamping**:
+- Global `maxDepth` setting in editor state
+- User adjusts via UI control (e.g., slider)
+- Segments beyond clamp show "+X additional levels" indicator
+- Prevents overwhelming vertical space with deep nesting
+
+**Empty Region Rendering**:
+- Dashed outline regions shown ONLY when `isAddingSegment === true`
+- Activated by "Add Segment" button in properties panel
+- Calculate time gaps between existing segments in focused template
+- Click dashed region → opens filtered template library modal
+
+**Empty State Handling**:
+1. **No templates in library** (`templates.size === 0`):
+   - Full-screen empty state in Build tab
+   - Center-aligned illustration + message: "Build your first meal template"
+   - Prominent "Create Template" button
+   - First-time user onboarding experience
+
+2. **No base template selected** (`templates.size > 0` but `focusPath === null`):
+   - Empty state in hierarchy viewer region only
+   - Illustration + message: "Select a template to edit"
+   - Button to open template library modal
+   - Properties panel hidden or shows placeholder
+
+**State Flow**: Empty library → Create first template → No selection state → Select template → Editor active
+
 ## State Management
 
-Following the codebase's established pattern:
+**IMPORTANT**: Build uses Zustand instead of the standard useReducer+Context pattern. This is an exception to the codebase pattern due to the need for fine-grained reactivity in the recursive template visualization.
 
-```
-Build/
-├── index.tsx          # Component with useReducer
-├── Context.ts         # BuildContextValue type
-├── Provider.tsx       # BuildProvider export
-├── reducer.ts         # State, actions, reducer
-└── useContext.ts      # useBuildContext hook
-```
-
-### State Structure
+### Zustand Store Structure
 
 ```typescript
 interface BuildState {
-  templates: TemplateMap;
-  selectedTemplateId: string | null;
+  // Template data (single source of truth)
+  templates: TemplateMap; // All templates loaded in memory with stable reference IDs
+
+  // Library view state
   searchQuery: string;
   sortBy: 'recent' | 'name' | 'calories' | 'protein';
+  savedFilters: Record<string, FilterConfig>;
+  activeFilterName: string | null;
+
+  // Editor state
+  editor: {
+    focusPath: FocusPathItem[] | null; // Lineage-based selection (null = no base selected)
+    maxDepth: number; // Global depth clamp for vertical space management
+    zoomLevel: number; // User-controlled zoom (default: 1.0 = 97% width, max: 3.0, min: 1.0)
+    isAddingSegment: boolean; // Shows empty region dashed outlines
+  };
+
+  // UI state
   isCreating: boolean;
+  isLibraryModalOpen: boolean;
 }
 
-type BuildAction =
-  | { type: 'CREATE_TEMPLATE'; template: BusyTemplate | LaneTemplate }
-  | { type: 'UPDATE_TEMPLATE'; id: string; updates: Partial<BusyTemplate | LaneTemplate> }
-  | { type: 'DELETE_TEMPLATE'; id: string }
-  | { type: 'SELECT_TEMPLATE'; id: string | null }
-  | { type: 'SET_SEARCH_QUERY'; query: string }
-  | { type: 'SET_SORT_BY'; sortBy: BuildState['sortBy'] }
-  | { type: 'TOGGLE_CREATE_MODE' };
+// Lineage path for breadcrumb-based selection
+interface FocusPathItem {
+  templateId: string;
+  offset?: number; // undefined for base template, number for segments
+}
+
+// Actions (Zustand setter functions)
+interface BuildActions {
+  // Template CRUD (uses @tannerbroberts/about-time-core functions)
+  createTemplate: (template: BusyTemplate | LaneTemplate) => void;
+  updateTemplate: (id: string, updates: Partial<BusyTemplate | LaneTemplate>) => void;
+  deleteTemplate: (id: string) => void;
+
+  // Editor actions
+  setFocusPath: (path: FocusPathItem[] | null) => void;
+  setMaxDepth: (depth: number) => void;
+  setZoomLevel: (zoom: number) => void;
+  toggleAddSegmentMode: () => void;
+
+  // Library actions
+  setSearchQuery: (query: string) => void;
+  setSortBy: (sortBy: BuildState['sortBy']) => void;
+  openLibraryModal: () => void;
+  closeLibraryModal: () => void;
+}
 ```
+
+### Component Subscription Pattern
+
+**Segment components use fine-grained selectors** to minimize re-renders:
+
+```typescript
+// Each segment subscribes only to its specific template
+const Segment: React.FC<SegmentProps> = React.memo(({ templateId, depth, offset }) => {
+  const template = useBuildStore(state => state.templates.get(templateId));
+  // Only re-renders when THIS template changes
+});
+```
+
+### Re-rendering Behavior
+
+- **Single source of truth**: Template changes in the store automatically propagate to all visible segments
+- **All visible references update**: When template D is modified, all visible segments referencing D re-render via Zustand subscriptions
+- **No "batch update" operation**: The store mutation IS the update; React handles re-rendering subscribed components
+- **React.memo optimization**: Unchanged segments in the tree don't re-render even if siblings do
 
 ## Data Model
 
