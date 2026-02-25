@@ -8,6 +8,23 @@ The Build feature enables users to create and manage reusable meal templates wit
 
 Create reusable meal templates with complete nutritional profiles that can be scheduled and tracked.
 
+## Happy Path Integration
+
+The Build feature is the foundation of the About Time user journey (see [HAPPY-PATH.md](./HAPPY-PATH.md)). It enables users to:
+
+1. **Record recipes found online**: Capture food variables consumed (ingredients) and produced (nutrition) from any source
+2. **Build personal taxonomy**: Create custom variable names and organization systems that match their goals and lifestyle
+3. **Compose complex templates**: Build meal prep sessions and routines using composition and nested templates
+4. **Access nested variables**: View aggregate nutrition across all segments when planning meal prep or daily schedules
+5. **Apply layout functions**: Use helper buttons to efficiently organize segments with about-time-core layout operations
+
+**Key Features Supporting Happy Path**:
+- User-defined variable names (support for any taxonomy)
+- Nested variable summaries (see totals across all segments)
+- Layout helper functions (Pack, Distribute, Eating Window, etc.)
+- Template composition (LaneTemplates containing BusyTemplates)
+- Hierarchy viewer with recursive expansion
+
 ## User Actions
 
 - Create BusyTemplates for individual meals/snacks
@@ -211,6 +228,26 @@ Editable properties:
 - **BusyTemplate**: variable names and quantities (willProduce, willConsume)
 - **LaneTemplate**: layout rules
 - **Inheritance**: color and background pattern (inherited from base layer)
+- **Variables Section**:
+  - **Template Variables**: Variables declared directly in the focused template
+    - Editable for BusyTemplates (willProduce, willConsume)
+    - Display-only for LaneTemplates (no direct variables)
+  - **Nested Variables Summary**: Aggregated variables from all child segments
+    - Recursive calculation across all nested segments
+    - Read-only display (e.g., "Total: 180g protein across 3 segments")
+    - Grouped by variable name with units
+    - Updates automatically when segments change
+    - Shows both willProduce and willConsume totals separately
+- **Layout Helper Functions** (for LaneTemplates only):
+  - Visual buttons to apply about-time-core layout functions:
+    - **Pack Tightly**: `applyLaneLayout(laneId, templates, { justifyContent: 'flex-start', gap: 0 })`
+    - **Distribute Evenly**: `applyLaneLayout(laneId, templates, { justifyContent: 'space-evenly' })`
+    - **Add Gap**: Opens gap size input, then applies with specified gap
+    - **Eating Window**: Opens start/end time inputs for intermittent fasting layout
+    - **Fit to Content**: `fitLaneDurationToLast(laneId, templates)`
+  - All functions update the focused template immediately
+  - Changes propagate to all visible instances via Zustand
+  - Visual feedback shows layout application in real-time
 - **Actions**:
   - Add segment (see workflow below)
   - Delete segment (only visible for segments, NOT base templates)
@@ -267,6 +304,178 @@ interface FocusPathItem {
    - Template type compatibility
 6. **Placement**: New segment added with calculated offset
 7. **Update**: All instances of focused template update to show new segment
+
+### Nested Variable Summaries
+
+**Purpose**: While building a template, users need visibility into the aggregate nutritional values produced across all nested segments, not just the variables declared in the template itself.
+
+**Calculation Method**:
+- Recursively traverse all segments in the focused template
+- For each segment, lookup the referenced template
+- If template is a BusyTemplate:
+  - Add its willProduce variables to totals
+  - Add its willConsume variables to totals
+- If template is a LaneTemplate:
+  - Recursively process its segments
+- Continue until all leaf BusyTemplates are accounted for
+
+**Display Format**:
+```
+Variables (This Template)
+  calories: 0 kcal         (no direct variables)
+  protein_g: 0 g
+  carbs_g: 0 g
+
+Nested Variables Summary
+  willProduce:
+    calories: 1,350 kcal   (450 × 3 segments)
+    protein_g: 120 g       (40 × 3 segments)
+    carbs_g: 165 g         (55 × 3 segments)
+    fats_g: 36 g           (12 × 3 segments)
+    fiber_g: 24 g          (8 × 3 segments)
+
+  willConsume:
+    prep_time_ms: 1,800,000 ms (30 minutes total)
+    cost_cents: 1,050       ($10.50 total)
+    greek_yogurt_g: 600 g   (200 × 3 segments)
+    mixed_berries_g: 300 g  (100 × 3 segments)
+```
+
+**Use Cases**:
+1. **Meal Prep Planning**: See total protein produced across all batches in "Sunday Meal Prep Session"
+2. **Daily Schedule**: View aggregate calories consumed across all meals in "Monday Schedule"
+3. **Shopping Lists**: Sum all ingredient quantities from willConsume variables
+4. **Cost Analysis**: Total cost across all segments in a meal prep session
+
+**Technical Implementation**:
+```typescript
+function calculateNestedVariables(
+  templateId: string,
+  templates: TemplateMap
+): { willProduce: Record<string, number>; willConsume: Record<string, number> } {
+  const template = templates.get(templateId);
+  if (!template) return { willProduce: {}, willConsume: {} };
+
+  const totals = { willProduce: {}, willConsume: {} };
+
+  // If BusyTemplate, return its variables directly
+  if (template.type === 'busy') {
+    return {
+      willProduce: { ...template.willProduce },
+      willConsume: { ...template.willConsume }
+    };
+  }
+
+  // If LaneTemplate, recursively sum segment variables
+  if (template.type === 'lane') {
+    for (const segment of template.segments) {
+      const segmentTotals = calculateNestedVariables(segment.busyId, templates);
+
+      // Merge willProduce
+      for (const [key, value] of Object.entries(segmentTotals.willProduce)) {
+        totals.willProduce[key] = (totals.willProduce[key] || 0) + value;
+      }
+
+      // Merge willConsume
+      for (const [key, value] of Object.entries(segmentTotals.willConsume)) {
+        totals.willConsume[key] = (totals.willConsume[key] || 0) + value;
+      }
+    }
+  }
+
+  return totals;
+}
+```
+
+### Layout Helper Functions
+
+**Purpose**: Provide one-click access to common layout operations from @tannerbroberts/about-time-core without requiring manual function calls or code editing.
+
+**Available Functions**:
+
+1. **Pack Tightly**
+   - **Visual Icon**: Squares touching edge-to-edge
+   - **Effect**: All segments start immediately after the previous one (gap = 0)
+   - **Code**: `applyLaneLayout(laneId, templates, { justifyContent: 'flex-start', gap: 0 })`
+   - **Use Case**: Back-to-back tasks with no breaks (cooking multiple dishes simultaneously)
+
+2. **Distribute Evenly**
+   - **Visual Icon**: Squares with equal spacing between them
+   - **Effect**: Segments spread evenly across lane duration with equal gaps
+   - **Code**: `applyLaneLayout(laneId, templates, { justifyContent: 'space-evenly' })`
+   - **Use Case**: Meals spread throughout the day with balanced timing
+
+3. **Add Gap**
+   - **Visual Icon**: Two squares with adjustable gap between
+   - **UI Flow**:
+     1. Click button → opens gap size input (minutes)
+     2. User enters gap size (e.g., "30 minutes")
+     3. Applies layout with specified gap
+   - **Code**: `applyLaneLayout(laneId, templates, { justifyContent: 'flex-start', gap: gapMs })`
+   - **Use Case**: Enforce rest periods between meals or prep tasks
+
+4. **Eating Window (Intermittent Fasting)**
+   - **Visual Icon**: Timeline with start/end markers
+   - **UI Flow**:
+     1. Click button → opens start/end time inputs
+     2. User enters window (e.g., "12:00 PM - 8:00 PM")
+     3. Applies layout with start/end offsets
+   - **Code**: `applyLaneLayout(laneId, templates, { justifyContent: 'space-between', startOffset: startMs, endOffset: endMs })`
+   - **Use Case**: 16:8 intermittent fasting, all meals within 8-hour window
+
+5. **Fit to Content**
+   - **Visual Icon**: Container shrinking to fit contents
+   - **Effect**: Sets lane duration to end exactly when last segment completes
+   - **Code**: `fitLaneDurationToLast(laneId, templates)`
+   - **Use Case**: Auto-size "Morning Routine" to actual time needed
+
+6. **Custom Layout** (Advanced)
+   - **Visual Icon**: Gear/settings icon
+   - **UI Flow**: Opens advanced panel with all applyLaneLayout options
+   - **Options**:
+     - `justifyContent`: dropdown (flex-start, center, flex-end, space-between, space-evenly)
+     - `gap`: number input (milliseconds)
+     - `startOffset`: number input (milliseconds)
+     - `endOffset`: number input (milliseconds)
+   - **Use Case**: Power users with specific layout requirements
+
+**Visual Feedback**:
+- Clicking a layout button shows brief loading indicator
+- Hierarchy viewer updates immediately with new segment positions
+- Success toast: "Layout applied: Distribute Evenly"
+- Undo button appears briefly (future enhancement)
+
+**Keyboard Shortcuts** (future enhancement):
+- `Cmd/Ctrl + 1`: Pack Tightly
+- `Cmd/Ctrl + 2`: Distribute Evenly
+- `Cmd/Ctrl + 3`: Add Gap (opens input)
+- `Cmd/Ctrl + 4`: Eating Window (opens input)
+- `Cmd/Ctrl + 0`: Fit to Content
+
+**Button Placement**:
+- Appears in Properties Panel ONLY when focused element is a LaneTemplate
+- Hidden for BusyTemplates (no segments to layout)
+- Grouped under "Layout Functions" section
+- Prominent placement above "Actions" section
+
+**Integration with about-time-core**:
+```typescript
+// Example: Distribute Evenly button click handler
+const handleDistributeEvenly = (): void => {
+  if (!focusedTemplate || focusedTemplate.type !== 'lane') return;
+
+  // Apply layout using about-time-core function
+  applyLaneLayout(focusedTemplate.id, templates, {
+    justifyContent: 'space-evenly'
+  });
+
+  // Zustand store updates automatically
+  // All subscribed components re-render with new positions
+
+  // Show success feedback
+  showToast('Layout applied: Distribute Evenly', 'success');
+};
+```
 
 ### Change Propagation & Impact Visualization
 

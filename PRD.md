@@ -4,9 +4,23 @@
 
 About Time is a nutrition-centric calendaring application that takes the cognitive load out of meal planning and execution. Using the about-time-core template system, it enables users to **Build**, **Schedule**, and **Execute** nutrition behaviors through a structured, reusable template approach.
 
+**See [HAPPY-PATH.md](./HAPPY-PATH.md) for the complete user journey from zero to hero**, covering meal prep, consumption, shopping, composition, and analysis workflows.
+
 ## Core Philosophy
 
 Traditional meal planning requires constant decision-making: "What should I eat?", "When should I eat?", "Did I get enough protein today?". About Time removes this mental overhead by transforming nutrition behaviors into executable templates that can be composed, scheduled, and tracked automatically.
+
+### User-Defined Taxonomy
+
+**About Time empowers users to create their own taxonomy** of food variables, meal categories, and tracking dimensions:
+
+- **No prescribed categories**: Users define their own variable names, units, and organization
+- **Food variables consumed**: Track ingredients and resources going into meals (e.g., `greek_yogurt_g`, `mixed_berries_g`, `prep_time_ms`, `cost_cents`)
+- **Food variables produced**: Track nutritional outputs from meals (e.g., `calories`, `protein_g`, `fiber_g`, custom variables like `caffeine_mg`)
+- **Personal organization**: Tag templates with custom metadata (meal type, prep method, dietary preferences, seasonal, etc.)
+- **Flexible composition**: Build complex templates from atomic parts, accessing both direct and nested variable summaries
+
+This approach supports diverse user needs: bodybuilders tracking macros, parents managing family meals, meal preppers optimizing batch cooking, or anyone building their personal nutrition system.
 
 ## About-Time-Core Integration
 

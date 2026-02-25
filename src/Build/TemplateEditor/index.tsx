@@ -1,7 +1,12 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import React from 'react';
 
 import { useBuildStore } from '../store';
@@ -16,10 +21,15 @@ import { SegmentAddOverlay } from './SegmentAddOverlay';
 export function TemplateEditor(): React.ReactElement {
   const isTemplateEditorOpen = useBuildStore((state) => state.isTemplateEditorOpen);
   const openBaseTemplateSelection = useBuildStore((state) => state.openBaseTemplateSelection);
+  const closeTemplateEditor = useBuildStore((state) => state.closeTemplateEditor);
 
   if (!isTemplateEditorOpen) {
     return <></>;
   }
+
+  const handleBack = (): void => {
+    closeTemplateEditor();
+  };
 
   const handleChangeBaseTemplate = (): void => {
     openBaseTemplateSelection();
@@ -29,12 +39,28 @@ export function TemplateEditor(): React.ReactElement {
     <>
       <Box
         sx={{
-          height: 'calc(100vh - 56px)', // Account for bottom navigation (56px)
+          height: 'calc(100vh - 120px)', // Account for AppBar (64px) + bottom navigation (56px)
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
+        <AppBar sx={{ position: 'relative' }}>
+          <Toolbar>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleBack}
+              aria-label="Back to library"
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography sx={{ marginLeft: 2, flex: 1 }} variant="h6" component="div">
+              Template Editor
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
         <Box sx={{ padding: 2 }}>
           <Breadcrumbs />
         </Box>

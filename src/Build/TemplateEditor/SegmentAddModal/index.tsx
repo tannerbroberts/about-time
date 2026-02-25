@@ -111,8 +111,8 @@ export function SegmentAddModal(): React.ReactElement {
             <TemplateCard
               key={template.id}
               template={template}
-              onEdit={handleTemplateSelect}
-              onDelete={(): void => {}}
+              selectionMode
+              onSelect={handleTemplateSelect}
             />
           ))}
         </Box>

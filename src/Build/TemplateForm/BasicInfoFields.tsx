@@ -8,7 +8,7 @@ interface BasicInfoFieldsProps {
   errors: Record<string, string>;
   onChange: (field: string, value: string | number) => void;
   onSubmit?: () => void;
-  nameInputRef?: React.RefObject<HTMLInputElement>;
+  nameInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export function BasicInfoFields({ name, durationMinutes, errors, onChange, onSubmit, nameInputRef }: BasicInfoFieldsProps): React.ReactElement {

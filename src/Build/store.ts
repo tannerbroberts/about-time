@@ -1,4 +1,5 @@
 import type { Template, TemplateMap } from '@tannerbroberts/about-time-core';
+import type React from 'react';
 import { create } from 'zustand';
 
 import { loadTemplates, saveTemplates } from './utils/localStorage';
@@ -37,6 +38,15 @@ export interface BuildState {
 
   // Base template selection state
   isBaseTemplateSelectionOpen: boolean;
+
+  // Notifications
+  notifications: Array<{
+    id: string;
+    message: string;
+    severity: 'success' | 'info' | 'warning' | 'error';
+    duration?: number;
+    action?: React.ReactNode;
+  }>;
 }
 
 export interface BuildActions {
@@ -73,6 +83,15 @@ export interface BuildActions {
   openBaseTemplateSelection: () => void;
   closeBaseTemplateSelection: () => void;
   selectBaseTemplate: (templateId: string) => void;
+
+  // Notification actions
+  showNotification: (
+    message: string,
+    severity?: 'success' | 'info' | 'warning' | 'error',
+    duration?: number,
+    action?: React.ReactNode,
+  ) => void;
+  dismissNotification: (id: string) => void;
 }
 
 export type BuildStore = BuildState & BuildActions;
@@ -95,6 +114,7 @@ const defaultState: BuildState = {
   isSegmentAddOverlayOpen: false,
   overlayPosition: null,
   isBaseTemplateSelectionOpen: false,
+  notifications: [],
 };
 
 export const useBuildStore = create<BuildStore>((set) => ({
@@ -255,6 +275,20 @@ export const useBuildStore = create<BuildStore>((set) => ({
       focusedLineage: [{ templateId }],
       isBaseTemplateSelectionOpen: false,
     });
+  },
+
+  // Notification actions
+  showNotification: (message, severity = 'success', duration = 3000, action = undefined): void => {
+    const id = crypto.randomUUID();
+    set((state) => ({
+      notifications: [...state.notifications, { id, message, severity, duration, action }],
+    }));
+  },
+
+  dismissNotification: (id): void => {
+    set((state) => ({
+      notifications: state.notifications.filter((n) => n.id !== id),
+    }));
   },
 }));
 
