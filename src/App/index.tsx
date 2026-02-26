@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import React from 'react';
 
 import { Build } from '../Build';
+import { Schedule } from '../Schedule';
 import { theme } from '../theme';
 
 import { BottomNavigation } from './BottomNavigation';
@@ -27,7 +28,7 @@ export function App(): React.ReactElement {
           }}
         >
           {appState.activeTab === 'build' && <Build />}
-          {appState.activeTab === 'schedule' && <div>Schedule (Coming Soon)</div>}
+          {appState.activeTab === 'schedule' && <Schedule />}
           {appState.activeTab === 'track' && <div>Track (Coming Soon)</div>}
         </Box>
         <BottomNavigation />
