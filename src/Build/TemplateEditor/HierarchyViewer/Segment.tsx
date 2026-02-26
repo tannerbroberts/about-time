@@ -5,11 +5,8 @@ import React from 'react';
 
 import type { FocusPathItem } from '../../store';
 import { useBuildStore } from '../../store';
-import { calculateEmptyRegions } from '../../utils/emptyRegions';
 import { generateLineageKey } from '../../utils/lineageKeys';
 import { calculateSegmentPosition, calculateSegmentWidth, countNestedLevels } from '../../utils/positioning';
-
-import { EmptyRegion } from './EmptyRegion';
 
 export interface SegmentProps {
   templateId: string;
@@ -32,7 +29,11 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const maxDepth = useBuildStore((state) => state.maxDepth);
   const focusedLineage = useBuildStore((state) => state.focusedLineage);
   const setFocusedLineage = useBuildStore((state) => state.setFocusedLineage);
+  const openActionMenu = useBuildStore((state) => state.openActionMenu);
   const templates = useBuildStore((state) => state.templates);
+
+  // Ref to get the segment's DOM element for positioning (must be before any conditionals)
+  const segmentRef = React.useRef<HTMLDivElement>(null);
 
   if (!template) {
     return null;
@@ -48,6 +49,27 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const handleClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
     setFocusedLineage(lineage);
+
+    // Open action menu near the segment
+    if (segmentRef.current) {
+      const rect = segmentRef.current.getBoundingClientRect();
+      // Position menu to the right of the segment, centered vertically
+      openActionMenu({
+        x: rect.right + 20,
+        y: rect.top + rect.height / 2,
+      });
+    }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Focus this segment first if not already focused
+    if (!isFocused) {
+      setFocusedLineage(lineage);
+    }
+    // Open action menu at cursor position
+    openActionMenu({ x: e.clientX, y: e.clientY });
   };
 
   // Check if we should render child segments
@@ -60,15 +82,12 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     hiddenLevels = countNestedLevels(templateId, templates);
   }
 
-  // Calculate empty regions if this template is focused (only for lane templates)
-  const emptyRegions = isFocused && shouldRenderChildren && template.templateType === 'lane'
-    ? calculateEmptyRegions(segments, template.estimatedDuration, templates)
-    : [];
-
   return (
     <>
       <Box
+        ref={segmentRef}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         sx={{
           position: 'absolute',
           left: `${leftPercent}%`,
@@ -134,17 +153,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
             cumulativeOffset={cumulativeOffset + segment.offset}
           />
         ))}
-
-      {emptyRegions.map((region, index) => (
-        <EmptyRegion
-          key={`empty-${index}`}
-          start={region.start}
-          end={region.end}
-          baseDuration={baseDuration}
-          depth={depth}
-          cumulativeOffset={cumulativeOffset}
-        />
-      ))}
     </>
   );
 };

@@ -40,6 +40,11 @@ export interface BuildState {
   // Base template selection state
   isBaseTemplateSelectionOpen: boolean;
 
+  // Action menu state
+  isActionMenuOpen: boolean;
+  actionMenuPosition: { x: number; y: number } | null;
+  menuPath: string[];
+
   // Notifications
   notifications: Array<{
     id: string;
@@ -76,6 +81,7 @@ export interface BuildActions {
   // Segment addition actions
   openSegmentAddModal: (region: { start: number; end: number }) => void;
   closeSegmentAddModal: () => void;
+  setSelectedRegion: (region: { start: number; end: number } | null) => void;
   toggleAddSegmentMode: () => void;
   openSegmentAddOverlay: (region: { start: number; end: number }, position: { x: number; y: number }) => void;
   closeSegmentAddOverlay: () => void;
@@ -84,6 +90,13 @@ export interface BuildActions {
   openBaseTemplateSelection: () => void;
   closeBaseTemplateSelection: () => void;
   selectBaseTemplate: (templateId: string) => void;
+
+  // Action menu actions
+  openActionMenu: (position: { x: number; y: number }) => void;
+  closeActionMenu: () => void;
+  navigateMenuPath: (path: string[]) => void;
+  goBackInMenu: () => void;
+  resetMenuPath: () => void;
 
   // Notification actions
   showNotification: (
@@ -116,6 +129,9 @@ const defaultState: BuildState = {
   isSegmentAddOverlayOpen: false,
   overlayPosition: null,
   isBaseTemplateSelectionOpen: false,
+  isActionMenuOpen: false,
+  actionMenuPosition: null,
+  menuPath: ['root'],
   notifications: [],
 };
 
@@ -242,6 +258,10 @@ export const useBuildStore = create<BuildStore>((set) => ({
     });
   },
 
+  setSelectedRegion: (region): void => {
+    set({ selectedRegion: region });
+  },
+
   toggleAddSegmentMode: (): void => {
     set((state) => ({
       isAddingSegment: !state.isAddingSegment,
@@ -279,6 +299,38 @@ export const useBuildStore = create<BuildStore>((set) => ({
       focusedLineage: [{ templateId }],
       isBaseTemplateSelectionOpen: false,
     });
+  },
+
+  // Action menu actions
+  openActionMenu: (position): void => {
+    set({
+      isActionMenuOpen: true,
+      actionMenuPosition: position,
+      menuPath: ['root'],
+    });
+  },
+
+  closeActionMenu: (): void => {
+    set({
+      isActionMenuOpen: false,
+      actionMenuPosition: null,
+      menuPath: ['root'],
+    });
+  },
+
+  navigateMenuPath: (path): void => {
+    set({ menuPath: path });
+  },
+
+  goBackInMenu: (): void => {
+    set((state) => {
+      const newPath = state.menuPath.slice(0, -1);
+      return { menuPath: newPath.length > 0 ? newPath : ['root'] };
+    });
+  },
+
+  resetMenuPath: (): void => {
+    set({ menuPath: ['root'] });
   },
 
   // Notification actions

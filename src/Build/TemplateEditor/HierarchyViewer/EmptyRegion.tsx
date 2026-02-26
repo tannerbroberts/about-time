@@ -13,14 +13,20 @@ export interface EmptyRegionProps {
 }
 
 export function EmptyRegion({ start, end, baseDuration, depth, cumulativeOffset }: EmptyRegionProps): React.ReactElement {
-  const openSegmentAddOverlay = useBuildStore((state) => state.openSegmentAddOverlay);
+  const openActionMenu = useBuildStore((state) => state.openActionMenu);
+  const navigateMenuPath = useBuildStore((state) => state.navigateMenuPath);
+  const setSelectedRegion = useBuildStore((state) => state.setSelectedRegion);
 
   const leftPercent = calculateSegmentPosition(cumulativeOffset + start, baseDuration);
   const widthPercent = calculateSegmentWidth(end - start, baseDuration);
 
   const handleClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    openSegmentAddOverlay({ start, end }, { x: e.clientX, y: e.clientY });
+    // Set the selected region
+    setSelectedRegion({ start, end });
+    // Open action menu at click position and navigate to Add branch
+    openActionMenu({ x: e.clientX, y: e.clientY });
+    navigateMenuPath(['root', 'add']);
   };
 
   return (

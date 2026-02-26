@@ -7,7 +7,6 @@ import React from 'react';
 
 import { useBuildStore } from '../../store';
 
-import { ActionButtons } from './ActionButtons';
 import { BusyProperties } from './BusyProperties';
 import { InstanceCounterBadge } from './InstanceCounterBadge';
 import { LaneProperties } from './LaneProperties';
@@ -71,10 +70,6 @@ export function PropertiesPanel(): React.ReactElement {
             <BusyProperties template={template as BusyTemplate} />
           )}
         </Box>
-
-        <Divider sx={{ marginTop: 3, marginBottom: 3 }} />
-
-        <ActionButtons template={template} focusedItem={focusedItem} parentLineage={parentLineage} />
       </Box>
     </Paper>
   );

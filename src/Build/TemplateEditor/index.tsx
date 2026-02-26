@@ -11,12 +11,12 @@ import React from 'react';
 
 import { useBuildStore } from '../store';
 
+import { ActionTreeMenu } from './ActionTreeMenu';
 import { BaseTemplateSelectionModal } from './BaseTemplateSelectionModal';
 import { Breadcrumbs } from './Breadcrumbs';
 import { HierarchyViewer } from './HierarchyViewer';
 import { PropertiesPanel } from './PropertiesPanel';
 import { SegmentAddModal } from './SegmentAddModal';
-import { SegmentAddOverlay } from './SegmentAddOverlay';
 
 export function TemplateEditor(): React.ReactElement {
   const isTemplateEditorOpen = useBuildStore((state) => state.isTemplateEditorOpen);
@@ -110,8 +110,8 @@ export function TemplateEditor(): React.ReactElement {
       </Box>
 
       <SegmentAddModal />
-      <SegmentAddOverlay />
       <BaseTemplateSelectionModal />
+      <ActionTreeMenu />
     </>
   );
 }

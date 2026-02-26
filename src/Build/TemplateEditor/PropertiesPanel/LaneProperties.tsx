@@ -5,8 +5,6 @@ import React from 'react';
 import { useBuildStore } from '../../store';
 import { calculateNestedVariables } from '../../utils/variableAggregation';
 
-import { LayoutButtons } from './LayoutButtons';
-
 interface LanePropertiesProps {
   template: LaneTemplate;
 }
@@ -78,7 +76,6 @@ export function LaneProperties({ template }: LanePropertiesProps): React.ReactEl
 
   return (
     <Box>
-      <LayoutButtons template={template} />
       <NestedVariablesSummary willProduce={nestedVariables.willProduce} willConsume={nestedVariables.willConsume} />
     </Box>
   );
