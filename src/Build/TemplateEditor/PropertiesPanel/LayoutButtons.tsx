@@ -1,14 +1,16 @@
-import { Box, Button, Stack, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import {
-  packSegments,
+  distributeSegmentOffsetsByInterval,
   equallyDistributeSegments,
   fitLaneDurationToLast,
-  distributeSegmentOffsetsByInterval,
+  packSegments,
 } from '@tannerbroberts/about-time-core';
 import type { LaneTemplate, Template } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 import { useBuildStore } from '../../store';
+import { formatDuration } from '../../utils/durationFormatters';
+import { calculateFitToContentDuration } from '../../utils/layoutHelpers';
 import { NOTIFICATION_DURATIONS, NOTIFICATION_MESSAGES } from '../../utils/notifications';
 
 interface LayoutButtonsProps {
@@ -22,6 +24,9 @@ export function LayoutButtons({ template }: LayoutButtonsProps): React.ReactElem
 
   const [gapDialogOpen, setGapDialogOpen] = React.useState(false);
   const [gapValue, setGapValue] = React.useState('60000'); // Default 1 minute in ms
+
+  const [fitToContentDialogOpen, setFitToContentDialogOpen] = React.useState(false);
+  const [proposedDuration, setProposedDuration] = React.useState<number>(0);
 
   const handlePackTightly = (): void => {
     const result = packSegments(template.id, templates as Record<string, Template>);
@@ -40,11 +45,41 @@ export function LayoutButtons({ template }: LayoutButtonsProps): React.ReactElem
   };
 
   const handleFitToContent = (): void => {
+    // Calculate what the new duration would be
+    const newDuration = calculateFitToContentDuration(template, templates as Record<string, Template>);
+
+    // Handle edge case: no segments
+    if (newDuration === null || newDuration === 0) {
+      showNotification('Cannot fit to content: no segments found', 'info', NOTIFICATION_DURATIONS.SHORT);
+      return;
+    }
+
+    // Check if duration would change
+    if (newDuration !== template.estimatedDuration) {
+      // Duration will change - show confirmation dialog
+      setProposedDuration(newDuration);
+      setFitToContentDialogOpen(true);
+    } else {
+      // Duration unchanged - apply immediately
+      const result = fitLaneDurationToLast(template.id, templates as Record<string, Template>);
+      if (result) {
+        updateTemplate(template.id, result);
+        showNotification(NOTIFICATION_MESSAGES.LAYOUT_FIT_TO_CONTENT, 'success', NOTIFICATION_DURATIONS.SHORT);
+      }
+    }
+  };
+
+  const handleFitToContentConfirm = (): void => {
     const result = fitLaneDurationToLast(template.id, templates as Record<string, Template>);
     if (result) {
       updateTemplate(template.id, result);
       showNotification(NOTIFICATION_MESSAGES.LAYOUT_FIT_TO_CONTENT, 'success', NOTIFICATION_DURATIONS.SHORT);
     }
+    setFitToContentDialogOpen(false);
+  };
+
+  const handleFitToContentCancel = (): void => {
+    setFitToContentDialogOpen(false);
   };
 
   const handleAddGapOpen = (): void => {
@@ -106,6 +141,29 @@ export function LayoutButtons({ template }: LayoutButtonsProps): React.ReactElem
           <Button onClick={handleAddGapClose}>Cancel</Button>
           <Button onClick={handleAddGapConfirm} variant="contained">
             Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={fitToContentDialogOpen} onClose={handleFitToContentCancel}>
+        <DialogTitle>Confirm Duration Change</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            This operation will change the template duration:
+          </Typography>
+          <Box sx={{ pl: 2 }}>
+            <Typography variant="body2">
+              <strong>Current duration:</strong> {formatDuration(template.estimatedDuration)}
+            </Typography>
+            <Typography variant="body2">
+              <strong>New duration:</strong> {formatDuration(proposedDuration)}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleFitToContentCancel}>Cancel</Button>
+          <Button onClick={handleFitToContentConfirm} variant="contained">
+            Proceed
           </Button>
         </DialogActions>
       </Dialog>
