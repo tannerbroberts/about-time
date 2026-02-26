@@ -1,19 +1,53 @@
 /**
- * Schedule API endpoints - placeholder for Phase 5
+ * Schedule API endpoints
  */
 
-export const getLanes = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+import { apiClient } from './client.js';
+import type { DailyGoals } from '@about-time/types';
+
+/**
+ * Get schedule lanes for date range
+ */
+export const getLanes = async (
+  startDate: string,
+  endDate: string
+): Promise<Record<string, string>> => {
+  const response = await apiClient.get<{ success: true; data: Record<string, string> }>(
+    `/schedule/lanes?startDate=${startDate}&endDate=${endDate}`
+  );
+  return response.data.data;
 };
 
-export const setLane = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+/**
+ * Set lane for specific date
+ */
+export const setLane = async (
+  dateKey: string,
+  laneTemplateId: string
+): Promise<void> => {
+  await apiClient.put(`/schedule/lanes/${dateKey}`, { laneTemplateId });
 };
 
-export const getGoals = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+/**
+ * Remove lane assignment for date
+ */
+export const removeLane = async (dateKey: string): Promise<void> => {
+  await apiClient.delete(`/schedule/lanes/${dateKey}`);
 };
 
-export const setGoals = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+/**
+ * Get daily nutrition goals
+ */
+export const getGoals = async (): Promise<DailyGoals> => {
+  const response = await apiClient.get<{ success: true; data: DailyGoals }>(
+    '/schedule/goals'
+  );
+  return response.data.data;
+};
+
+/**
+ * Update daily nutrition goals
+ */
+export const setGoals = async (goals: DailyGoals): Promise<void> => {
+  await apiClient.put('/schedule/goals', goals);
 };

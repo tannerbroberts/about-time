@@ -1,19 +1,59 @@
 /**
- * Execute API endpoints - placeholder for Phase 5
+ * Execute API endpoints
  */
 
-export const getDailyState = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+import { apiClient } from './client.js';
+import type { DailyStateResponse } from '@about-time/types';
+
+/**
+ * Get daily state for specific date
+ */
+export const getDailyState = async (dateKey: string): Promise<{
+  dateKey: string;
+  completedMealIds: string[];
+  skippedMealIds: string[];
+  updatedAt: Date;
+}> => {
+  const response = await apiClient.get<{ success: true; data: DailyStateResponse }>(
+    `/execute/daily-state/${dateKey}`
+  );
+  return {
+    ...response.data.data,
+    updatedAt: new Date(response.data.data.updatedAt),
+  };
 };
 
-export const updateDailyState = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+/**
+ * Update full daily state
+ */
+export const updateDailyState = async (
+  dateKey: string,
+  completedMealIds: string[],
+  skippedMealIds: string[]
+): Promise<void> => {
+  await apiClient.put(`/execute/daily-state/${dateKey}`, {
+    completedMealIds,
+    skippedMealIds,
+  });
 };
 
-export const completeMeal = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+/**
+ * Mark meal as completed
+ */
+export const completeMeal = async (dateKey: string, mealId: string): Promise<void> => {
+  await apiClient.patch(`/execute/daily-state/${dateKey}/complete`, { mealId });
 };
 
-export const skipMeal = async (): Promise<void> => {
-  throw new Error('Not implemented - Phase 5');
+/**
+ * Mark meal as skipped
+ */
+export const skipMeal = async (dateKey: string, mealId: string): Promise<void> => {
+  await apiClient.patch(`/execute/daily-state/${dateKey}/skip`, { mealId });
+};
+
+/**
+ * Unmark meal (remove from both completed and skipped)
+ */
+export const unmarkMeal = async (dateKey: string, mealId: string): Promise<void> => {
+  await apiClient.patch(`/execute/daily-state/${dateKey}/unmark`, { mealId });
 };
