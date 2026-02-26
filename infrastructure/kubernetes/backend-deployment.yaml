@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: about-time
+  labels:
+    app: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: your-registry/about-time-backend:latest  # Replace with your image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              name: http
+          env:
+            # ConfigMap values
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: PORT
+            - name: CORS_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: CORS_ORIGIN
+
+            # Database connection string (constructed from config + secrets)
+            - name: DATABASE_URL
+              value: "postgres://$(DATABASE_USER):$(DATABASE_PASSWORD)@$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)"
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: DATABASE_HOST
+            - name: DATABASE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: DATABASE_PORT
+            - name: DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: DATABASE_NAME
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: DATABASE_USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: DATABASE_PASSWORD
+
+            # Redis connection string
+            - name: REDIS_URL
+              value: "redis://$(REDIS_HOST):$(REDIS_PORT)"
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: REDIS_PORT
+
+            # Secret values
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: SESSION_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: GOOGLE_CLIENT_SECRET
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: GITHUB_CLIENT_ID
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: GITHUB_CLIENT_SECRET
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+      # Init container to wait for database
+      initContainers:
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h $DATABASE_HOST -p $DATABASE_PORT -U $DATABASE_USER; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+          env:
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: DATABASE_HOST
+            - name: DATABASE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: about-time-config
+                  key: DATABASE_PORT
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: about-time-secrets
+                  key: DATABASE_USER

@@ -3,6 +3,7 @@
  */
 
 import { apiClient } from './client.js';
+import { queueScheduleLane, queueScheduleLaneRemove } from './offlineQueue.js';
 import type { DailyGoals } from '@about-time/types';
 
 /**
@@ -19,20 +20,31 @@ export const getLanes = async (
 };
 
 /**
- * Set lane for specific date
+ * Set lane for specific date (with offline queueing)
  */
 export const setLane = async (
   dateKey: string,
   laneTemplateId: string
 ): Promise<void> => {
-  await apiClient.put(`/schedule/lanes/${dateKey}`, { laneTemplateId });
+  await queueScheduleLane(
+    async () => {
+      await apiClient.put(`/schedule/lanes/${dateKey}`, { laneTemplateId });
+    },
+    dateKey,
+    laneTemplateId
+  );
 };
 
 /**
- * Remove lane assignment for date
+ * Remove lane assignment for date (with offline queueing)
  */
 export const removeLane = async (dateKey: string): Promise<void> => {
-  await apiClient.delete(`/schedule/lanes/${dateKey}`);
+  await queueScheduleLaneRemove(
+    async () => {
+      await apiClient.delete(`/schedule/lanes/${dateKey}`);
+    },
+    dateKey
+  );
 };
 
 /**

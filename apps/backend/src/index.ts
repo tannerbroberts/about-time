@@ -7,11 +7,14 @@ import fastifyCookie from '@fastify/cookie';
 import { env } from './config/env.js';
 import { corsPlugin } from './plugins/cors.js';
 import { helmetPlugin } from './plugins/helmet.js';
+import metricsPlugin from './plugins/metrics.js';
 import { authRoutes } from './routes/auth.js';
 import { templateRoutes } from './routes/templates.js';
 import { scheduleRoutes } from './routes/schedule.js';
 import { executeRoutes } from './routes/execute.js';
+import { migrateRoutes } from './routes/migrate.js';
 import { closeDatabase } from './db/client.js';
+import { closeRedis } from './config/redis.js';
 
 // Create Fastify instance
 const fastify = Fastify({
@@ -31,6 +34,7 @@ const fastify = Fastify({
 await fastify.register(fastifyCookie);
 await fastify.register(corsPlugin);
 await fastify.register(helmetPlugin);
+await fastify.register(metricsPlugin);
 
 // Health check endpoint
 fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
@@ -40,12 +44,14 @@ await fastify.register(authRoutes, { prefix: '/api/auth' });
 await fastify.register(templateRoutes, { prefix: '/api/templates' });
 await fastify.register(scheduleRoutes, { prefix: '/api/schedule' });
 await fastify.register(executeRoutes, { prefix: '/api/execute' });
+await fastify.register(migrateRoutes, { prefix: '/api/migrate' });
 
 // Graceful shutdown handler
 const closeGracefully = async (signal: string): Promise<void> => {
   fastify.log.info(`Received ${signal}, closing server...`);
   await fastify.close();
   await closeDatabase();
+  await closeRedis();
   process.exit(0);
 };
 

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: about-time-config
+  namespace: about-time
+data:
+  # Backend configuration
+  NODE_ENV: "production"
+  PORT: "3001"
+  CORS_ORIGIN: "https://about-time.app"
+
+  # Database configuration
+  DATABASE_HOST: "postgres-service"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "about_time"
+
+  # Redis configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+
+  # Frontend configuration
+  VITE_API_URL: "https://api.about-time.app"

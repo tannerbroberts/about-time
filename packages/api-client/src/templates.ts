@@ -3,6 +3,7 @@
  */
 
 import { apiClient } from './client.js';
+import { queueTemplateCreate, queueTemplateUpdate, queueTemplateDelete } from './offlineQueue.js';
 import type { Template, TemplateMap } from '@tannerbroberts/about-time-core';
 import type { TemplateListQuery, TemplateListResponse, TemplateHierarchyResponse } from '@about-time/types';
 
@@ -51,32 +52,53 @@ export const getTemplate = async (templateId: string): Promise<Template> => {
 };
 
 /**
- * Create new template
+ * Create new template (with offline queueing)
  */
 export const createTemplate = async (template: Template): Promise<Template> => {
-  const response = await apiClient.post<{ success: true; data: Template }>(
-    '/templates',
-    { template }
+  const result = await queueTemplateCreate(
+    async () => {
+      const response = await apiClient.post<{ success: true; data: Template }>(
+        '/templates',
+        { template }
+      );
+      return response.data.data;
+    },
+    template
   );
-  return response.data.data;
+
+  // If queued (offline), return the template as-is for optimistic update
+  return result || template;
 };
 
 /**
- * Update existing template
+ * Update existing template (with offline queueing)
  */
 export const updateTemplate = async (template: Template): Promise<Template> => {
-  const response = await apiClient.put<{ success: true; data: Template }>(
-    `/templates/${template.id}`,
-    { template }
+  const result = await queueTemplateUpdate(
+    async () => {
+      const response = await apiClient.put<{ success: true; data: Template }>(
+        `/templates/${template.id}`,
+        { template }
+      );
+      return response.data.data;
+    },
+    template
   );
-  return response.data.data;
+
+  // If queued (offline), return the template as-is for optimistic update
+  return result || template;
 };
 
 /**
- * Delete template
+ * Delete template (with offline queueing)
  */
 export const deleteTemplate = async (templateId: string): Promise<void> => {
-  await apiClient.delete(`/templates/${templateId}`);
+  await queueTemplateDelete(
+    async () => {
+      await apiClient.delete(`/templates/${templateId}`);
+    },
+    templateId
+  );
 };
 
 /**

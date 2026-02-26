@@ -1,0 +1,91 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: about-time-ingress
+  namespace: about-time
+  annotations:
+    # Nginx ingress controller annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+
+    # CORS (if needed for cross-domain API access)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://about-time.app"
+
+    # SSL/TLS with cert-manager (for Let's Encrypt)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # Connection settings
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - about-time.app
+        - www.about-time.app
+      secretName: about-time-tls-cert
+    - hosts:
+        - api.about-time.app
+      secretName: about-time-api-tls-cert
+
+  rules:
+    # Frontend (main app)
+    - host: about-time.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+
+    # Frontend (www subdomain)
+    - host: www.about-time.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+
+    # Backend API
+    - host: api.about-time.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 3001
+
+---
+# ClusterIssuer for cert-manager (Let's Encrypt)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # Replace with your email
+    email: admin@about-time.app
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx

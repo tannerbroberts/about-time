@@ -1,0 +1,72 @@
+# Multi-stage build for backend
+FROM node:24-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /app
+
+# Copy root package files and workspace structure
+COPY package*.json ./
+COPY turbo.json ./
+
+# Copy workspace package files
+COPY packages/core/package*.json ./packages/core/
+COPY packages/types/package*.json ./packages/types/
+COPY packages/api-client/package*.json ./packages/api-client/
+COPY apps/backend/package*.json ./apps/backend/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY packages/core ./packages/core/
+COPY packages/types ./packages/types/
+COPY packages/api-client ./packages/api-client/
+COPY apps/backend ./apps/backend/
+
+# Build packages
+RUN npm run build -- --filter=@about-time/backend
+
+# Production stage
+FROM node:24-alpine
+
+# Add non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+WORKDIR /app
+
+# Copy package files
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/turbo.json ./
+COPY --from=builder /app/packages/core/package*.json ./packages/core/
+COPY --from=builder /app/packages/types/package*.json ./packages/types/
+COPY --from=builder /app/apps/backend/package*.json ./apps/backend/
+
+# Install production dependencies only
+RUN npm ci --omit=dev --workspace=@about-time/backend
+
+# Copy built artifacts
+COPY --from=builder /app/packages/core/dist ./packages/core/dist/
+COPY --from=builder /app/packages/types/dist ./packages/types/dist/
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist/
+
+# Copy drizzle migrations
+COPY --from=builder /app/apps/backend/src/db/migrations ./apps/backend/dist/db/migrations/
+
+# Change ownership to nodejs user
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start application
+WORKDIR /app/apps/backend
+CMD ["node", "dist/index.js"]

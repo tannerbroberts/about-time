@@ -6,6 +6,7 @@ import { db } from '../db/client.js';
 import { templates, templateRelationships, type NewTemplate, type NewTemplateRelationship } from '../db/schema.js';
 import { eq, and, desc, asc, ilike, or, sql } from 'drizzle-orm';
 import type { Template, TemplateMap, LaneTemplate, BusyTemplate } from '@tannerbroberts/about-time-core';
+import { getCache, setCache, deleteCache, deleteCachePattern, CACHE_KEYS, CACHE_TTL } from '../config/redis.js';
 
 export class TemplateService {
   /**
@@ -30,13 +31,26 @@ export class TemplateService {
       await db.insert(templateRelationships).values(relationships);
     }
 
+    // Invalidate templates list cache
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+
+    // Cache the new template
+    await setCache(CACHE_KEYS.TEMPLATE(userId, template.id), dbTemplate.templateData, CACHE_TTL.TEMPLATE);
+
     return dbTemplate.templateData;
   }
 
   /**
-   * Get template by ID
+   * Get template by ID (with caching)
    */
   async getTemplateById(userId: string, templateId: string): Promise<Template | null> {
+    // Try cache first
+    const cached = await getCache<Template>(CACHE_KEYS.TEMPLATE(userId, templateId));
+    if (cached) {
+      return cached;
+    }
+
+    // Query database
     const result = await db.query.templates.findFirst({
       where: and(
         eq(templates.id, templateId),
@@ -44,7 +58,14 @@ export class TemplateService {
       ),
     });
 
-    return result?.templateData || null;
+    const template = result?.templateData || null;
+
+    // Cache result if found
+    if (template) {
+      await setCache(CACHE_KEYS.TEMPLATE(userId, templateId), template, CACHE_TTL.TEMPLATE);
+    }
+
+    return template;
   }
 
   /**
@@ -142,6 +163,10 @@ export class TemplateService {
       await db.insert(templateRelationships).values(relationships);
     }
 
+    // Invalidate caches
+    await deleteCache(CACHE_KEYS.TEMPLATE(userId, template.id));
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+
     return updated.templateData;
   }
 
@@ -161,6 +186,10 @@ export class TemplateService {
         eq(templates.id, templateId),
         eq(templates.userId, userId)
       ));
+
+    // Invalidate caches
+    await deleteCache(CACHE_KEYS.TEMPLATE(userId, templateId));
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
   }
 
   /**

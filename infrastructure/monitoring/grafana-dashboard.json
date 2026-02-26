@@ -1,0 +1,216 @@
+{
+  "dashboard": {
+    "title": "About Time - API Performance",
+    "tags": ["about-time", "api", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate (requests/sec)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{route}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "reqps", "label": "Requests/sec" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Request Duration P95 (ms)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000",
+            "legendFormat": "{{method}} {{route}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "ms", "label": "Duration" },
+          { "format": "short" }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "params": [200], "type": "gt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A", "5m", "now"] },
+              "reducer": { "params": [], "type": "avg" },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High Latency Alert",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 3,
+        "title": "Error Rate (%)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "expr": "sum(rate(http_request_errors_total[5m])) / sum(rate(http_requests_total[5m])) * 100",
+            "legendFormat": "Error Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "percent", "label": "Error %" },
+          { "format": "short" }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "params": [1], "type": "gt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A", "5m", "now"] },
+              "reducer": { "params": [], "type": "avg" },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High Error Rate Alert",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Connections",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [
+          {
+            "expr": "active_connections",
+            "legendFormat": "Active",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "label": "Connections" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Cache Hit Rate (%)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "targets": [
+          {
+            "expr": "sum(rate(cache_hits_total[5m])) / (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m]))) * 100",
+            "legendFormat": "Hit Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "percent", "label": "Hit Rate" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Database Query Duration P95 (ms)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(database_query_duration_seconds_bucket[5m])) * 1000",
+            "legendFormat": "{{operation}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "ms", "label": "Duration" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "HTTP Status Codes",
+        "type": "piechart",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (status_code)",
+            "legendFormat": "{{status_code}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes / 1024 / 1024",
+            "legendFormat": "RSS (MB)",
+            "refId": "A"
+          },
+          {
+            "expr": "nodejs_heap_size_used_bytes / 1024 / 1024",
+            "legendFormat": "Heap Used (MB)",
+            "refId": "B"
+          },
+          {
+            "expr": "nodejs_heap_size_total_bytes / 1024 / 1024",
+            "legendFormat": "Heap Total (MB)",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          { "format": "decmbytes", "label": "Memory" },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Top Slowest Endpoints",
+        "type": "table",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+        "targets": [
+          {
+            "expr": "topk(10, histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000)",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": { "method": 0, "route": 1, "Value": 2 },
+              "renameByName": {
+                "method": "Method",
+                "route": "Route",
+                "Value": "P95 Latency (ms)"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

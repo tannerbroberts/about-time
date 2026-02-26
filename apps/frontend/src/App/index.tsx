@@ -6,11 +6,13 @@ import React from 'react';
 
 import { Build } from '../Build';
 import { Execute } from '../Execute';
+import { MigrationBanner } from '../Migration';
 import { Schedule } from '../Schedule';
 import { theme } from '../theme';
 
 import { BottomNavigation } from './BottomNavigation';
 import { AppContext } from './Context';
+import { OnlineStatus } from './OnlineStatus';
 import { DefaultAppState, reducer } from './reducer';
 
 export function App(): React.ReactElement {
@@ -33,6 +35,8 @@ export function App(): React.ReactElement {
           {appState.activeTab === 'track' && <Execute />}
         </Box>
         <BottomNavigation />
+        <OnlineStatus />
+        <MigrationBanner />
       </AppContext.Provider>
     </ThemeProvider>
   );

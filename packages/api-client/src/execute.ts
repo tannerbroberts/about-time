@@ -3,6 +3,7 @@
  */
 
 import { apiClient } from './client.js';
+import { queueDailyState } from './offlineQueue.js';
 import type { DailyStateResponse } from '@about-time/types';
 
 /**
@@ -24,17 +25,24 @@ export const getDailyState = async (dateKey: string): Promise<{
 };
 
 /**
- * Update full daily state
+ * Update full daily state (with offline queueing)
  */
 export const updateDailyState = async (
   dateKey: string,
   completedMealIds: string[],
   skippedMealIds: string[]
 ): Promise<void> => {
-  await apiClient.put(`/execute/daily-state/${dateKey}`, {
+  await queueDailyState(
+    async () => {
+      await apiClient.put(`/execute/daily-state/${dateKey}`, {
+        completedMealIds,
+        skippedMealIds,
+      });
+    },
+    dateKey,
     completedMealIds,
-    skippedMealIds,
-  });
+    skippedMealIds
+  );
 };
 
 /**
