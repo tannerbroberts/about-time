@@ -302,20 +302,14 @@ Editable properties:
     - Grouped by variable name with units
     - Updates automatically when segments change
     - Shows both willProduce and willConsume totals separately
-- **Layout Helper Functions** (for LaneTemplates only):
-  - Visual buttons to apply about-time-core layout functions:
-    - **Pack Tightly**: `applyLaneLayout(laneId, templates, { justifyContent: 'flex-start', gap: 0 })`
-    - **Distribute Evenly**: `applyLaneLayout(laneId, templates, { justifyContent: 'space-evenly' })`
-    - **Add Gap**: Opens gap size input, then applies with specified gap
-    - **Eating Window**: Opens start/end time inputs for intermittent fasting layout
-    - **Fit to Content**: `fitLaneDurationToLast(laneId, templates)`
-  - All functions update the focused template immediately
-  - Changes propagate to all visible instances via Zustand
-  - Visual feedback shows layout application in real-time
-- **Actions**:
-  - Add segment (see workflow below)
-  - Delete segment (only visible for segments, NOT base templates)
-  - Duplicate template (creates new record with different name)
+
+**Actions accessed via ActionTreeMenu** (click segment or empty region):
+- **Add**: Create new template or select existing template to add as segment
+- **Edit**: Duplicate template or remove segment
+- **Layout** (for LaneTemplates only): Apply layout functions (Pack, Distribute, Fit, Add Gap)
+- **Navigate**: Focus parent template or change base template
+
+See "ActionTreeMenu System" section below for detailed menu structure and behavior.
 
 ### Focused Element System
 
@@ -369,17 +363,91 @@ interface FocusPathItem {
 - Each visual instance has unique key even if same template appears multiple times
 - Prevents incorrect DOM reuse when segment order changes
 
+### ActionTreeMenu System
+
+**Purpose**: Context-aware floating menu for all template editing actions, accessible by clicking any segment or empty region in the hierarchy viewer.
+
+**Visual Design**:
+- Floating overlay with semi-transparent backdrop (z-index 1300)
+- Paper component at click coordinates (z-index 1400)
+- Horizontal bars of circular icon buttons (48px diameter) stacked vertically
+- Submenus appear ABOVE root categories, not below
+- Close button (✕) centered at bottom
+- Smooth expand/collapse animations via Framer Motion
+
+**Menu Structure (3 levels)**:
+
+```
+┌─────────────────────────────────────┐
+│  [Busy] [Lane]                      │  ← Level 3: Nested submenu (when open)
+├─────────────────────────────────────┤
+│  [Select Existing] [Create New]    │  ← Level 2: Category actions (when open)
+├─────────────────────────────────────┤
+│  [Add] [Edit] [Layout] [Navigate]  │  ← Level 1: Root categories (always visible)
+├─────────────────────────────────────┤
+│            [✕ Close]                │  ← Close button (centered)
+└─────────────────────────────────────┘
+```
+
+**Category Actions**:
+
+1. **Add** (Green #10b981):
+   - **Select Existing**: Opens template library filtered by available space
+   - **Create New**:
+     - **Create Busy**: Opens template form (type=busy)
+     - **Create Lane**: Opens template form (type=lane)
+
+2. **Edit** (Blue #3b82f6):
+   - **Duplicate**: Creates copy of focused template with "(Copy)" suffix
+   - **Remove**: Deletes segment from parent template (confirmation required)
+
+3. **Layout** (Orange #f59e0b) - LaneTemplates only:
+   - **Pack**: Removes all gaps between segments
+   - **Distribute**: Spreads segments evenly across lane duration
+   - **Fit**: Resizes lane duration to end at last segment
+   - **Add Gap**: Opens dialog for gap size input (milliseconds)
+
+4. **Navigate** (Purple #8b5cf6):
+   - **Focus Parent**: Moves focus up one level in lineage
+   - **Change Base**: Opens template library to switch base template
+
+**Context-Aware Availability**:
+- Actions enabled/disabled based on focused template type via `useContextActions` hook
+- Example: Layout actions disabled for BusyTemplates with tooltip "Layout operations only apply to lane templates"
+- Remove action disabled when focused element is base template (not a segment)
+- Focus Parent disabled when lineage length is 1 (already at base)
+
+**Interaction Behaviors**:
+- **Mutually exclusive categories**: Opening one category closes others
+- **Progressive ESC closing**: ESC key closes levels in order: Submenu → Category → Menu
+- **Open/closed icons**: ChevronRight (closed) / ExpandMore (open) indicators on submenu buttons
+- **Backdrop click**: Closes entire menu
+- **Success notifications**: Toast messages confirm actions (e.g., "Layout applied: Distribute Evenly")
+
+**Technical Implementation**:
+- State managed in Zustand store: `isActionMenuOpen`, `actionMenuPosition`, `openCategory`, `openSubMenu`
+- Integrates with `@tannerbroberts/about-time-core` for layout functions
+- Layout functions call `updateTemplate()` after mutation to trigger Zustand updates
+- All actions close menu on completion (except when dialogs are opened)
+
+**Implementation Files**:
+- `src/Build/TemplateEditor/ActionTreeMenu/index.tsx` - Main menu container
+- `src/Build/TemplateEditor/ActionTreeMenu/useContextActions.ts` - Availability logic
+- `src/Build/TemplateEditor/ActionTreeMenu/actions/*.tsx` - Category-specific action components
+- `src/Build/TemplateEditor/HierarchyViewer/Segment.tsx` - Click handler integration
+- `src/Build/TemplateEditor/HierarchyViewer/EmptyRegion.tsx` - Click handler integration
+
 ### Adding Segments Workflow
 
-1. **Focus**: Select target template (base or segment)
-2. **Action**: Click "Add Segment" in properties panel
-3. **Region Selection**: Pick time region within focused template
-4. **Region Highlight**: UI highlights selected region
-5. **Template Selection**: Searchable library filtered by:
+1. **Trigger**: Click empty region in hierarchy viewer OR click segment and select Add → Select Existing
+2. **Menu Opens**: ActionTreeMenu appears at click coordinates
+3. **Navigate**: Add → Select Existing (for empty regions) or Add → Create New → [Template Type]
+4. **Region Highlight**: UI highlights selected empty region (if applicable)
+5. **Template Selection**: Library modal opens with filters:
    - Duration constraints (must fit in selected region)
    - Template type compatibility
 6. **Placement**: New segment added with calculated offset
-7. **Update**: All instances of focused template update to show new segment
+7. **Update**: All instances of focused template update to show new segment via Zustand
 
 ### Nested Variable Summaries
 
@@ -467,6 +535,8 @@ function calculateNestedVariables(
 
 **Purpose**: Provide one-click access to common layout operations from @tannerbroberts/about-time-core without requiring manual function calls or code editing.
 
+**Access**: Layout functions are available in the ActionTreeMenu under the "Layout" category (orange). Click any LaneTemplate segment, then expand the Layout category to access these functions.
+
 **Available Functions**:
 
 1. **Pack Tightly**
@@ -516,9 +586,10 @@ function calculateNestedVariables(
    - **Use Case**: Power users with specific layout requirements
 
 **Visual Feedback**:
-- Clicking a layout button shows brief loading indicator
+- Clicking a layout action shows brief loading indicator
 - Hierarchy viewer updates immediately with new segment positions
-- Success toast: "Layout applied: Distribute Evenly"
+- Success toast notification: "Layout applied: Distribute Evenly"
+- ActionTreeMenu closes after successful operation
 - Undo button appears briefly (future enhancement)
 
 **Keyboard Shortcuts** (future enhancement):
@@ -528,11 +599,11 @@ function calculateNestedVariables(
 - `Cmd/Ctrl + 4`: Eating Window (opens input)
 - `Cmd/Ctrl + 0`: Fit to Content
 
-**Button Placement**:
-- Appears in Properties Panel ONLY when focused element is a LaneTemplate
-- Hidden for BusyTemplates (no segments to layout)
-- Grouped under "Layout Functions" section
-- Prominent placement above "Actions" section
+**Availability**:
+- Layout actions appear in ActionTreeMenu ONLY when focused element is a LaneTemplate
+- Disabled (grayed out) for BusyTemplates with tooltip explanation
+- Accessible via clicking any LaneTemplate segment in hierarchy viewer
+- Context-aware enabling via `useContextActions` hook
 
 **Integration with about-time-core**:
 ```typescript
@@ -581,7 +652,8 @@ const handleDistributeEvenly = (): void => {
 **Implementation Files**:
 - `/src/Build/utils/variableAggregation.ts` - Recursive aggregation utility with circular dependency protection
 - `/src/Build/TemplateEditor/PropertiesPanel/LaneProperties.tsx` - Main component with memoized variable summaries
-- `/src/Build/TemplateEditor/PropertiesPanel/LayoutButtons.tsx` - Layout action buttons with about-time-core integration
+- `/src/Build/TemplateEditor/ActionTreeMenu/actions/LayoutActions.tsx` - Layout action buttons with about-time-core integration
+- `/src/Build/TemplateEditor/ActionTreeMenu/useContextActions.ts` - Context-aware action availability logic
 - `/src/Build/TemplateEditor/PropertiesPanel/index.tsx` - Conditional rendering based on template type
 
 **Implementation Status**: ✅ **Completed and Tested** (2026-02-25)

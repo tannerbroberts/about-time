@@ -74,3 +74,62 @@ const updateTemplate = useBuildStore(state => state.updateTemplate);
 ```
 
 See PRD-Build.md for complete Zustand store specification.
+
+### ActionTreeMenu Component
+
+The Build feature includes a context-aware action menu system (`ActionTreeMenu`) that appears when users click on segments or empty regions in the hierarchy viewer.
+
+**Architecture:**
+- **Layout**: Horizontal bars of icon buttons stacked vertically
+- **Hierarchy**: 3 levels (root categories → category actions → nested actions)
+- **Submenus**: Appear ABOVE the root categories (not below)
+- **Close button**: Centered at the bottom of the menu
+- **State**: Managed via Zustand (consistent with Build feature)
+- **Animations**: Framer Motion's Collapse component for smooth expand/collapse
+
+**Menu Structure:**
+```
+┌─────────────────────────────────────┐
+│  [Create Busy] [Create Lane]       │  ← Level 3: Nested submenu (when open)
+├─────────────────────────────────────┤
+│  [Select Existing] [Create New]    │  ← Level 2: Category actions (when open)
+├─────────────────────────────────────┤
+│  [Add] [Edit] [Layout] [Navigate]  │  ← Level 1: Root categories (always visible)
+├─────────────────────────────────────┤
+│            [Close ✕]                │  ← Close button (centered)
+└─────────────────────────────────────┘
+```
+
+**Context-Aware Actions:**
+- Actions are enabled/disabled based on the focused template type
+- `useContextActions` hook determines availability and provides disabled reasons
+- Example: Layout operations only available for LaneTemplates
+- Tooltips show why actions are disabled when hovered
+
+**Key Behaviors:**
+- **Mutually exclusive expansion**: Opening one category closes others
+- **Progressive ESC closing**: Submenu → Category → Entire menu
+- **Open/closed icons**: ChevronRight when closed, ExpandMore when open
+- **Backdrop**: Semi-transparent overlay closes menu on click
+- **Positioning**: Floats at click coordinates with z-index 1300-1400
+
+**Integration Points:**
+- Click handlers in `Segment.tsx` and `EmptyRegion.tsx` trigger menu
+- Menu actions call Zustand store methods (duplicate, remove, pack, etc.)
+- Layout functions integrate with `@tannerbroberts/about-time-core`
+- Notifications provide success feedback for all operations
+
+**File Structure:**
+```
+ActionTreeMenu/
+  ├── index.tsx                 # Main container with bar layout
+  ├── MenuNode.tsx              # Category icon button component
+  ├── ActionLeaf.tsx            # Action icon button component
+  ├── useContextActions.ts      # Context-aware availability hook
+  ├── actions/
+  │   ├── AddActions.tsx        # Add category (create/select segments)
+  │   ├── EditActions.tsx       # Edit category (duplicate/remove)
+  │   ├── LayoutActions.tsx     # Layout category (pack/distribute/fit/gap)
+  │   └── NavigateActions.tsx   # Navigate category (focus parent/change base)
+  └── types.ts                  # Type definitions
+```
