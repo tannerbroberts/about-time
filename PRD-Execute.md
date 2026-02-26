@@ -6,18 +6,68 @@ The Execute feature provides real-time guidance for following meal schedules thr
 
 ## Goal
 
-Follow the schedule throughout the day, track completion, and adjust as needed while providing clear visibility into remaining nutrition budget.
+Follow the schedule throughout the day, track completion, and adjust as needed while providing clear visibility into remaining variable budget against user-defined goals.
+
+## Philosophy: Data Platform, Not Prescriptive Tracker
+
+The Execute view is a **generic data display platform** that shows whatever variables the user has defined in their templates, tracked against whatever goals they've set. It makes no assumptions about:
+
+- What variables users should track (nutrition, time, cost, or anything else)
+- What values are "good" or "bad"
+- How variables should be categorized or grouped
+- What user behaviors mean or how to interpret them
+
+The system simply:
+- Displays consumed vs. goal for user-defined variables
+- Shows trajectory (on track, ahead, behind) based on time of day
+- Provides a timeline of scheduled activities with completion tracking
+- Enables schedule adjustments in real-time
+
+Users bring their own taxonomy, goals, and meaning to the data.
 
 ## User Actions
 
 - View today's meal schedule with timing
 - Mark meals as completed
-- Track actual nutrition consumption vs. planned
-- Adjust schedule on-the-fly (swap meals, add snacks)
-- View remaining nutrition budget for the day
+- Track actual variable consumption vs. planned goals
+- Adjust schedule on-the-fly (swap meals, add unscheduled items)
+- View remaining variable budget for the day
 - Receive reminders for upcoming meals
 
 ## Key Features
+
+### Goal Configuration
+
+Users define daily goals for any variables they want to track:
+
+**Goal Definition Interface**:
+- Accessed from Execute view settings or first-time setup
+- Shows all variables that appear in user's templates (discovered automatically)
+- User sets numeric goal for each variable they want to track
+- Variables without goals are not displayed in Execute view
+- Goals can be edited anytime
+- Per-day goal customization (optional Phase 2 feature)
+
+**Goal Discovery**:
+- System scans all templates and lists unique variable names
+- Suggests variables that appear frequently across templates
+- User selects which variables to set goals for
+- No hardcoded variable list - fully dynamic
+
+**Example Goal Configuration**:
+```
+Available Variables (from your templates):
+☐ calories (appears in 15 templates)
+☐ protein_g (appears in 15 templates)
+☐ prep_time_ms (appears in 12 templates)
+☐ cost_cents (appears in 8 templates)
+☐ caffeine_mg (appears in 3 templates)
+
+Set your daily goals:
+calories: [2000] kcal
+protein_g: [150] g
+cost_cents: [1500] cents ($15.00)
+```
 
 ### Today View
 - Focused view of current day's schedule
@@ -44,16 +94,17 @@ Follow the schedule throughout the day, track completion, and adjust as needed w
 - Record skipped meals
 
 ### Real-Time Budget
-- "You have 500 calories and 30g protein remaining"
+- Shows current vs. goal for all tracked variables
 - Updates immediately on meal completion
 - Color-coded indicators (on track, close, over/under)
 - Progress bars for visual feedback
+- No interpretation - just data presentation
 
-### Smart Suggestions
-- "Add a protein shake to hit your target"
-- Context-aware based on time remaining
-- Considers available templates in library
-- Learns from user preferences
+### Context-Aware Prompts (Optional)
+- Generic gap notifications based on math (current vs. goal)
+- Time-based context (time remaining in day)
+- Considers available templates in library for suggestions
+- No prescriptive advice about specific behaviors
 
 ### Notification System
 - Meal reminders (configurable time before)
@@ -68,14 +119,14 @@ Follow the schedule throughout the day, track completion, and adjust as needed w
 - Updates schedule and nutrition instantly
 
 ### Notes & Logging
-- Track hunger levels (1-10 scale)
-- Energy levels throughout day
-- Meal satisfaction ratings
-- Optional notes for each meal
+- Free-form text notes for each meal (optional)
+- Daily summary notes field
+- No prescribed tracking dimensions (hunger, energy, etc.)
+- User can record whatever is relevant to them
 
 ## Example User Story
 
-> As a user, I want to see my next scheduled meal in 1 hour, check off meals as I eat them, and know how much protein I still need to hit my daily goal before bedtime.
+> As a user, I want to see my next scheduled meal in 1 hour, check off meals as I eat them, and see how my actual consumption compares to my daily goals for the variables I'm tracking.
 
 ## Technical Implementation
 
@@ -113,30 +164,25 @@ function getTodaySchedule(templates: TemplateMap): LaneTemplate | null {
 }
 ```
 
-### Calculate Consumed Nutrition
+### Calculate Consumed Variables
 
 ```typescript
-// Calculate nutrition state at current time
-function calculateConsumedNutrition(
+// Calculate variable state at current time
+function calculateConsumedVariables(
   todayLane: LaneTemplate,
   templates: TemplateMap,
   completedMealIds: Set<string>
-): NutritionTotals {
-  const totals: NutritionTotals = {
-    calories: 0,
-    protein_g: 0,
-    carbs_g: 0,
-    fats_g: 0
-  };
+): Record<string, number> {
+  const totals: Record<string, number> = {};
 
   for (const segment of todayLane.segments) {
     if (completedMealIds.has(segment.busyId)) {
       const meal = templates.get(segment.busyId);
       if (meal && 'willProduce' in meal) {
-        totals.calories += meal.willProduce.calories || 0;
-        totals.protein_g += meal.willProduce.protein_g || 0;
-        totals.carbs_g += meal.willProduce.carbs_g || 0;
-        totals.fats_g += meal.willProduce.fats_g || 0;
+        // Aggregate all willProduce variables dynamically
+        for (const [variableName, value] of Object.entries(meal.willProduce)) {
+          totals[variableName] = (totals[variableName] || 0) + (value || 0);
+        }
       }
     }
   }
@@ -148,17 +194,19 @@ function calculateConsumedNutrition(
 ### Calculate Remaining Budget
 
 ```typescript
-// Calculate remaining nutrition budget
+// Calculate remaining variable budget
 function calculateRemainingBudget(
-  dailyGoals: NutritionGoals,
-  consumed: NutritionTotals
-): NutritionTotals {
-  return {
-    calories: dailyGoals.calories - consumed.calories,
-    protein_g: dailyGoals.protein_g - consumed.protein_g,
-    carbs_g: dailyGoals.carbs_g - consumed.carbs_g,
-    fats_g: dailyGoals.fats_g - consumed.fats_g
-  };
+  dailyGoals: Record<string, number>,
+  consumed: Record<string, number>
+): Record<string, number> {
+  const remaining: Record<string, number> = {};
+
+  // For each goal, calculate remaining amount
+  for (const [variableName, goalValue] of Object.entries(dailyGoals)) {
+    remaining[variableName] = goalValue - (consumed[variableName] || 0);
+  }
+
+  return remaining;
 }
 ```
 
@@ -213,10 +261,11 @@ function getNextScheduledMeal(
 **Color & Theme**
 - Fresh/healthy greens and blues color palette
 - Subtle accents (primary colors in key spots, neutral backgrounds)
-- Color-coded progress indicators:
-  - Green: On track (within 10% of goal at current time)
-  - Yellow: Close (within 20% but not on track)
-  - Red: Over or significantly under
+- Color-coded progress indicators (generic, data-driven):
+  - Green: On track (within threshold of goal trajectory for current time)
+  - Yellow: Close to trajectory but not perfectly aligned
+  - Red: Significantly over or under expected trajectory
+  - Thresholds are configurable per user preference
 - Auto-detect dark mode following system preference
 
 **Typography**
@@ -257,7 +306,7 @@ function getNextScheduledMeal(
 │  🍳 Next Meal in 1h 23m               │
 │                                       │
 │  High-Protein Breakfast               │
-│  450 cal · 40g protein                │
+│  [Variable summary if available]      │
 │                                       │
 │  [Skip]  [Ate It]  [Reschedule]      │
 └───────────────────────────────────────┘
@@ -266,46 +315,53 @@ function getNextScheduledMeal(
 **Features**:
 - Large countdown timer (hours and minutes)
 - Updates every minute
-- Meal name and key macros
+- Meal name from template intent
+- Optional variable summary (shows first 1-2 most relevant variables if available)
 - Quick action buttons
 - Celebration animation when time arrives
 - Changes to "Time to eat!" at meal time
 
-### Nutrition Display: Grouped by Category
+### Variable Tracking Display
 
-**Macros Section** (always visible):
-```
-Macros
-  Calories    1,450 / 2,000 kcal  [=========>  ]
-  Protein        98 /   150 g     [======>     ]
-  Carbs         165 /   200 g     [========>   ]
-  Fats           48 /    65 g     [=======>    ]
-```
+**Generic Variable Display System**:
 
-**Micros Section** (collapsible):
-```
-Micros ▼
-  Fiber          22 /    30 g
-  Sodium        890 / 2,300 mg
-  Sugar          45 /    50 g
-```
-
-**Custom Variables** (collapsible):
-```
-Custom ▼
-  Water         1,200 / 2,000 ml
-  Caffeine        200 /   400 mg
-```
+The Execute view displays whatever variables exist in the user's templates, without prescribing categories or structure.
 
 **Display Format**:
-- Variable name (left-aligned)
-- Current value / Goal value + unit
-- Simple progress bar (visual indicator)
-- Color coding:
-  - Green: On track (within 10% of goal at current time)
-  - Yellow: Close (within 20% but not on track)
-  - Red: Over or significantly under
-- Grouped sections expand/collapse with smooth animation
+```
+[User-Defined Variable 1]
+  current_value / goal_value unit  [=========>  ]
+
+[User-Defined Variable 2]
+  current_value / goal_value unit  [======>     ]
+
+[User-Defined Variable 3]
+  current_value / goal_value unit  [========>   ]
+```
+
+**Variable Display Rules**:
+- Show all variables that have goals defined by the user
+- Variables without goals are not displayed (or shown in a separate "untracked" section)
+- Variable order determined by user preference (configurable) or alphabetical by default
+- Each variable shows:
+  - Variable name (as defined by user)
+  - Current consumed value / Daily goal value
+  - Unit (extracted from variable name or user-defined)
+  - Progress bar (visual indicator)
+  - Color coding based on progress:
+    - Green: On track (within 10% of goal at current time of day)
+    - Yellow: Close (within 20% but not perfectly on track)
+    - Red: Over goal or significantly under trajectory
+
+**Optional Grouping**:
+- User can optionally define custom groups (e.g., "Macros", "Hydration", "Time")
+- Groups are collapsible sections
+- Ungrouped variables appear in a default section
+- No hardcoded categories - fully user-controlled
+
+**Empty State**:
+- If no goals are defined, show message: "Set daily goals to track progress"
+- Link to goals configuration
 
 ### Today's Schedule Timeline
 
@@ -333,22 +389,21 @@ Custom ▼
 
 **Floating Action Menu**:
 - Compact button row or expandable FAB
-- Common tasks easily accessible:
-  - 💧 Log water
-  - ☕ Log caffeine
-  - 🔄 Swap meal
-  - ➕ Add snack
-  - ⏱️ Adjust timing
+- Common schedule manipulation tasks:
+  - 🔄 Swap meal (replace with different template)
+  - ➕ Add unscheduled item (quick-add from library)
+  - ⏱️ Adjust timing (reschedule meals)
+  - ✏️ Edit schedule (navigate to Schedule view)
 
-**Context-Aware Suggestions**:
-- "Add 200ml water to hit daily goal"
-- "You're 30g protein short - add a protein shake?"
-- "Running late? Push dinner back 30 minutes?"
-- Appears based on nutrition gaps and time context
+**Context-Aware Suggestions** (Optional Enhancement):
+- Generic gap detection: "You have X variable units remaining"
+- Time-based prompts: "Running late? Adjust your schedule?"
+- Suggestions based purely on math (current vs. goal), not assumptions about what variables mean
+- No prescriptive advice about specific foods or behaviors
 
 ### Daily Summary Panel
 
-**End-of-Day View** (after last meal):
+**End-of-Day View** (after last meal or end of day):
 ```
 ┌─────────────────────────────────────┐
 │  Today's Summary                    │
@@ -356,10 +411,9 @@ Custom ▼
 │  ✅ All meals completed!            │
 │                                     │
 │  Actual vs. Planned:                │
-│    Calories    2,050 / 2,000 (+50)  │
-│    Protein       155 /   150 (+5g)  │
-│    Carbs         198 /   200 (-2g)  │
-│    Fats           67 /    65 (+2g)  │
+│    [Variable 1]    current / goal (±delta)  │
+│    [Variable 2]    current / goal (±delta)  │
+│    [Variable 3]    current / goal (±delta)  │
 │                                     │
 │  Notes:                             │
 │  [Add notes about today...]         │
@@ -367,6 +421,13 @@ Custom ▼
 │  [Plan Tomorrow]                    │
 └─────────────────────────────────────┘
 ```
+
+**Display Rules**:
+- Shows all tracked variables (those with goals)
+- Displays actual consumed vs. planned goal with delta
+- No judgment or interpretation - just the data
+- Optional notes field for user reflection
+- Quick link to plan next day's schedule
 
 ## State Management
 
@@ -390,15 +451,12 @@ interface ExecuteState {
   completedMealIds: Set<string>;
   skippedMealIds: Set<string>;
   currentTime: Date;
-  dailyGoals: NutritionGoals;
-  consumed: NutritionTotals;
-  remaining: NutritionTotals;
+  dailyGoals: Record<string, number>; // User-defined variable goals
+  consumed: Record<string, number>; // Current consumed variables
+  remaining: Record<string, number>; // Remaining variable budget
   nextMeal: ScheduledMeal | null;
-  expandedSections: {
-    macros: boolean;
-    micros: boolean;
-    custom: boolean;
-  };
+  expandedGroups: Set<string>; // User-defined collapsible groups
+  variableOrder: string[]; // User-preferred variable display order
   notifications: {
     enabled: boolean;
     reminderMinutes: number;
@@ -422,19 +480,20 @@ type ExecuteAction =
 
 ### Phase 1 (MVP Core)
 - Next meal countdown display
-- Grouped nutrition tracking (Macros/Micros/Custom)
+- Generic variable tracking display (for all user-defined variables with goals)
 - Meal check-off with progress updates
 - Today's timeline view
 - Real-time budget calculation
-- LocalStorage persistence of completed meals
+- LocalStorage persistence of completed meals and daily goals
 
 ### Phase 2 (Enhanced Features)
 - Smart meal swap recommendations
-- Quick actions (add snack, log water)
+- Quick actions (add unscheduled items, adjust timing)
 - Notification system for meal reminders
 - Daily summary with actual vs. planned
-- Notes and logging (hunger, energy, satisfaction)
+- Free-form notes and logging
 - Streak tracking and achievements
+- User-defined variable grouping and ordering
 
 ### Phase 3 (Advanced Features)
 - Predictive suggestions based on patterns
@@ -447,10 +506,11 @@ type ExecuteAction =
 ## Success Metrics
 
 1. **Meal Completion Rate**: Percentage of scheduled meals checked off
-2. **Goal Achievement**: Percentage of days meeting nutrition goals
+2. **Goal Achievement**: Percentage of days meeting user-defined variable goals
 3. **Schedule Adherence**: How closely users follow planned times
 4. **Adjustment Rate**: Frequency of on-the-fly swaps and additions
 5. **Engagement**: Daily active usage, session duration in Execute view
+6. **Goal Setting Rate**: Percentage of users who define daily goals for their variables
 
 ## Technical Considerations
 
@@ -487,25 +547,25 @@ type ExecuteAction =
 ## Future Enhancements
 
 ### AI & Intelligence
-- Proactive suggestions: "You usually have a snack around 3pm"
-- Pattern recognition: "You skip breakfast on weekends"
-- Predictive adjustments: "Traffic delay? Suggest rescheduling"
-- Personalized reminders based on habits
+- Pattern recognition: Learn user's scheduling habits
+- Proactive timing suggestions based on historical behavior
+- Predictive adjustments: Context-aware rescheduling prompts
+- Personalized reminders based on completion patterns
 
 ### Data & Integration
-- Fitness tracker integration (adjust for exercise)
+- Fitness tracker integration (import activity data as variables)
 - Smart watch complications (countdown on wrist)
-- Voice assistant integration ("Alexa, mark breakfast complete")
-- Photo logging with AI nutrition estimation
+- Voice assistant integration (mark meals complete)
+- Photo logging with optional metadata tagging
 
 ### Social Features
-- Share daily achievements
-- Compete with friends on goals
-- Group challenges (7-day protein challenge)
+- Share daily achievements (variable-agnostic)
+- Compete with friends on user-defined goals
+- Group challenges based on any tracked variable
 - Community support and motivation
 
 ### Advanced Tracking
-- Hunger/fullness scale tracking
-- Energy level correlation with meals
-- Mood tracking and nutrition relationship
-- Sleep quality and nutrition patterns
+- Free-form correlation tracking (user defines what to correlate)
+- Custom data visualization and trend analysis
+- Export data for external analysis
+- Integration with user's existing tracking tools
