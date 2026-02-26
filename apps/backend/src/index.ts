@@ -9,6 +9,8 @@ import { corsPlugin } from './plugins/cors.js';
 import { helmetPlugin } from './plugins/helmet.js';
 import { authRoutes } from './routes/auth.js';
 import { templateRoutes } from './routes/templates.js';
+import { scheduleRoutes } from './routes/schedule.js';
+import { executeRoutes } from './routes/execute.js';
 import { closeDatabase } from './db/client.js';
 
 // Create Fastify instance
@@ -36,10 +38,8 @@ fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOS
 // Register routes
 await fastify.register(authRoutes, { prefix: '/api/auth' });
 await fastify.register(templateRoutes, { prefix: '/api/templates' });
-
-// Placeholder routes for future phases
-fastify.get('/api/schedule/lanes', async () => ({ message: 'Schedule API - Phase 4' }));
-fastify.get('/api/execute/daily-state/:dateKey', async () => ({ message: 'Execute API - Phase 4' }));
+await fastify.register(scheduleRoutes, { prefix: '/api/schedule' });
+await fastify.register(executeRoutes, { prefix: '/api/execute' });
 
 // Graceful shutdown handler
 const closeGracefully = async (signal: string): Promise<void> => {
