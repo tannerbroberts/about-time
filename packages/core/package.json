@@ -1,0 +1,63 @@
+{
+  "name": "@tannerbroberts/about-time-core",
+  "version": "0.2.1",
+  "description": "Core template operations and validation for about-time",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tannerbroberts/about-time-core.git"
+  },
+  "author": "Tanner Roberts",
+  "keywords": [
+    "time",
+    "templates",
+    "scheduling",
+    "validation"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    },
+    "./templates": {
+      "types": "./dist/templates/index.d.ts",
+      "import": "./dist/templates/index.js"
+    },
+    "./layout": {
+      "types": "./dist/templates/layout/index.d.ts",
+      "import": "./dist/templates/layout/index.js"
+    },
+    "./validation": {
+      "types": "./dist/validation/index.d.ts",
+      "import": "./dist/validation/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest --run",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src/",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
