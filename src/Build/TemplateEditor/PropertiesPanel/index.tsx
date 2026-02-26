@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import type { BusyTemplate, Template } from '@tannerbroberts/about-time-core';
+import type { BusyTemplate, LaneTemplate, Template } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 import { useBuildStore } from '../../store';
@@ -10,6 +10,7 @@ import { useBuildStore } from '../../store';
 import { ActionButtons } from './ActionButtons';
 import { BusyProperties } from './BusyProperties';
 import { InstanceCounterBadge } from './InstanceCounterBadge';
+import { LaneProperties } from './LaneProperties';
 import { SegmentProperties } from './SegmentProperties';
 import { TemplateProperties } from './TemplateProperties';
 
@@ -60,6 +61,10 @@ export function PropertiesPanel(): React.ReactElement {
 
           {!isBaseTemplate && (
             <SegmentProperties focusedItem={focusedItem} parentLineage={parentLineage} />
+          )}
+
+          {template.templateType === 'lane' && (
+            <LaneProperties template={template as LaneTemplate} />
           )}
 
           {template.templateType === 'busy' && (
