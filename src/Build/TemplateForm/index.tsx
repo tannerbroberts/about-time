@@ -4,12 +4,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
 import IconButton from '@mui/material/IconButton';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -29,13 +24,19 @@ export function TemplateForm(): React.ReactElement {
   const closeTemplateForm = useBuildStore((state) => state.closeTemplateForm);
   const createTemplate = useBuildStore((state) => state.createTemplate);
   const updateTemplate = useBuildStore((state) => state.updateTemplate);
+  const creationTemplateType = useBuildStore((state) => state.creationTemplateType);
 
   const editingTemplate = editingTemplateId
     ? (templates[editingTemplateId] as BusyTemplate | LaneTemplate | undefined)
     : undefined;
 
-  // Form state
-  const [templateType, setTemplateType] = React.useState<'busy' | 'lane'>('busy');
+  // Form state - derive template type from store or editing template
+  const templateType = React.useMemo<'busy' | 'lane'>(() => {
+    if (editingTemplateId && editingTemplate) {
+      return editingTemplate.templateType;
+    }
+    return creationTemplateType || 'busy';
+  }, [editingTemplateId, editingTemplate, creationTemplateType]);
   const [name, setName] = React.useState('');
   const [durationMinutes, setDurationMinutes] = React.useState(0);
   const [willProduce, setWillProduce] = React.useState<Record<string, number>>({});
@@ -48,7 +49,6 @@ export function TemplateForm(): React.ReactElement {
   // Reset form when dialog opens/closes or when editing template changes
   React.useEffect(() => {
     if (isTemplateFormOpen && editingTemplate) {
-      setTemplateType(editingTemplate.templateType);
       setName(editingTemplate.intent);
       setDurationMinutes(Math.round(editingTemplate.estimatedDuration / 60000));
       if (editingTemplate.templateType === 'busy') {
@@ -60,7 +60,6 @@ export function TemplateForm(): React.ReactElement {
       }
     } else if (isTemplateFormOpen) {
       // Clear form for new template
-      setTemplateType('busy');
       setName('');
       setDurationMinutes(0);
       setWillProduce({});
@@ -68,14 +67,6 @@ export function TemplateForm(): React.ReactElement {
     }
     setErrors({});
   }, [isTemplateFormOpen, editingTemplate]);
-
-  const handleTemplateTypeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setTemplateType(e.target.value as 'busy' | 'lane');
-    // Focus name input after selecting template type
-    setTimeout(() => {
-      nameInputRef.current?.focus();
-    }, 0);
-  };
 
   const handleClose = (): void => {
     closeTemplateForm();
@@ -151,28 +142,6 @@ export function TemplateForm(): React.ReactElement {
 
       <DialogContent sx={{ paddingBottom: '80px' }}>
         <Stack spacing={4} sx={{ maxWidth: 600, margin: '0 auto', paddingTop: 2 }}>
-          {!editingTemplateId && (
-            <FormControl>
-              <FormLabel id="template-type-label">Template Type</FormLabel>
-              <RadioGroup
-                aria-labelledby="template-type-label"
-                value={templateType}
-                onChange={handleTemplateTypeChange}
-              >
-                <FormControlLabel
-                  value="busy"
-                  control={<Radio />}
-                  label="Busy Template - Individual meal or activity with nutritional values"
-                />
-                <FormControlLabel
-                  value="lane"
-                  control={<Radio />}
-                  label="Lane Template - Container for organizing multiple templates"
-                />
-              </RadioGroup>
-            </FormControl>
-          )}
-
           <BasicInfoFields
             name={name}
             durationMinutes={durationMinutes}

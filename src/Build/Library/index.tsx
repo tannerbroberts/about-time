@@ -1,7 +1,10 @@
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Fab from '@mui/material/Fab';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
 import React from 'react';
 
 import { useBuildStore } from '../store';
@@ -18,8 +21,12 @@ export function Library(): React.ReactElement {
   const templateArray = Object.values(templates);
   const hasTemplates = templateArray.length > 0;
 
-  const handleCreateClick = (): void => {
-    openTemplateForm();
+  const handleCreateBusyClick = (): void => {
+    openTemplateForm(undefined, 'busy');
+  };
+
+  const handleCreateLaneClick = (): void => {
+    openTemplateForm(undefined, 'lane');
   };
 
   const handleEditClick = (templateId: string): void => {
@@ -38,7 +45,7 @@ export function Library(): React.ReactElement {
 
   return (
     <Container maxWidth="md" sx={{ paddingTop: 3, paddingBottom: 3 }}>
-      {!hasTemplates && <EmptyState onCreateClick={handleCreateClick} />}
+      {!hasTemplates && <EmptyState onCreateBusyClick={handleCreateBusyClick} onCreateLaneClick={handleCreateLaneClick} />}
 
       {hasTemplates && (
         <Box>
@@ -55,18 +62,26 @@ export function Library(): React.ReactElement {
       )}
 
       {hasTemplates && (
-        <Fab
-          color="primary"
-          aria-label="Create template"
+        <SpeedDial
+          ariaLabel="Create template"
+          icon={<AddIcon />}
           sx={{
             position: 'fixed',
-            bottom: 72, // Above bottom navigation
+            bottom: 72,
             right: 16,
           }}
-          onClick={handleCreateClick}
         >
-          <AddIcon />
-        </Fab>
+          <SpeedDialAction
+            icon={<CheckCircleIcon />}
+            tooltipTitle="Busy Template"
+            onClick={handleCreateBusyClick}
+          />
+          <SpeedDialAction
+            icon={<AccountTreeIcon />}
+            tooltipTitle="Lane Template"
+            onClick={handleCreateLaneClick}
+          />
+        </SpeedDial>
       )}
     </Container>
   );

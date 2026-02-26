@@ -21,6 +21,7 @@ export interface BuildState {
   // Form state
   isTemplateFormOpen: boolean;
   editingTemplateId: string | null;
+  creationTemplateType: 'busy' | 'lane' | null;
 
   // Editor state
   isTemplateEditorOpen: boolean;
@@ -62,7 +63,7 @@ export interface BuildActions {
   setFilterType: (filterType: BuildState['filterTemplateType']) => void;
 
   // Form actions
-  openTemplateForm: (templateId?: string) => void;
+  openTemplateForm: (templateId?: string, preselectedType?: 'busy' | 'lane') => void;
   closeTemplateForm: () => void;
 
   // Editor actions
@@ -103,6 +104,7 @@ const defaultState: BuildState = {
   filterTemplateType: 'all',
   isTemplateFormOpen: false,
   editingTemplateId: null,
+  creationTemplateType: null,
   isTemplateEditorOpen: false,
   selectedBaseTemplateId: null,
   focusedLineage: [],
@@ -178,10 +180,11 @@ export const useBuildStore = create<BuildStore>((set) => ({
   },
 
   // Form actions
-  openTemplateForm: (templateId?): void => {
+  openTemplateForm: (templateId?, preselectedType?): void => {
     set({
       isTemplateFormOpen: true,
       editingTemplateId: templateId ?? null,
+      creationTemplateType: templateId ? null : (preselectedType ?? null),
     });
   },
 
@@ -189,6 +192,7 @@ export const useBuildStore = create<BuildStore>((set) => ({
     set({
       isTemplateFormOpen: false,
       editingTemplateId: null,
+      creationTemplateType: null,
     });
   },
 
