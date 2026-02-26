@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 import { corsPlugin } from './plugins/cors.js';
 import { helmetPlugin } from './plugins/helmet.js';
 import { authRoutes } from './routes/auth.js';
+import { templateRoutes } from './routes/templates.js';
 import { closeDatabase } from './db/client.js';
 
 // Create Fastify instance
@@ -34,9 +35,9 @@ fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOS
 
 // Register routes
 await fastify.register(authRoutes, { prefix: '/api/auth' });
+await fastify.register(templateRoutes, { prefix: '/api/templates' });
 
 // Placeholder routes for future phases
-fastify.get('/api/templates', async () => ({ message: 'Templates API - Phase 3' }));
 fastify.get('/api/schedule/lanes', async () => ({ message: 'Schedule API - Phase 4' }));
 fastify.get('/api/execute/daily-state/:dateKey', async () => ({ message: 'Execute API - Phase 4' }));
 
