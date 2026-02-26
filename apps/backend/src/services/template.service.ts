@@ -20,7 +20,7 @@ export class TemplateService {
       id: template.id,
       userId,
       templateData: template,
-      templateType: template.type,
+      templateType: template.templateType,
       intent: template.intent,
       estimatedDuration: template.estimatedDuration,
     }).returning();
@@ -126,7 +126,7 @@ export class TemplateService {
     const [updated] = await db.update(templates)
       .set({
         templateData: template,
-        templateType: template.type,
+        templateType: template.templateType,
         intent: template.intent,
         estimatedDuration: template.estimatedDuration,
         updatedAt: new Date(),
@@ -209,13 +209,13 @@ export class TemplateService {
   private extractRelationships(template: Template): NewTemplateRelationship[] {
     const relationships: NewTemplateRelationship[] = [];
 
-    if (template.type === 'lane') {
+    if (template.templateType === 'lane') {
       const laneTemplate = template as LaneTemplate;
       for (const segment of laneTemplate.segments) {
         relationships.push({
           id: segment.relationshipId,
           parentTemplateId: template.id,
-          childTemplateId: segment.busy.id,
+          childTemplateId: segment.templateId,
           offset: segment.offset,
         });
       }
