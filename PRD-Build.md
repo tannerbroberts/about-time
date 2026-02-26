@@ -144,6 +144,32 @@ createBusyTemplate({
 
 ## UI/UX Design Specifications
 
+### UI Layering and Z-Index Conventions
+
+To ensure proper stacking order and prevent visual conflicts, follow these z-index levels:
+
+**Z-Index Layers** (from bottom to top):
+- **Base content**: z-index 0 (default, no explicit z-index needed)
+- **Sticky headers/footers**: z-index 100-200
+- **Overlays and floating menus**: z-index 1300-1400
+  - Backdrop: 1300
+  - Floating pill/menu: 1400
+- **Dialogs and modals**: z-index 1500+
+  - Should always appear above overlays and floating menus
+  - MUI Dialog default is 1300, explicitly set to 1500 when needed
+
+**Example Implementation**:
+```typescript
+// SegmentAddOverlay (floating menu)
+<Box sx={{ zIndex: 1300 }}>  {/* Backdrop */}
+<Paper sx={{ zIndex: 1400 }}>  {/* Floating pill */}
+
+// FillWithNewModal (dialog triggered from overlay)
+<Dialog sx={{ zIndex: 1500 }}>  {/* Must be above the overlay */}
+```
+
+**Rule**: Any modal/dialog opened FROM an overlay must have a higher z-index than the overlay itself.
+
 ### Template Library Display
 
 **Dense template rows** in list format:
@@ -156,6 +182,44 @@ createBusyTemplate({
 - Scroll performance optimized for hundreds of templates
 
 ### Template Creation Interface
+
+**IMPORTANT: Template Type Selection Pattern**:
+
+The template type (Busy vs Lane) MUST be determined BEFORE opening the creation form, never inside the form itself.
+
+**Required Pattern**:
+- Two separate action buttons/triggers: one for creating a Busy template, one for creating a Lane template
+- Each button opens the form with the type pre-determined
+- The form itself NEVER shows template type selection UI
+- This pattern applies to ALL template creation entry points:
+  - Library empty state: Two separate "Create Busy Template" and "Create Lane Template" buttons
+  - Library SpeedDial: Two separate SpeedDial actions
+  - SegmentAddOverlay: Two separate icon buttons in the pill menu
+  - Any future template creation UI
+
+**Rationale**:
+- Reduces cognitive load by separating the "what kind?" decision from the "what details?" task
+- Makes the form cleaner and more focused on the template's actual properties
+- Matches the mental model: users know whether they want a container (Lane) or an activity (Busy) before they start entering details
+- Consistent with existing UI patterns in Library and EmptyState
+
+**Implementation**:
+```typescript
+// ✅ Correct: Type determined before form opens
+const handleCreateBusyClick = (): void => {
+  openTemplateForm(undefined, 'busy');
+};
+
+const handleCreateLaneClick = (): void => {
+  openTemplateForm(undefined, 'lane');
+};
+
+// ❌ Incorrect: Type selection inside the form
+<Stack direction="row" spacing={1}>
+  <Button onClick={() => setTemplateType('busy')}>Busy</Button>
+  <Button onClick={() => setTemplateType('lane')}>Lane</Button>
+</Stack>
+```
 
 **Manual Form-Based Creation**:
 - Structured form with clear field labels

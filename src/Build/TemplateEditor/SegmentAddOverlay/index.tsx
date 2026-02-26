@@ -1,3 +1,4 @@
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import CloseIcon from '@mui/icons-material/Close';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
@@ -25,8 +26,6 @@ export function SegmentAddOverlay(): React.ReactElement {
   const closeSegmentAddOverlay = useBuildStore((state) => state.closeSegmentAddOverlay);
   const openSegmentAddModal = useBuildStore((state) => state.openSegmentAddModal);
 
-  const [isFillWithNewModalOpen, setIsFillWithNewModalOpen] = React.useState(false);
-
   const handleClose = (): void => {
     closeSegmentAddOverlay();
   };
@@ -39,12 +38,18 @@ export function SegmentAddOverlay(): React.ReactElement {
     openSegmentAddModal(selectedRegion);
   };
 
-  const handleFillWithNew = (): void => {
-    setIsFillWithNewModalOpen(true);
+  const [selectedTemplateType, setSelectedTemplateType] = React.useState<'busy' | 'lane' | null>(null);
+
+  const handleFillWithBusy = (): void => {
+    setSelectedTemplateType('busy');
+  };
+
+  const handleFillWithLane = (): void => {
+    setSelectedTemplateType('lane');
   };
 
   const handleFillWithNewModalClose = (): void => {
-    setIsFillWithNewModalOpen(false);
+    setSelectedTemplateType(null);
     closeSegmentAddOverlay();
   };
 
@@ -75,12 +80,13 @@ export function SegmentAddOverlay(): React.ReactElement {
   if (!isSegmentAddOverlayOpen || !overlayPosition) {
     return (
       <>
-        {isFillWithNewModalOpen && selectedRegion && (
+        {selectedTemplateType && selectedRegion && (
           <FillWithNewModal
-            isOpen={isFillWithNewModalOpen}
+            isOpen={Boolean(selectedTemplateType)}
             onClose={handleFillWithNewModalClose}
             start={selectedRegion.start}
             end={selectedRegion.end}
+            templateType={selectedTemplateType}
           />
         )}
       </>
@@ -162,9 +168,9 @@ export function SegmentAddOverlay(): React.ReactElement {
           </span>
         </Tooltip>
 
-        <Tooltip title="Create new template">
+        <Tooltip title="Create new busy template">
           <IconButton
-            onClick={handleFillWithNew}
+            onClick={handleFillWithBusy}
             size="small"
             sx={{
               width: 48,
@@ -179,14 +185,33 @@ export function SegmentAddOverlay(): React.ReactElement {
             <AddBoxIcon />
           </IconButton>
         </Tooltip>
+
+        <Tooltip title="Create new lane template">
+          <IconButton
+            onClick={handleFillWithLane}
+            size="small"
+            sx={{
+              width: 48,
+              height: 48,
+              backgroundColor: '#10b981',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#059669',
+              },
+            }}
+          >
+            <AccountTreeIcon />
+          </IconButton>
+        </Tooltip>
       </Paper>
 
-      {isFillWithNewModalOpen && selectedRegion && (
+      {selectedTemplateType && selectedRegion && (
         <FillWithNewModal
-          isOpen={isFillWithNewModalOpen}
+          isOpen={Boolean(selectedTemplateType)}
           onClose={handleFillWithNewModalClose}
           start={selectedRegion.start}
           end={selectedRegion.end}
+          templateType={selectedTemplateType}
         />
       )}
     </>
@@ -198,9 +223,10 @@ interface FillWithNewModalProps {
   onClose: () => void;
   start: number;
   end: number;
+  templateType: 'busy' | 'lane';
 }
 
-function FillWithNewModal({ isOpen, onClose, start, end }: FillWithNewModalProps): React.ReactElement {
+function FillWithNewModal({ isOpen, onClose, start, end, templateType }: FillWithNewModalProps): React.ReactElement {
   const focusedLineage = useBuildStore((state) => state.focusedLineage);
   const templates = useBuildStore((state) => state.templates);
   const createTemplate = useBuildStore((state) => state.createTemplate);
@@ -210,7 +236,6 @@ function FillWithNewModal({ isOpen, onClose, start, end }: FillWithNewModalProps
   const duration = end - start;
   const durationMinutes = Math.round(duration / 60000);
 
-  const [templateType, setTemplateType] = React.useState<'busy' | 'lane'>('busy');
   const [name, setName] = React.useState('');
   const [customDuration, setCustomDuration] = React.useState(durationMinutes);
   const [offset, setOffset] = React.useState(start);
@@ -283,31 +308,18 @@ function FillWithNewModal({ isOpen, onClose, start, end }: FillWithNewModalProps
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Fill with New Template</DialogTitle>
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        zIndex: 1500,
+      }}
+    >
+      <DialogTitle>Create New {templateType === 'busy' ? 'Busy' : 'Lane'} Template</DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ paddingTop: 2 }}>
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Template Type
-            </Typography>
-            <Stack direction="row" spacing={1}>
-              <Button
-                variant={templateType === 'busy' ? 'contained' : 'outlined'}
-                onClick={(): void => setTemplateType('busy')}
-                fullWidth
-              >
-                Busy
-              </Button>
-              <Button
-                variant={templateType === 'lane' ? 'contained' : 'outlined'}
-                onClick={(): void => setTemplateType('lane')}
-                fullWidth
-              >
-                Lane
-              </Button>
-            </Stack>
-          </Box>
 
           <Box>
             <Typography variant="subtitle2" gutterBottom>
