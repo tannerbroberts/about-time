@@ -10,7 +10,11 @@ import { NextMealCountdown } from './NextMealCountdown';
 import { ExecuteProvider } from './Provider';
 import { DefaultExecuteState, reducer } from './reducer';
 import { TodaysTimeline } from './TodaysTimeline';
-import { loadTodayCompleted, loadTodaySkipped, saveTodayCompleted, saveTodaySkipped } from './utils/localStorage';
+import {
+  loadDailyState,
+  saveDailyStateToCache,
+  updateDailyState,
+} from './utils/localStorage';
 import { VariableTracking } from './VariableTracking';
 
 export function Execute(): React.ReactElement {
@@ -22,32 +26,51 @@ export function Execute(): React.ReactElement {
     executeDispatch({ type: 'HYDRATE_TEMPLATES', templates: buildTemplates });
   }, [buildTemplates]);
 
+  // Load today's data from API on mount
   React.useEffect(() => {
-    const todayKey = formatDateKey(new Date());
-    const scheduleLanes = loadScheduleLanes();
-    const todayLaneId = scheduleLanes[todayKey] || null;
+    const loadData = async (): Promise<void> => {
+      const todayKey = formatDateKey(new Date());
+      const scheduleLanes = await loadScheduleLanes();
+      const todayLaneId = scheduleLanes[todayKey] || null;
 
-    executeDispatch({ type: 'LOAD_TODAY', laneId: todayLaneId, date: new Date() });
+      executeDispatch({ type: 'LOAD_TODAY', laneId: todayLaneId, date: new Date() });
 
-    const completedIds = loadTodayCompleted(todayKey);
-    if (completedIds.size > 0) {
-      executeDispatch({ type: 'RESTORE_COMPLETED', mealIds: completedIds });
-    }
-
-    const skippedIds = loadTodaySkipped(todayKey);
-    if (skippedIds.size > 0) {
-      executeDispatch({ type: 'RESTORE_SKIPPED', mealIds: skippedIds });
-    }
+      const dailyState = await loadDailyState(todayKey);
+      if (dailyState.completedMealIds.length > 0) {
+        executeDispatch({ type: 'RESTORE_COMPLETED', mealIds: new Set(dailyState.completedMealIds) });
+      }
+      if (dailyState.skippedMealIds.length > 0) {
+        executeDispatch({ type: 'RESTORE_SKIPPED', mealIds: new Set(dailyState.skippedMealIds) });
+      }
+    };
+    loadData();
   }, []);
 
+  // Sync changes to API
   React.useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-    const todayKey = formatDateKey(new Date());
-    saveTodayCompleted(executeState.completedMealIds, todayKey);
-    saveTodaySkipped(executeState.skippedMealIds, todayKey);
+
+    const syncChanges = async (): Promise<void> => {
+      const todayKey = formatDateKey(new Date());
+      const completedIds = Array.from(executeState.completedMealIds);
+      const skippedIds = Array.from(executeState.skippedMealIds);
+
+      try {
+        await updateDailyState(todayKey, completedIds, skippedIds);
+        saveDailyStateToCache(todayKey, {
+          completedMealIds: completedIds,
+          skippedMealIds: skippedIds,
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to sync daily state:', error);
+      }
+    };
+
+    syncChanges();
   }, [executeState.completedMealIds, executeState.skippedMealIds]);
 
   React.useEffect(() => {

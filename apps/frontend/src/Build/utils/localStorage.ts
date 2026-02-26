@@ -1,8 +1,76 @@
-import type { TemplateMap } from '@tannerbroberts/about-time-core';
+import {
+  fetchTemplateMap,
+  createTemplate as apiCreateTemplate,
+  updateTemplate as apiUpdateTemplate,
+  deleteTemplate as apiDeleteTemplate,
+} from '@about-time/api-client';
+import type { Template, TemplateMap } from '@tannerbroberts/about-time-core';
 
 const STORAGE_KEY = 'about-time:templates';
 
-export const loadTemplates = (): TemplateMap => {
+/**
+ * Load templates from API with localStorage cache fallback
+ */
+export const loadTemplates = async (): Promise<TemplateMap> => {
+  try {
+    // Try API first
+    const templates = await fetchTemplateMap();
+    // Cache in localStorage
+    saveToLocalStorage(templates);
+    return templates;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to load templates from API, using localStorage cache:', error);
+    // Fallback to localStorage
+    return loadFromLocalStorage();
+  }
+};
+
+/**
+ * Create template via API with optimistic localStorage update
+ */
+export const createTemplate = async (template: Template): Promise<Template> => {
+  try {
+    const created = await apiCreateTemplate(template);
+    return created;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to create template via API:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update template via API
+ */
+export const updateTemplate = async (template: Template): Promise<Template> => {
+  try {
+    const updated = await apiUpdateTemplate(template);
+    return updated;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to update template via API:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete template via API
+ */
+export const deleteTemplate = async (templateId: string): Promise<void> => {
+  try {
+    await apiDeleteTemplate(templateId);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to delete template via API:', error);
+    throw error;
+  }
+};
+
+/**
+ * Load templates from localStorage (used as cache/fallback)
+ */
+const loadFromLocalStorage = (): TemplateMap => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
@@ -16,7 +84,10 @@ export const loadTemplates = (): TemplateMap => {
   }
 };
 
-export const saveTemplates = (templates: TemplateMap): void => {
+/**
+ * Save templates to localStorage (used as cache)
+ */
+export const saveToLocalStorage = (templates: TemplateMap): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
   } catch (error) {

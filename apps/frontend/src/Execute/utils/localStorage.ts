@@ -1,61 +1,101 @@
-const EXECUTE_COMPLETED_KEY = 'about-time:execute-completed';
-const EXECUTE_SKIPPED_KEY = 'about-time:execute-skipped';
-const EXECUTE_LAST_DATE_KEY = 'about-time:execute-last-date';
+import {
+  getDailyState as apiGetDailyState,
+  updateDailyState as apiUpdateDailyState,
+  completeMeal as apiCompleteMeal,
+  skipMeal as apiSkipMeal,
+} from '@about-time/api-client';
 
-export function loadTodayCompleted(todayKey: string): Set<string> {
+const DAILY_STATE_KEY = 'about-time:daily-state';
+
+export interface DailyState {
+  completedMealIds: string[];
+  skippedMealIds: string[];
+}
+
+/**
+ * Load daily state from API with localStorage cache fallback
+ */
+export const loadDailyState = async (dateKey: string): Promise<DailyState> => {
   try {
-    const lastDate = localStorage.getItem(EXECUTE_LAST_DATE_KEY);
-    if (lastDate !== todayKey) {
-      clearDailyData();
-      return new Set<string>();
-    }
+    const state = await apiGetDailyState(dateKey);
+    // Cache in localStorage
+    saveDailyStateToCache(dateKey, state);
+    return {
+      completedMealIds: state.completedMealIds,
+      skippedMealIds: state.skippedMealIds,
+    };
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to load daily state from API, using localStorage cache:', error);
+    return loadDailyStateFromCache(dateKey);
+  }
+};
 
-    const stored = localStorage.getItem(EXECUTE_COMPLETED_KEY);
+/**
+ * Complete a meal
+ */
+export const completeMeal = async (dateKey: string, mealId: string): Promise<void> => {
+  try {
+    await apiCompleteMeal(dateKey, mealId);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to complete meal via API:', error);
+    throw error;
+  }
+};
+
+/**
+ * Skip a meal
+ */
+export const skipMeal = async (dateKey: string, mealId: string): Promise<void> => {
+  try {
+    await apiSkipMeal(dateKey, mealId);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to skip meal via API:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update full daily state
+ */
+export const updateDailyState = async (
+  dateKey: string,
+  completedMealIds: string[],
+  skippedMealIds: string[],
+): Promise<void> => {
+  try {
+    await apiUpdateDailyState(dateKey, completedMealIds, skippedMealIds);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to update daily state via API:', error);
+    throw error;
+  }
+};
+
+// Cache functions
+const loadDailyStateFromCache = (dateKey: string): DailyState => {
+  try {
+    const stored = localStorage.getItem(`${DAILY_STATE_KEY}:${dateKey}`);
     if (stored) {
-      const ids = JSON.parse(stored) as string[];
-      return new Set(ids);
+      return JSON.parse(stored);
     }
   } catch (error) {
-    console.error('Failed to load completed meals:', error);
+    // eslint-disable-next-line no-console
+    console.error('Failed to load daily state from localStorage:', error);
   }
-  return new Set<string>();
-}
+  return { completedMealIds: [], skippedMealIds: [] };
+};
 
-export function saveTodayCompleted(completedMealIds: Set<string>, todayKey: string): void {
+export const saveDailyStateToCache = (
+  dateKey: string,
+  state: { completedMealIds: string[]; skippedMealIds: string[] },
+): void => {
   try {
-    localStorage.setItem(EXECUTE_COMPLETED_KEY, JSON.stringify([...completedMealIds]));
-    localStorage.setItem(EXECUTE_LAST_DATE_KEY, todayKey);
+    localStorage.setItem(`${DAILY_STATE_KEY}:${dateKey}`, JSON.stringify(state));
   } catch (error) {
-    console.error('Failed to save completed meals:', error);
+    // eslint-disable-next-line no-console
+    console.error('Failed to save daily state to localStorage:', error);
   }
-}
-
-export function loadTodaySkipped(todayKey: string): Set<string> {
-  try {
-    const lastDate = localStorage.getItem(EXECUTE_LAST_DATE_KEY);
-    if (lastDate !== todayKey) return new Set<string>();
-
-    const stored = localStorage.getItem(EXECUTE_SKIPPED_KEY);
-    if (stored) {
-      const ids = JSON.parse(stored) as string[];
-      return new Set(ids);
-    }
-  } catch (error) {
-    console.error('Failed to load skipped meals:', error);
-  }
-  return new Set<string>();
-}
-
-export function saveTodaySkipped(skippedMealIds: Set<string>, todayKey: string): void {
-  try {
-    localStorage.setItem(EXECUTE_SKIPPED_KEY, JSON.stringify([...skippedMealIds]));
-    localStorage.setItem(EXECUTE_LAST_DATE_KEY, todayKey);
-  } catch (error) {
-    console.error('Failed to save skipped meals:', error);
-  }
-}
-
-function clearDailyData(): void {
-  localStorage.removeItem(EXECUTE_COMPLETED_KEY);
-  localStorage.removeItem(EXECUTE_SKIPPED_KEY);
-}
+};

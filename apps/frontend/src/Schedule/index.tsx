@@ -10,32 +10,88 @@ import { NutritionPanel } from './NutritionPanel';
 import { ScheduleProvider } from './Provider';
 import { DefaultScheduleState, reducer } from './reducer';
 import { ScheduleFAB } from './ScheduleFAB';
-import { loadDailyGoals, loadScheduleLanes, saveScheduleLanes } from './utils/localStorage';
+import {
+  loadDailyGoals,
+  loadScheduleLanes,
+  saveScheduleLanesToCache,
+  setScheduleLane,
+  removeScheduleLane,
+} from './utils/localStorage';
 
 export function Schedule(): React.ReactElement {
   const buildTemplates = useBuildStore((state) => state.templates);
   const [scheduleState, scheduleDispatch] = React.useReducer(reducer, DefaultScheduleState);
   const isInitialMount = React.useRef(true);
+  const previousLanes = React.useRef<Record<string, string>>({});
 
   React.useEffect(() => {
     scheduleDispatch({ type: 'HYDRATE_TEMPLATES', templates: buildTemplates });
   }, [buildTemplates]);
 
+  // Load data from API on mount
   React.useEffect(() => {
-    const lanes = loadScheduleLanes();
-    const goals = loadDailyGoals();
-    scheduleDispatch({ type: 'HYDRATE_SCHEDULE_LANES', lanes });
-    if (goals) {
-      scheduleDispatch({ type: 'SET_DAILY_GOALS', goals });
-    }
+    const loadData = async (): Promise<void> => {
+      const [lanes, goals] = await Promise.all([loadScheduleLanes(), loadDailyGoals()]);
+      scheduleDispatch({ type: 'HYDRATE_SCHEDULE_LANES', lanes });
+      if (goals) {
+        // Map API response (proteinG, carbsG, fatsG) to frontend format (protein_g, carbs_g, fats_g)
+        scheduleDispatch({
+          type: 'SET_DAILY_GOALS',
+          goals: {
+            calories: goals.calories,
+            protein_g: goals.proteinG,
+            carbs_g: goals.carbsG,
+            fats_g: goals.fatsG,
+          },
+        });
+      }
+      previousLanes.current = lanes;
+    };
+    loadData();
   }, []);
 
+  // Sync changes to API
   React.useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-    saveScheduleLanes(scheduleState.scheduleLanes);
+
+    // Detect changes and sync to API
+    const syncChanges = async (): Promise<void> => {
+      const currentLanes = scheduleState.scheduleLanes;
+      const prev = previousLanes.current;
+
+      // Find added/updated lanes
+      for (const [dateKey, laneId] of Object.entries(currentLanes)) {
+        if (prev[dateKey] !== laneId) {
+          try {
+            await setScheduleLane(dateKey, laneId);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`Failed to sync lane for ${dateKey}:`, error);
+          }
+        }
+      }
+
+      // Find removed lanes
+      for (const dateKey of Object.keys(prev)) {
+        if (!(dateKey in currentLanes)) {
+          try {
+            await removeScheduleLane(dateKey);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`Failed to remove lane for ${dateKey}:`, error);
+          }
+        }
+      }
+
+      // Update cache and tracking
+      saveScheduleLanesToCache(currentLanes);
+      previousLanes.current = currentLanes;
+    };
+
+    syncChanges();
   }, [scheduleState.scheduleLanes]);
 
   const contextValue = React.useMemo(

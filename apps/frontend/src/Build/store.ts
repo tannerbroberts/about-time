@@ -2,7 +2,13 @@ import type { Template, TemplateMap } from '@tannerbroberts/about-time-core';
 import type React from 'react';
 import { create } from 'zustand';
 
-import { loadTemplates, saveTemplates } from './utils/localStorage';
+import {
+  loadTemplates,
+  createTemplate as apiCreateTemplate,
+  updateTemplate as apiUpdateTemplate,
+  deleteTemplate as apiDeleteTemplate,
+  saveToLocalStorage,
+} from './utils/localStorage';
 
 export interface FocusPathItem {
   templateId: string;
@@ -58,9 +64,10 @@ export interface BuildState {
 export interface BuildActions {
   // Template CRUD
   hydrateTemplates: (templates: TemplateMap) => void;
-  createTemplate: (template: Template) => void;
-  updateTemplate: (id: string, template: Template) => void;
-  deleteTemplate: (id: string) => void;
+  loadTemplatesFromAPI: () => Promise<void>;
+  createTemplate: (template: Template) => Promise<void>;
+  updateTemplate: (id: string, template: Template) => Promise<void>;
+  deleteTemplate: (id: string) => Promise<void>;
 
   // Library actions
   setSearchQuery: (query: string) => void;
@@ -141,45 +148,105 @@ export const useBuildStore = create<BuildStore>((set) => ({
   // Template CRUD
   hydrateTemplates: (templates): void => {
     set({ templates });
+    saveToLocalStorage(templates);
   },
 
-  createTemplate: (template): void => {
-    set((state) => {
-      const newTemplates = {
+  loadTemplatesFromAPI: async (): Promise<void> => {
+    try {
+      const templates = await loadTemplates();
+      set({ templates });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load templates:', error);
+    }
+  },
+
+  createTemplate: async (template): Promise<void> => {
+    // Optimistic update
+    set((state) => ({
+      templates: {
         ...state.templates,
         [template.id]: template,
-      };
-      saveTemplates(newTemplates);
-      return {
-        templates: newTemplates,
-        isTemplateFormOpen: false,
-        editingTemplateId: null,
-      };
-    });
+      },
+      isTemplateFormOpen: false,
+      editingTemplateId: null,
+    }));
+
+    try {
+      await apiCreateTemplate(template);
+      // Update cache
+      set((state) => {
+        saveToLocalStorage(state.templates);
+        return {};
+      });
+    } catch (error) {
+      // Revert on error
+      set((state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [template.id]: _removed, ...remaining } = state.templates;
+        return { templates: remaining };
+      });
+      throw error;
+    }
   },
 
-  updateTemplate: (id, template): void => {
-    set((state) => {
-      const newTemplates = {
+  updateTemplate: async (id, template): Promise<void> => {
+    const previousTemplate = useBuildStore.getState().templates[id];
+
+    // Optimistic update
+    set((state) => ({
+      templates: {
         ...state.templates,
         [id]: template,
-      };
-      saveTemplates(newTemplates);
-      return {
-        templates: newTemplates,
-      };
-    });
+      },
+    }));
+
+    try {
+      await apiUpdateTemplate(template);
+      // Update cache
+      set((state) => {
+        saveToLocalStorage(state.templates);
+        return {};
+      });
+    } catch (error) {
+      // Revert on error
+      set((state) => ({
+        templates: {
+          ...state.templates,
+          [id]: previousTemplate,
+        },
+      }));
+      throw error;
+    }
   },
 
-  deleteTemplate: (id): void => {
+  deleteTemplate: async (id): Promise<void> => {
+    const previousTemplate = useBuildStore.getState().templates[id];
+
+    // Optimistic update
     set((state) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _deleted, ...remainingTemplates } = state.templates;
-      saveTemplates(remainingTemplates);
-      return {
-        templates: remainingTemplates,
-      };
+      return { templates: remainingTemplates };
     });
+
+    try {
+      await apiDeleteTemplate(id);
+      // Update cache
+      set((state) => {
+        saveToLocalStorage(state.templates);
+        return {};
+      });
+    } catch (error) {
+      // Revert on error
+      set((state) => ({
+        templates: {
+          ...state.templates,
+          [id]: previousTemplate,
+        },
+      }));
+      throw error;
+    }
   },
 
   // Library actions
@@ -348,8 +415,4 @@ export const useBuildStore = create<BuildStore>((set) => ({
   },
 }));
 
-// Initialize store with data from localStorage on module load
-const initialTemplates = loadTemplates();
-if (Object.keys(initialTemplates).length > 0) {
-  useBuildStore.getState().hydrateTemplates(initialTemplates);
-}
+// Note: Templates are loaded on mount in Build component via loadTemplatesFromAPI()
