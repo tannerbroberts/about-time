@@ -19,19 +19,7 @@ import { closeRedis } from './config/redis.js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { db } from './db/client.js';
 
-// Run database migrations on startup in production
-if (env.NODE_ENV === 'production') {
-  try {
-    console.log('🔄 Running database migrations...');
-    await migrate(db, { migrationsFolder: './src/db/migrations' });
-    console.log('✅ Database migrations completed');
-  } catch (error) {
-    console.error('❌ Migration failed:', error);
-    process.exit(1);
-  }
-}
-
-// Create Fastify instance
+// Create Fastify instance first so we can use its logger
 const fastify = Fastify({
   logger: {
     level: env.NODE_ENV === 'production' ? 'info' : 'debug',
@@ -44,6 +32,18 @@ const fastify = Fastify({
     } : undefined,
   },
 });
+
+// Run database migrations on startup in production
+if (env.NODE_ENV === 'production') {
+  try {
+    fastify.log.info('🔄 Running database migrations...');
+    await migrate(db, { migrationsFolder: './src/db/migrations' });
+    fastify.log.info('✅ Database migrations completed');
+  } catch (error) {
+    fastify.log.error({ error }, '❌ Migration failed');
+    process.exit(1);
+  }
+}
 
 // Register plugins
 await fastify.register(fastifyCookie);

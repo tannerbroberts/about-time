@@ -38,8 +38,9 @@ export type Env = z.infer<typeof envSchema>;
 const parseResult = envSchema.safeParse(process.env);
 
 if (!parseResult.success) {
-  console.error('❌ Invalid environment variables:');
-  console.error(parseResult.error.format());
+  // Use process.stderr.write instead of console.error (runs before logger exists)
+  process.stderr.write('❌ Invalid environment variables:\n');
+  process.stderr.write(`${JSON.stringify(parseResult.error.format(), null, 2)}\n`);
   process.exit(1);
 }
 

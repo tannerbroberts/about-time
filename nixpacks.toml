@@ -2,11 +2,12 @@
 nixPkgs = ['nodejs_20']
 
 [phases.install]
-cmds = ['npm install --legacy-peer-deps']
+cmds = ['npm ci --legacy-peer-deps']
 
 [phases.build]
 cmds = [
   'npm run build --workspace=@tannerbroberts/about-time-core',
+  'npm run build --workspace=@about-time/types',
   'npm run build --workspace=@about-time/api-client',
   'npm run build --workspace=@about-time/backend',
   'npm run build --workspace=@about-time/frontend'

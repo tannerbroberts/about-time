@@ -3,7 +3,20 @@
  */
 
 import Redis from 'ioredis';
+import pino from 'pino';
 import { env } from './env.js';
+
+// Create standalone logger for Redis (before Fastify is initialized)
+const logger = pino({
+  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+  transport: env.NODE_ENV === 'development' ? {
+    target: 'pino-pretty',
+    options: {
+      translateTime: 'HH:MM:ss Z',
+      ignore: 'pid,hostname',
+    },
+  } : undefined,
+});
 
 // Parse Redis URL
 const redisUrl = new URL(env.REDIS_URL);
@@ -24,15 +37,15 @@ export const redis = new Redis({
 
 // Connection event handlers
 redis.on('connect', () => {
-  console.log('✓ Redis connected');
+  logger.info('✓ Redis connected');
 });
 
 redis.on('error', (err) => {
-  console.error('Redis error:', err);
+  logger.error({ err }, 'Redis error');
 });
 
 redis.on('close', () => {
-  console.log('Redis connection closed');
+  logger.info('Redis connection closed');
 });
 
 /**
@@ -67,7 +80,7 @@ export const getCache = async <T>(key: string): Promise<T | null> => {
     if (!cached) return null;
     return JSON.parse(cached) as T;
   } catch (error) {
-    console.error('Cache get error:', error);
+    logger.error({ error, key }, 'Cache get error');
     return null;
   }
 };
@@ -79,7 +92,7 @@ export const setCache = async (key: string, value: unknown, ttl: number): Promis
   try {
     await redis.setex(key, ttl, JSON.stringify(value));
   } catch (error) {
-    console.error('Cache set error:', error);
+    logger.error({ error, key, ttl }, 'Cache set error');
   }
 };
 
@@ -90,7 +103,7 @@ export const deleteCache = async (key: string): Promise<void> => {
   try {
     await redis.del(key);
   } catch (error) {
-    console.error('Cache delete error:', error);
+    logger.error({ error, key }, 'Cache delete error');
   }
 };
 
@@ -104,7 +117,7 @@ export const deleteCachePattern = async (pattern: string): Promise<void> => {
       await redis.del(...keys);
     }
   } catch (error) {
-    console.error('Cache delete pattern error:', error);
+    logger.error({ error, pattern }, 'Cache delete pattern error');
   }
 };
 
