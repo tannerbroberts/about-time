@@ -16,6 +16,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "knip": "^5.85.0",
     "turbo": "^2.0.0"
   },
   "engines": {

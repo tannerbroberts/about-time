@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./templates": {
+      "types": "./dist/templates.d.ts",
+      "import": "./dist/templates.js"
     }
   },
   "files": [
@@ -28,7 +32,6 @@
   "devDependencies": {
     "@types/node": "^24.10.1",
     "eslint": "^9.39.1",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.4"
+    "typescript": "~5.9.3"
   }
 }

@@ -2,7 +2,7 @@
  * Database schema using Drizzle ORM
  */
 
-import { pgTable, uuid, varchar, timestamp, jsonb, bigint, text, integer, index, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, jsonb, bigint, text, integer, index, unique, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import type { Template } from '@tannerbroberts/about-time-core';
 
@@ -49,12 +49,17 @@ export const templates = pgTable('templates', {
   templateType: varchar('template_type', { length: 10 }).notNull(),
   intent: text('intent').notNull(),
   estimatedDuration: bigint('estimated_duration', { mode: 'number' }).notNull(),
+  isPublic: boolean('is_public').default(false).notNull(),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  authorDisplayName: varchar('author_display_name', { length: 100 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
   userIdIdx: index('idx_templates_user_id').on(table.userId),
   userTypeIdx: index('idx_templates_user_type').on(table.userId, table.templateType),
   updatedIdx: index('idx_templates_updated').on(table.userId, table.updatedAt),
+  publicIdx: index('idx_templates_public').on(table.isPublic, table.publishedAt),
+  publicTypeIdx: index('idx_templates_public_type').on(table.isPublic, table.templateType, table.publishedAt),
 }));
 
 // ============================================================================

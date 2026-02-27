@@ -3,10 +3,11 @@
  */
 
 import { db } from '../db/client.js';
-import { templates, templateRelationships, type NewTemplate, type NewTemplateRelationship } from '../db/schema.js';
+import { templates, templateRelationships, users, type NewTemplate, type NewTemplateRelationship } from '../db/schema.js';
 import { eq, and, desc, asc, ilike, or, sql } from 'drizzle-orm';
 import type { Template, TemplateMap, LaneTemplate, BusyTemplate } from '@tannerbroberts/about-time-core';
 import { getCache, setCache, deleteCache, deleteCachePattern, CACHE_KEYS, CACHE_TTL } from '../config/redis.js';
+import crypto from 'crypto';
 
 export class TemplateService {
   /**
@@ -269,5 +270,161 @@ export class TemplateService {
       map[template.id] = template;
     }
     return map;
+  }
+
+  /**
+   * Publish template (make public)
+   */
+  async publishTemplate(userId: string, templateId: string): Promise<Template> {
+    const existing = await this.getTemplateById(userId, templateId);
+    if (!existing) {
+      throw new Error('Template not found');
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+
+    const [updated] = await db.update(templates)
+      .set({
+        isPublic: true,
+        publishedAt: sql`COALESCE(published_at, NOW())`,
+        authorDisplayName: user?.displayName || 'Anonymous',
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(templates.id, templateId),
+        eq(templates.userId, userId)
+      ))
+      .returning();
+
+    await deleteCache(CACHE_KEYS.TEMPLATE(userId, templateId));
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+    await deleteCache(CACHE_KEYS.PUBLIC_TEMPLATES);
+
+    return updated.templateData;
+  }
+
+  /**
+   * Unpublish template (make private)
+   */
+  async unpublishTemplate(userId: string, templateId: string): Promise<Template> {
+    const existing = await this.getTemplateById(userId, templateId);
+    if (!existing) {
+      throw new Error('Template not found');
+    }
+
+    const [updated] = await db.update(templates)
+      .set({
+        isPublic: false,
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(templates.id, templateId),
+        eq(templates.userId, userId)
+      ))
+      .returning();
+
+    await deleteCache(CACHE_KEYS.TEMPLATE(userId, templateId));
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+    await deleteCache(CACHE_KEYS.PUBLIC_TEMPLATES);
+
+    return updated.templateData;
+  }
+
+  /**
+   * Browse public templates (NO AUTH REQUIRED)
+   */
+  async getPublicTemplates(
+    options: {
+      offset?: number;
+      limit?: number;
+      templateType?: 'busy' | 'lane';
+      searchIntent?: string;
+      sortBy?: 'publishedAt' | 'intent';
+      sortOrder?: 'asc' | 'desc';
+    } = {}
+  ): Promise<{ templates: Template[]; total: number; authors: Record<string, string> }> {
+    const {
+      offset = 0,
+      limit = 50,
+      templateType,
+      searchIntent,
+      sortBy = 'publishedAt',
+      sortOrder = 'desc',
+    } = options;
+
+    const whereConditions = [eq(templates.isPublic, true)];
+    if (templateType) {
+      whereConditions.push(eq(templates.templateType, templateType));
+    }
+    if (searchIntent) {
+      whereConditions.push(ilike(templates.intent, `%${searchIntent}%`));
+    }
+
+    const results = await db.query.templates.findMany({
+      where: and(...whereConditions),
+      orderBy: sortOrder === 'asc' ? asc(templates[sortBy]) : desc(templates[sortBy]),
+      limit,
+      offset,
+    });
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`cast(count(*) as integer)` })
+      .from(templates)
+      .where(and(...whereConditions));
+
+    const authors: Record<string, string> = {};
+    for (const result of results) {
+      authors[result.id] = result.authorDisplayName || 'Anonymous';
+    }
+
+    return {
+      templates: results.map(r => r.templateData),
+      total: count,
+      authors,
+    };
+  }
+
+  /**
+   * Import public template into user's library
+   */
+  async importPublicTemplate(userId: string, publicTemplateId: string): Promise<Template> {
+    const [publicTemplate] = await db
+      .select()
+      .from(templates)
+      .where(and(
+        eq(templates.id, publicTemplateId),
+        eq(templates.isPublic, true)
+      ))
+      .limit(1);
+
+    if (!publicTemplate) {
+      throw new Error('Public template not found');
+    }
+
+    const importedTemplate: Template = {
+      ...publicTemplate.templateData,
+      id: crypto.randomUUID(),
+    };
+
+    const [created] = await db.insert(templates).values({
+      id: importedTemplate.id,
+      userId,
+      templateData: importedTemplate,
+      templateType: importedTemplate.templateType,
+      intent: `${importedTemplate.intent} (imported)`,
+      estimatedDuration: importedTemplate.estimatedDuration,
+      isPublic: false,
+    }).returning();
+
+    const relationships = this.extractRelationships(importedTemplate);
+    if (relationships.length > 0) {
+      await db.insert(templateRelationships).values(relationships);
+    }
+
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+
+    return created.templateData;
   }
 }

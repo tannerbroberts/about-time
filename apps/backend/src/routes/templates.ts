@@ -186,4 +186,76 @@ export const templateRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to get template hierarchy' });
     }
   });
+
+  /**
+   * Publish template (make public)
+   * POST /api/templates/:id/publish
+   */
+  fastify.post('/:id/publish', async (request, reply) => {
+    try {
+      const { user } = request as AuthenticatedRequest;
+      const { id } = request.params as { id: string };
+
+      const published = await templateService.publishTemplate(user.id, id);
+
+      return reply.send({
+        success: true,
+        data: published,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Template not found') {
+        return reply.code(404).send({ error: 'NotFound', message: 'Template not found' });
+      }
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to publish template' });
+    }
+  });
+
+  /**
+   * Unpublish template (make private)
+   * POST /api/templates/:id/unpublish
+   */
+  fastify.post('/:id/unpublish', async (request, reply) => {
+    try {
+      const { user } = request as AuthenticatedRequest;
+      const { id } = request.params as { id: string };
+
+      const unpublished = await templateService.unpublishTemplate(user.id, id);
+
+      return reply.send({
+        success: true,
+        data: unpublished,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Template not found') {
+        return reply.code(404).send({ error: 'NotFound', message: 'Template not found' });
+      }
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to unpublish template' });
+    }
+  });
+
+  /**
+   * Import public template into user's library
+   * POST /api/templates/:id/import
+   */
+  fastify.post('/:id/import', async (request, reply) => {
+    try {
+      const { user } = request as AuthenticatedRequest;
+      const { id } = request.params as { id: string };
+
+      const imported = await templateService.importPublicTemplate(user.id, id);
+
+      return reply.code(201).send({
+        success: true,
+        data: imported,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Public template not found') {
+        return reply.code(404).send({ error: 'NotFound', message: 'Public template not found' });
+      }
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to import template' });
+    }
+  });
 };

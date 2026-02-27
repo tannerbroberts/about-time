@@ -20,6 +20,79 @@ npm run lint:fix
 npm run format
 ```
 
+## Testing with Playwright
+
+**IMPORTANT:** When implementing or modifying features, ALWAYS test them using Playwright browser automation. This ensures the UI works correctly and catches integration issues early.
+
+### Why Playwright?
+- Tests the actual user experience in a real browser
+- Catches UI/UX issues that unit tests miss
+- Verifies frontend-backend integration
+- Provides visual snapshots for debugging
+- Works even when the developer isn't at their computer
+
+### How to Use Playwright
+
+After implementing a feature:
+
+1. **Ensure servers are running:**
+   ```bash
+   # Backend: http://localhost:3001
+   npm run dev --workspace=@about-time/backend
+
+   # Frontend: http://localhost:5173 (or auto-assigned port)
+   npm run dev --workspace=@about-time/frontend
+   ```
+
+2. **Use Playwright tools to interact with the UI:**
+   - `browser_navigate` - Go to a page
+   - `browser_snapshot` - View the current page structure
+   - `browser_click` - Click buttons/elements
+   - `browser_type` - Fill in forms
+   - `browser_wait_for` - Wait for elements or time
+   - `browser_take_screenshot` - Capture visual state
+   - `browser_console_messages` - Check for errors
+
+3. **Test critical user flows:**
+   - Create/edit/delete operations
+   - Form submissions
+   - Modal dialogs
+   - Notifications
+   - Navigation between pages
+   - Error states
+
+### Example Test Flow
+
+```typescript
+// Navigate to the app
+browser_navigate("http://localhost:5173/")
+
+// Take a snapshot to see the page
+browser_snapshot()
+
+// Click a button
+browser_click({ ref: "button-id", element: "Create Template button" })
+
+// Fill a form
+browser_type({ ref: "input-id", text: "Test Template", element: "Intent field" })
+
+// Verify success
+browser_snapshot() // Check for success message
+```
+
+### Testing Tips
+
+- **Always check console messages** for errors using `browser_console_messages()`
+- **Test both success and error paths** (e.g., invalid form inputs)
+- **Verify visual feedback** (notifications, loading states, disabled buttons)
+- **Test API endpoints directly** if Playwright encounters issues with the UI
+- **Document any workarounds** for known testing limitations
+
+### Known Testing Limitations
+
+- **Auth retry loops**: The app may get stuck in infinite auth retries. Test API endpoints directly with curl as a fallback.
+- **Build package exports**: Ensure packages are built (`npm run build --workspace=package-name`) before testing imports.
+
 ## Architecture Overview
 
 This is a React + TypeScript application using Vite. The codebase enforces strict Airbnb-style coding standards via ESLint that **will cause builds to fail** if violated.

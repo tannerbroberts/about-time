@@ -19,6 +19,9 @@ export interface BaseTemplate {
   authorId: UUID;
   estimatedDuration: Duration;
   references: ParentReference[];
+  isPublic?: boolean;
+  publishedAt?: Date;
+  authorDisplayName?: string;
 }
 
 /** Reference to a template within a lane, with timing offset */

@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
       } catch (error) {
         // User not authenticated - this is expected behavior
         // However, log unexpected errors for debugging (not 401s)
-        const is401Error = error instanceof Error &&
-                          (error.message.includes('401') || error.message.includes('Unauthorized'));
+        const is401Error = error instanceof Error
+          && (error.message.includes('401') || error.message.includes('Unauthorized'));
 
         if (!is401Error) {
           console.error('[Auth] Unexpected error during authentication check:', error);

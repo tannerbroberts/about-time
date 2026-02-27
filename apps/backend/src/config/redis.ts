@@ -41,6 +41,7 @@ redis.on('close', () => {
 export const CACHE_KEYS = {
   TEMPLATE: (userId: string, templateId: string) => `template:${userId}:${templateId}`,
   TEMPLATES: (userId: string) => `templates:${userId}`,
+  PUBLIC_TEMPLATES: 'public_templates',
   SCHEDULE_LANES: (userId: string) => `schedule_lanes:${userId}`,
   DAILY_GOALS: (userId: string) => `daily_goals:${userId}`,
   DAILY_STATE: (userId: string, dateKey: string) => `daily_state:${userId}:${dateKey}`,

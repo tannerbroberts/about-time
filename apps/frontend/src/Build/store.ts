@@ -1,3 +1,9 @@
+import {
+  publishTemplate as publishTemplateAPI,
+  unpublishTemplate as unpublishTemplateAPI,
+  fetchPublicTemplates as fetchPublicTemplatesAPI,
+  importPublicTemplate as importPublicTemplateAPI,
+} from '@about-time/api-client/templates';
 import type { Template, TemplateMap } from '@tannerbroberts/about-time-core';
 import type React from 'react';
 import { create } from 'zustand';
@@ -50,6 +56,12 @@ export interface BuildState {
   isActionMenuOpen: boolean;
   actionMenuPosition: { x: number; y: number } | null;
   menuPath: string[];
+
+  // Public template browsing
+  publicTemplates: TemplateMap;
+  publicTemplateAuthors: Record<string, string>;
+  publicSearchQuery: string;
+  isPublicLibraryOpen: boolean;
 
   // Notifications
   notifications: Array<{
@@ -105,6 +117,17 @@ export interface BuildActions {
   goBackInMenu: () => void;
   resetMenuPath: () => void;
 
+  // Public library actions
+  loadPublicTemplates: (searchQuery?: string) => Promise<void>;
+  setPublicSearchQuery: (query: string) => void;
+  openPublicLibrary: () => void;
+  closePublicLibrary: () => void;
+  importPublicTemplate: (publicTemplateId: string) => Promise<void>;
+
+  // Publishing actions
+  publishTemplate: (templateId: string) => Promise<void>;
+  unpublishTemplate: (templateId: string) => Promise<void>;
+
   // Notification actions
   showNotification: (
     message: string,
@@ -139,6 +162,10 @@ const defaultState: BuildState = {
   isActionMenuOpen: false,
   actionMenuPosition: null,
   menuPath: ['root'],
+  publicTemplates: {},
+  publicTemplateAuthors: {},
+  publicSearchQuery: '',
+  isPublicLibraryOpen: false,
   notifications: [],
 };
 
@@ -398,6 +425,105 @@ export const useBuildStore = create<BuildStore>((set) => ({
 
   resetMenuPath: (): void => {
     set({ menuPath: ['root'] });
+  },
+
+  // Publishing actions
+  publishTemplate: async (templateId): Promise<void> => {
+    try {
+      const published = await publishTemplateAPI(templateId);
+
+      set((state) => ({
+        templates: {
+          ...state.templates,
+          [templateId]: published,
+        },
+      }));
+
+      useBuildStore.getState().showNotification('Template published successfully!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to publish template:', error);
+      useBuildStore.getState().showNotification('Failed to publish template', 'error');
+    }
+  },
+
+  unpublishTemplate: async (templateId): Promise<void> => {
+    try {
+      const unpublished = await unpublishTemplateAPI(templateId);
+
+      set((state) => ({
+        templates: {
+          ...state.templates,
+          [templateId]: unpublished,
+        },
+      }));
+
+      useBuildStore.getState().showNotification('Template unpublished successfully!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to unpublish template:', error);
+      useBuildStore.getState().showNotification('Failed to unpublish template', 'error');
+    }
+  },
+
+  // Public library actions
+  loadPublicTemplates: async (searchQuery): Promise<void> => {
+    try {
+      const result = await fetchPublicTemplatesAPI({
+        searchIntent: searchQuery,
+        sortBy: 'publishedAt',
+        sortOrder: 'desc',
+        limit: 100,
+      });
+
+      const publicTemplateMap: TemplateMap = {};
+      for (const template of result.templates) {
+        publicTemplateMap[template.id] = template;
+      }
+
+      set({
+        publicTemplates: publicTemplateMap,
+        publicTemplateAuthors: result.authors,
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load public templates:', error);
+      useBuildStore.getState().showNotification('Failed to load public templates', 'error');
+    }
+  },
+
+  setPublicSearchQuery: (query): void => {
+    set({ publicSearchQuery: query });
+    useBuildStore.getState().loadPublicTemplates(query);
+  },
+
+  openPublicLibrary: (): void => {
+    set({ isPublicLibraryOpen: true });
+    useBuildStore.getState().loadPublicTemplates();
+  },
+
+  closePublicLibrary: (): void => {
+    set({ isPublicLibraryOpen: false });
+  },
+
+  importPublicTemplate: async (publicTemplateId): Promise<void> => {
+    try {
+      const imported = await importPublicTemplateAPI(publicTemplateId);
+
+      set((state) => ({
+        templates: {
+          ...state.templates,
+          [imported.id]: imported,
+        },
+      }));
+
+      useBuildStore.getState().showNotification('Template imported successfully!', 'success');
+      useBuildStore.getState().closePublicLibrary();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to import template:', error);
+      useBuildStore.getState().showNotification('Failed to import template', 'error');
+    }
   },
 
   // Notification actions

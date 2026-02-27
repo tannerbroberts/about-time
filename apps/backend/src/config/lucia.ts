@@ -5,13 +5,15 @@
 import { Lucia } from 'lucia';
 import { NodePostgresAdapter } from '@lucia-auth/adapter-postgresql';
 import { env } from './env.js';
+import pg from 'pg';
 
 // Create adapter for Lucia
-// Note: We use postgres client directly for the adapter
-import postgres from 'postgres';
-const queryClient = postgres(env.DATABASE_URL);
+// Note: NodePostgresAdapter requires pg.Pool, not postgres package
+const pool = new pg.Pool({
+  connectionString: env.DATABASE_URL,
+});
 
-const adapter = new NodePostgresAdapter(queryClient, {
+const adapter = new NodePostgresAdapter(pool, {
   user: 'users',
   session: 'sessions',
 });

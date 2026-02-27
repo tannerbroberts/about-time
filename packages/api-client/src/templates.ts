@@ -114,3 +114,63 @@ export const getTemplateHierarchy = async (templateId: string): Promise<{
   );
   return response.data.data;
 };
+
+/**
+ * Publish template (make public)
+ */
+export const publishTemplate = async (templateId: string): Promise<Template> => {
+  const response = await apiClient.post<{ success: true; data: Template }>(
+    `/templates/${templateId}/publish`
+  );
+  return response.data.data;
+};
+
+/**
+ * Unpublish template (make private)
+ */
+export const unpublishTemplate = async (templateId: string): Promise<Template> => {
+  const response = await apiClient.post<{ success: true; data: Template }>(
+    `/templates/${templateId}/unpublish`
+  );
+  return response.data.data;
+};
+
+/**
+ * Browse public templates (no auth required)
+ */
+export const fetchPublicTemplates = async (
+  query?: {
+    offset?: number;
+    limit?: number;
+    templateType?: 'busy' | 'lane';
+    searchIntent?: string;
+    sortBy?: 'publishedAt' | 'intent';
+    sortOrder?: 'asc' | 'desc';
+  }
+): Promise<{ templates: Template[]; total: number; authors: Record<string, string> }> => {
+  const params = new URLSearchParams();
+
+  if (query?.offset !== undefined) params.append('offset', query.offset.toString());
+  if (query?.limit !== undefined) params.append('limit', query.limit.toString());
+  if (query?.templateType) params.append('templateType', query.templateType);
+  if (query?.searchIntent) params.append('searchIntent', query.searchIntent);
+  if (query?.sortBy) params.append('sortBy', query.sortBy);
+  if (query?.sortOrder) params.append('sortOrder', query.sortOrder);
+
+  const response = await apiClient.get<{
+    success: true;
+    data: { templates: Template[]; total: number; authors: Record<string, string> };
+  }>(`/public-templates?${params.toString()}`);
+
+  return response.data.data;
+};
+
+/**
+ * Import public template into user's library
+ */
+export const importPublicTemplate = async (publicTemplateId: string): Promise<Template> => {
+  const response = await apiClient.post<{ success: true; data: Template }>(
+    `/templates/${publicTemplateId}/import`
+  );
+  return response.data.data;
+};

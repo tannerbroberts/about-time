@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 import { Library } from './Library';
 import { NotificationManager } from './NotificationManager';
+import { PublicLibrary } from './PublicLibrary';
 import { useBuildStore } from './store';
 import { TemplateEditor } from './TemplateEditor';
 import { TemplateForm } from './TemplateForm';
@@ -23,6 +24,7 @@ export function Build(): React.ReactElement {
           <TemplateForm />
         </>
       )}
+      <PublicLibrary />
       <NotificationManager />
     </>
   );

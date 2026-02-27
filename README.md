@@ -22,8 +22,9 @@ about-time/  (mono-repo root)
 ### Prerequisites
 
 - Node.js >= 18
-- Docker Desktop (for PostgreSQL + Redis)
 - npm >= 9
+- PostgreSQL 16+ (running locally)
+- Redis (running locally)
 
 ### Quick Start
 
@@ -34,13 +35,14 @@ about-time/  (mono-repo root)
 
 2. **Setup local database**
    ```bash
+   # Run PostgreSQL and Redis locally, then:
    ./scripts/setup-local-db.sh
    ```
 
 3. **Configure environment**
    ```bash
-   cp apps/backend/.env.example apps/backend/.env
-   # Update SESSION_SECRET in apps/backend/.env
+   # Backend .env is already configured for local development
+   # Just verify apps/backend/.env has correct DATABASE_URL and REDIS_URL
    ```
 
 4. **Start development servers**
@@ -53,7 +55,7 @@ about-time/  (mono-repo root)
    ```
 
 5. **Open app**
-   - Frontend: http://localhost:5173
+   - Frontend: http://localhost:5173 (or auto-assigned port)
    - Backend: http://localhost:3001
    - Health check: http://localhost:3001/health
 
@@ -81,30 +83,32 @@ npm run dev --workspace=@about-time/frontend
 
 ## Features
 
-### Phase 1: Mono-repo Setup ✅
-- npm workspaces with Turborepo
-- Shared type definitions
-- API client package skeleton
+### Build ✅
+- Create and manage meal/activity templates
+- Template editor with hierarchy viewer
+- Support for Busy (individual) and Lane (container) templates
+- Template variables and customization
+- Visual 2D template editor
 
-### Phase 2: Backend Scaffolding ✅
-- Fastify server with CORS and security headers
+### Schedule ✅
+- Plan daily meals and activities
+- Drag-and-drop scheduling interface
+- Daily goal tracking
+- Template instantiation
+
+### Track (Execute) ✅
+- Track meal completion throughout the day
+- Real-time progress monitoring
+- Completion status tracking
+
+### Infrastructure ✅
+- Fastify backend with CORS and security
 - PostgreSQL database with Drizzle ORM
-- Redis for session storage
-- Lucia authentication (email/password)
-- Database migrations
-
-### Phase 3: Template API (In Progress)
-- Template CRUD endpoints
-- Pagination and search
-- Row-level security
-
-### Phase 4-10: Coming Soon
-- Schedule & Execute APIs
-- Full API client implementation
-- Frontend integration
+- Redis session storage
+- Lucia authentication
 - Offline-first Service Workers
-- Kubernetes deployment
-- Performance optimization
+- React + Vite frontend
+- Zustand state management
 
 ## Tech Stack
 
@@ -146,10 +150,8 @@ npm run db:studio --workspace=@about-time/backend
 ## Project Documentation
 
 - [CLAUDE.md](./CLAUDE.md) - Development guidelines for Claude Code
-- [PRD.md](./PRD.md) - Product requirements
-- [PRD-Build.md](./PRD-Build.md) - Build feature spec
-- [PRD-Schedule.md](./PRD-Schedule.md) - Schedule feature spec
-- [PRD-Execute.md](./PRD-Execute.md) - Execute feature spec
+- [PRD-Build.md](./PRD-Build.md) - Build feature specification
+- [PRD-Execute.md](./PRD-Execute.md) - Execute/Track feature specification
 
 ## License
 
