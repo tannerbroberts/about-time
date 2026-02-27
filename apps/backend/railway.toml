@@ -5,7 +5,7 @@ builder = "NIXPACKS"
 nixPkgs = ["nodejs_20"]
 
 [build.nixpacksPlan.phases.install]
-cmds = ["npm ci"]
+cmds = ["npm install"]
 
 [build.nixpacksPlan.phases.build]
 cmds = [
