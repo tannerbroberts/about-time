@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1
+FROM node:20-slim AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+COPY packages/types/package.json ./packages/types/
+COPY packages/api-client/package.json ./packages/api-client/
+COPY packages/about-time-core/package.json ./packages/about-time-core/
+COPY apps/frontend/package.json ./apps/frontend/
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Build the packages
+FROM base AS builder
+WORKDIR /app
+
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+
+# Copy all source files
+COPY packages/ ./packages/
+COPY apps/frontend/ ./apps/frontend/
+COPY turbo.json ./
+
+# Build dependencies and frontend
+RUN npm run build --workspace=@tannerbroberts/about-time-core && \
+    npm run build --workspace=@about-time/types && \
+    npm run build --workspace=@about-time/api-client && \
+    npm run build --workspace=@about-time/frontend
+
+# Production image - serve static files
+FROM caddy:2-alpine AS runner
+WORKDIR /app
+
+# Copy built files
+COPY --from=builder /app/apps/frontend/dist /srv
+
+# Caddy configuration for SPA
+RUN echo ':$PORT' > /etc/caddy/Caddyfile && \
+    echo 'root * /srv' >> /etc/caddy/Caddyfile && \
+    echo 'try_files {path} /index.html' >> /etc/caddy/Caddyfile && \
+    echo 'file_server' >> /etc/caddy/Caddyfile
+
+# Expose port (Railway sets $PORT)
+EXPOSE 3000
+
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
