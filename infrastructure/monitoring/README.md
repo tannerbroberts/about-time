@@ -219,15 +219,17 @@ const client = postgres(env.DATABASE_URL, {
 
 ### 4. Rate Limit Adjustment
 
-If legitimate users hit rate limits:
+If you implement rate limiting and legitimate users hit rate limits, adjust the configuration:
 
 ```typescript
-// apps/backend/src/middleware/rateLimit.ts
+// Example rate limit configuration (if implemented)
 export const generalRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
   maxRequests: 200, // Increase from 100
 });
 ```
+
+**Note**: Rate limiting is not currently implemented in the application.
 
 ## Monitoring Best Practices
 

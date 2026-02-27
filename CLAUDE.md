@@ -107,13 +107,13 @@ This is a React + TypeScript application using Vite. The codebase enforces stric
 
 ### State Management Pattern
 
-**Standard Pattern**: Most components with state follow this folder structure pattern (see `App/` as reference):
+**Standard Pattern**: Most components with state follow this folder structure pattern:
 
 ```
 ComponentName/
   ├── index.tsx              # Component (uses useReducer)
   ├── Context.ts             # React.createContext<ComponentNameContextValue>
-  ├── Provider.tsx           # Export of Context.Provider
+  ├── Provider.tsx           # (Optional) Export of Context.Provider
   ├── reducer.ts             # Reducer function, action types, default state
   └── useContext.ts          # Hook to access context with undefined check
 ```
@@ -121,9 +121,9 @@ ComponentName/
 **File responsibilities:**
 - `reducer.ts`: Exports `DefaultComponentNameState`, action types, `ComponentNameContextValue` interface, and the `reducer` function
 - `Context.ts`: Creates the React context using the `ComponentNameContextValue` type from reducer
-- `Provider.tsx`: Exports the Provider as a named export (e.g., `export const ComponentNameProvider = Context.Provider`)
+- `Provider.tsx`: (Optional) Exports the Provider as a named export (e.g., `export const ComponentNameProvider = Context.Provider`). Some features like `App/` use `Context.Provider` directly in `index.tsx` instead.
 - `useContext.ts`: Provides type-safe access to context with error handling if used outside provider. Named with component prefix (e.g., `useAppContext` for App component)
-- `index.tsx`: The component itself, which calls `useReducer(reducer, DefaultState)` and wraps children in the Provider
+- `index.tsx`: The component itself, which calls `useReducer(reducer, DefaultState)` and wraps children in the Provider (either from Provider.tsx or Context.Provider directly)
 
 **Exception - Build Feature**: The Build feature uses **Zustand** instead of the standard useReducer+Context pattern due to the need for fine-grained reactivity in the recursive template visualization. This allows individual segment components to subscribe only to their specific template data, preventing unnecessary re-renders in the complex nested hierarchy.
 
@@ -187,7 +187,7 @@ The Build feature includes a context-aware action menu system (`ActionTreeMenu`)
 - **Positioning**: Floats at click coordinates with z-index 1300-1400
 
 **Integration Points:**
-- Click handlers in `Segment.tsx` and `EmptyRegion.tsx` trigger menu
+- Click handlers in `Segment.tsx` and `HierarchyViewer/index.tsx` (for empty space) trigger menu
 - Menu actions call Zustand store methods (duplicate, remove, pack, etc.)
 - Layout functions integrate with `@tannerbroberts/about-time-core`
 - Notifications provide success feedback for all operations

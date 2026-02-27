@@ -8,9 +8,9 @@ The Build feature enables users to create and manage reusable meal templates wit
 
 Create reusable meal templates with complete nutritional profiles that can be scheduled and tracked.
 
-## Happy Path Integration
+## User Journey Integration
 
-The Build feature is the foundation of the About Time user journey (see [HAPPY-PATH.md](./HAPPY-PATH.md)). It enables users to:
+The Build feature is the foundation of the About Time user workflow. It enables users to:
 
 1. **Record recipes found online**: Capture food variables consumed (ingredients) and produced (nutrition) from any source
 2. **Build personal taxonomy**: Create custom variable names and organization systems that match their goals and lifestyle
@@ -435,7 +435,7 @@ interface FocusPathItem {
 - `src/Build/TemplateEditor/ActionTreeMenu/useContextActions.ts` - Availability logic
 - `src/Build/TemplateEditor/ActionTreeMenu/actions/*.tsx` - Category-specific action components
 - `src/Build/TemplateEditor/HierarchyViewer/Segment.tsx` - Click handler integration
-- `src/Build/TemplateEditor/HierarchyViewer/EmptyRegion.tsx` - Click handler integration
+- `src/Build/TemplateEditor/HierarchyViewer/index.tsx` - Empty space click handler integration
 
 ### Adding Segments Workflow
 

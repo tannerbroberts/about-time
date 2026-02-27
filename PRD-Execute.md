@@ -46,7 +46,7 @@ Users define daily goals for any variables they want to track:
 - User sets numeric goal for each variable they want to track
 - Variables without goals are not displayed in Execute view
 - Goals can be edited anytime
-- Per-day goal customization (optional Phase 2 feature)
+- Per-day goal customization (optional future enhancement)
 
 **Goal Discovery**:
 - System scans all templates and lists unique variable names
@@ -439,7 +439,12 @@ Execute/
 ├── Context.ts         # ExecuteContextValue type
 ├── Provider.tsx       # ExecuteProvider export
 ├── reducer.ts         # State, actions, reducer
-└── useContext.ts      # useExecuteContext hook
+├── useContext.ts      # useExecuteContext hook
+├── EmptyState.tsx     # Empty state display
+├── NextMealCountdown/ # Next meal countdown component
+├── TodaysTimeline/    # Timeline display
+├── VariableTracking/  # Variable tracking components
+└── utils/             # Utility functions
 ```
 
 ### State Structure
