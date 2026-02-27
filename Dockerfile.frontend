@@ -26,7 +26,6 @@ COPY --from=deps /app/package.json ./package.json
 # Copy all source files
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
-COPY turbo.json ./
 
 # Build dependencies and frontend
 RUN npm run build --workspace=@tannerbroberts/about-time-core && \
