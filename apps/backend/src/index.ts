@@ -9,6 +9,7 @@ import { corsPlugin } from './plugins/cors.js';
 import { helmetPlugin } from './plugins/helmet.js';
 import metricsPlugin from './plugins/metrics.js';
 import { authRoutes } from './routes/auth.js';
+import { publicTemplateRoutes } from './routes/public-templates.js';
 import { templateRoutes } from './routes/templates.js';
 import { scheduleRoutes } from './routes/schedule.js';
 import { executeRoutes } from './routes/execute.js';
@@ -36,11 +37,34 @@ await fastify.register(corsPlugin);
 await fastify.register(helmetPlugin);
 await fastify.register(metricsPlugin);
 
+// Global error handler for unhandled errors
+fastify.setErrorHandler((error, request, reply) => {
+  // Log the error with request context
+  fastify.log.error({
+    error,
+    url: request.url,
+    method: request.method,
+    headers: request.headers,
+  }, 'Unhandled error in request');
+
+  // Check if response was already sent
+  if (reply.sent) {
+    return;
+  }
+
+  // Return a proper 500 error instead of Fastify's default 503
+  return reply.code(500).send({
+    error: 'InternalServerError',
+    message: 'An unexpected error occurred',
+  });
+});
+
 // Health check endpoint
 fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // Register routes
 await fastify.register(authRoutes, { prefix: '/api/auth' });
+await fastify.register(publicTemplateRoutes, { prefix: '/api/public-templates' });
 await fastify.register(templateRoutes, { prefix: '/api/templates' });
 await fastify.register(scheduleRoutes, { prefix: '/api/schedule' });
 await fastify.register(executeRoutes, { prefix: '/api/execute' });

@@ -30,10 +30,45 @@ export const requireAuth = async (
     return reply.code(401).send({ error: 'Unauthorized', message: 'No session cookie' });
   }
 
-  const { session, user } = await lucia.validateSession(sessionId);
+  try {
+    const { session, user } = await lucia.validateSession(sessionId);
 
-  if (!session || !user) {
-    // Invalid session - clear cookie
+    if (!session || !user) {
+      // Invalid session - clear cookie
+      reply.setCookie('session_id', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+      return reply.code(401).send({ error: 'Unauthorized', message: 'Invalid session' });
+    }
+
+    // Attach user and session to request
+    (request as AuthenticatedRequest).user = {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+    };
+    (request as AuthenticatedRequest).session = {
+      id: session.id,
+      expiresAt: session.expiresAt,
+    };
+
+    // If session is close to expiring, refresh it
+    if (session.fresh) {
+      const sessionCookie = lucia.createSessionCookie(session.id);
+      reply.setCookie(sessionCookie.name, sessionCookie.value, {
+        ...sessionCookie.attributes,
+        httpOnly: true,
+      });
+    }
+  } catch (error) {
+    // Session validation failed (database error, timeout, etc.)
+    request.log.error({ error, sessionId }, 'Session validation error');
+
+    // Clear the invalid cookie
     reply.setCookie('session_id', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -41,26 +76,11 @@ export const requireAuth = async (
       path: '/',
       maxAge: 0,
     });
-    return reply.code(401).send({ error: 'Unauthorized', message: 'Invalid session' });
-  }
 
-  // Attach user and session to request
-  (request as AuthenticatedRequest).user = {
-    id: user.id,
-    email: user.email,
-    displayName: user.displayName,
-  };
-  (request as AuthenticatedRequest).session = {
-    id: session.id,
-    expiresAt: session.expiresAt,
-  };
-
-  // If session is close to expiring, refresh it
-  if (session.fresh) {
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    reply.setCookie(sessionCookie.name, sessionCookie.value, {
-      ...sessionCookie.attributes,
-      httpOnly: true,
+    // Return 401 instead of letting the error propagate as 503
+    return reply.code(401).send({
+      error: 'Unauthorized',
+      message: 'Session validation failed',
     });
   }
 };

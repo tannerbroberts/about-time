@@ -45,8 +45,15 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
       try {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
-      } catch {
-        // User not authenticated
+      } catch (error) {
+        // User not authenticated - this is expected behavior
+        // However, log unexpected errors for debugging (not 401s)
+        const is401Error = error instanceof Error &&
+                          (error.message.includes('401') || error.message.includes('Unauthorized'));
+
+        if (!is401Error) {
+          console.error('[Auth] Unexpected error during authentication check:', error);
+        }
         setUser(null);
       } finally {
         setLoading(false);
