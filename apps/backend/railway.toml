@@ -5,10 +5,13 @@ builder = "NIXPACKS"
 nixPkgs = ["nodejs_24"]
 
 [build.nixpacksPlan.phases.install]
-cmds = ["npm install"]
+cmds = ["npm ci"]
 
 [build.nixpacksPlan.phases.build]
-cmds = ["npm run build --workspace=@about-time/backend"]
+cmds = [
+  "npm run build --workspace=@tannerbroberts/about-time-core",
+  "npm run build --workspace=@about-time/backend"
+]
 
 [build.nixpacksPlan.start]
 cmd = "npm run start --workspace=@about-time/backend"
