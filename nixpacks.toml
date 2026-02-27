@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ['nodejs_20']
+
+[phases.install]
+cmds = ['npm ci']
+
+[phases.build]
+cmds = [
+  'npm run build --workspace=@tannerbroberts/about-time-core',
+  'npm run build --workspace=@about-time/api-client',
+  'npm run build --workspace=@about-time/backend',
+  'npm run build --workspace=@about-time/frontend'
+]
+
+# Note: Start command will be overridden per-service via NIXPACKS_START_CMD env var
