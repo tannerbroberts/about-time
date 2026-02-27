@@ -5,14 +5,14 @@ builder = "NIXPACKS"
 nixPkgs = ["nodejs_20"]
 
 [build.nixpacksPlan.phases.install]
-cmds = ["cd ../.. && npm ci"]
+cmds = ["npm ci"]
 
 [build.nixpacksPlan.phases.build]
 cmds = [
-  "cd ../.. && npm run build --workspace=@tannerbroberts/about-time-core",
-  "cd ../.. && npm run build --workspace=@about-time/api-client",
-  "cd ../.. && npm run build --workspace=@about-time/frontend"
+  "npm run build --workspace=@tannerbroberts/about-time-core",
+  "npm run build --workspace=@about-time/api-client",
+  "npm run build --workspace=@about-time/frontend"
 ]
 
 [build.nixpacksPlan.start]
-cmd = "npx serve -s dist -l $PORT"
+cmd = "npx serve -s apps/frontend/dist -l $PORT"

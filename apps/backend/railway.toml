@@ -5,13 +5,13 @@ builder = "NIXPACKS"
 nixPkgs = ["nodejs_20"]
 
 [build.nixpacksPlan.phases.install]
-cmds = ["cd ../.. && npm ci"]
+cmds = ["npm ci"]
 
 [build.nixpacksPlan.phases.build]
 cmds = [
-  "cd ../.. && npm run build --workspace=@tannerbroberts/about-time-core",
-  "cd ../.. && npm run build --workspace=@about-time/backend"
+  "npm run build --workspace=@tannerbroberts/about-time-core",
+  "npm run build --workspace=@about-time/backend"
 ]
 
 [build.nixpacksPlan.start]
-cmd = "cd ../.. && npm run start --workspace=@about-time/backend"
+cmd = "npm run start --workspace=@about-time/backend"
