@@ -16,6 +16,20 @@ import { executeRoutes } from './routes/execute.js';
 import { migrateRoutes } from './routes/migrate.js';
 import { closeDatabase } from './db/client.js';
 import { closeRedis } from './config/redis.js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { db } from './db/client.js';
+
+// Run database migrations on startup in production
+if (env.NODE_ENV === 'production') {
+  try {
+    console.log('🔄 Running database migrations...');
+    await migrate(db, { migrationsFolder: './src/db/migrations' });
+    console.log('✅ Database migrations completed');
+  } catch (error) {
+    console.error('❌ Migration failed:', error);
+    process.exit(1);
+  }
+}
 
 // Create Fastify instance
 const fastify = Fastify({

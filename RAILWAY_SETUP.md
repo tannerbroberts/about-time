@@ -17,12 +17,23 @@ The following must be set in Railway UI (cannot be stored in git for security):
 
 ### 1. Database Connection (about-time-backend service)
 
+**Option A: Using Railway CLI (Recommended)**
+
+```bash
+railway variables set 'DATABASE_URL=${{Postgres.DATABASE_URL}}'
+railway variables set 'REDIS_URL=${{Redis.REDIS_URL}}'
+```
+
+**Option B: Using Railway UI**
+
 **Variables Tab → New Variable → Add Reference:**
 
 | Variable Name | Reference From | Reference Variable |
 |---------------|----------------|-------------------|
 | `DATABASE_URL` | Postgres service | `DATABASE_URL` |
 | `REDIS_URL` | Redis service | `REDIS_URL` |
+
+**Note**: Replace `Postgres` and `Redis` with your actual service names if different.
 
 ### 2. Security & Config (about-time-backend service)
 
@@ -52,13 +63,20 @@ railway login
 # Link to your project
 railway link
 
-# Set variables (replace with actual values)
+# Set variables
 railway variables set SESSION_SECRET=$(openssl rand -base64 48)
 railway variables set NODE_ENV=production
 railway variables set PORT=3001
 
-# Note: DATABASE_URL and REDIS_URL must be connected via References in the UI
-# Note: CORS_ORIGIN should be set after frontend deployment
+# Connect database references (adjust service names if needed)
+railway variables set 'DATABASE_URL=${{Postgres.DATABASE_URL}}'
+railway variables set 'REDIS_URL=${{Redis.REDIS_URL}}'
+
+# Set temporary CORS origin (update after frontend deployment)
+railway variables set CORS_ORIGIN=http://localhost:5180
+
+# Enable public domain
+railway domain
 ```
 
 ## Verification
