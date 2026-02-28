@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+FROM node:20-slim AS base
+
+# Builder stage - install and build
+FROM base AS builder
+WORKDIR /app
+
+# Ensure devDependencies are installed
+ENV NODE_ENV=development
+
+# Copy all files (needed for npm to understand workspace structure)
+COPY package.json ./
+COPY packages/ ./packages/
+COPY apps/backend/ ./apps/backend/
+
+# Install ALL dependencies without package-lock to force fresh install
+RUN npm install --legacy-peer-deps
+
+# Build dependencies and backend
+RUN npm run build --workspace=@tannerbroberts/about-time-core && \
+    npm run build --workspace=@about-time/types && \
+    npm run build --workspace=@about-time/api-client && \
+    npm run build --workspace=@about-time/backend && \
+    echo "=== Verifying backend dist ===" && \
+    ls -la apps/backend/dist/ && \
+    test -f apps/backend/dist/index.js || (echo "ERROR: backend dist missing!" && exit 1)
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+# Copy built files and dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/backend/package.json ./apps/backend/package.json
+COPY --from=builder /app/apps/backend/src/db/migrations ./apps/backend/src/db/migrations
+
+# Set production environment
+ENV NODE_ENV=production
+
+# Expose port (Railway sets $PORT)
+EXPOSE 3001
+
+# Start backend
+CMD ["npm", "run", "start", "--workspace=@about-time/backend"]
