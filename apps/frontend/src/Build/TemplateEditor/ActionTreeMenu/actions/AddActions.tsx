@@ -130,7 +130,7 @@ export function AddActions({ currentPath, onNavigate, parentPosition, parentAngl
         />
         <MenuNode
           key="node-create-new"
-          label="Create New"
+          label="NEW"
           onClick={(): void => onNavigate([...currentPath, 'create-new'])}
           position={createNewPosition}
           size={60}
@@ -141,14 +141,14 @@ export function AddActions({ currentPath, onNavigate, parentPosition, parentAngl
           <>
             <ActionLeaf
               key="leaf-create-busy"
-              label="Create Busy"
+              label="B"
               onClick={handleCreateBusy}
               position={createBusyPosition}
               color={color}
             />
             <ActionLeaf
               key="leaf-create-lane"
-              label="Create Lane"
+              label="L"
               onClick={handleCreateLane}
               position={createLanePosition}
               color={color}
