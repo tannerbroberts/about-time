@@ -9,14 +9,14 @@ WORKDIR /app
 ENV NODE_ENV=development
 
 # Copy all files (needed for npm to understand workspace structure)
-COPY package.json package-lock.json ./
+COPY package.json ./
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
 
-# Install ALL dependencies (production + dev) with workspace support
+# Install ALL dependencies (production + dev) without package-lock to force fresh install
 RUN npm install --legacy-peer-deps && \
     echo "=== Verifying vite installation ===" && \
-    test -f node_modules/.bin/vite && echo "✓ Vite found!" || (echo "✗ Vite NOT found!" && ls -la node_modules/.bin/ | head -20 && exit 1)
+    test -f node_modules/.bin/vite && echo "✓ Vite found!" || (echo "✗ Vite NOT found! Showing what was installed:" && find node_modules/@vitejs -type d 2>/dev/null || echo "No @vitejs packages" && exit 1)
 
 # Build dependencies and frontend (using build:prod to skip linting)
 RUN npm run build --workspace=@tannerbroberts/about-time-core && \
