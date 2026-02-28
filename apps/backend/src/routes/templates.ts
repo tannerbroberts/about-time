@@ -21,7 +21,7 @@ const updateTemplateSchema = z.object({
 
 const listTemplatesSchema = z.object({
   offset: z.string().transform(Number).pipe(z.number().int().min(0)).optional(),
-  limit: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).optional(),
+  limit: z.string().transform(Number).pipe(z.number().int().min(1).max(10000)).optional(),
   templateType: z.enum(['busy', 'lane']).optional(),
   searchIntent: z.string().optional(),
   sortBy: z.enum(['updatedAt', 'createdAt', 'intent']).optional(),
