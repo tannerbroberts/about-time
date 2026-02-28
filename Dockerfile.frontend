@@ -17,7 +17,8 @@ COPY apps/frontend/package.json ./apps/frontend/
 
 # Install dependencies (including devDependencies)
 RUN npm ci --legacy-peer-deps --include=dev && \
-    ls -la node_modules/.bin/ | grep vite
+    echo "=== Checking installed binaries ===" && \
+    ls -la node_modules/.bin/ | head -30
 
 # Build the packages
 FROM base AS builder
