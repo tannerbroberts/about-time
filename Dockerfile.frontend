@@ -26,7 +26,10 @@ RUN npm install --legacy-peer-deps && \
 RUN npm run build --workspace=@tannerbroberts/about-time-core && \
     npm run build --workspace=@about-time/types && \
     npm run build --workspace=@about-time/api-client && \
-    npm run build:prod --workspace=@about-time/frontend
+    npm run build:prod --workspace=@about-time/frontend && \
+    echo "=== Verifying dist folder ===" && \
+    ls -la apps/frontend/dist/ && \
+    test -f apps/frontend/dist/index.html || (echo "ERROR: dist folder missing or empty!" && exit 1)
 
 # Production image - serve static files
 FROM caddy:2-alpine AS runner
