@@ -53,7 +53,11 @@ export function calculateNestedVariables(
     // Traverse all segments and sum their variables
     if (laneTemplate.segments) {
       for (const segment of laneTemplate.segments) {
-        const segmentVars = calculateNestedVariables(segment.templateId, templates, visited);
+        // Create a new visited set for each segment that includes the current path
+        // This allows the same template to be used multiple times in different segments
+        // while still protecting against circular dependencies in the ancestry chain
+        const segmentVisited = new Set(visited);
+        const segmentVars = calculateNestedVariables(segment.templateId, templates, segmentVisited);
 
         // Sum willProduce variables
         for (const [key, value] of Object.entries(segmentVars.willProduce)) {
