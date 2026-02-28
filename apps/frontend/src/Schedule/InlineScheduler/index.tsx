@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { addSegmentToEnd, createLaneTemplate } from '@tannerbroberts/about-time-core';
-import type { BusyTemplate } from '@tannerbroberts/about-time-core';
+import type { BusyTemplate, LaneTemplate } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 import { useBuildStore } from '../../Build/store';
@@ -44,8 +44,17 @@ export function InlineScheduler(): React.ReactElement {
     if (!selectedTemplateId || !selectedTime || !state.schedulerContext) return;
 
     const { dateKey } = state.schedulerContext;
-    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const selectedTemplate = state.templates[selectedTemplateId];
 
+    // If the selected template is a lane, directly assign it to the date
+    if (selectedTemplate && selectedTemplate.templateType === 'lane') {
+      dispatch({ type: 'ADD_MEAL_TO_SCHEDULE', dateKey, laneId: selectedTemplateId });
+      handleClose();
+      return;
+    }
+
+    // Otherwise, treat it as a busy template and add to daily lane
+    const [hours, minutes] = selectedTime.split(':').map(Number);
     const offsetMs = (hours * 60 + minutes) * 60 * 1000;
 
     let laneId = state.scheduleLanes[dateKey];
@@ -97,7 +106,7 @@ export function InlineScheduler(): React.ReactElement {
   };
 
   const selectedMeal = selectedTemplateId
-    ? (state.templates[selectedTemplateId] as BusyTemplate | undefined) || null
+    ? (state.templates[selectedTemplateId] as BusyTemplate | LaneTemplate | undefined) || null
     : null;
 
   const canSubmit = selectedTemplateId && selectedTime;
@@ -136,6 +145,7 @@ export function InlineScheduler(): React.ReactElement {
             currentTotals={currentTotals}
             selectedMeal={selectedMeal}
             dailyGoals={state.dailyGoals}
+            templates={state.templates}
           />
         )}
       </Box>

@@ -2,29 +2,48 @@
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
-import type { BusyTemplate } from '@tannerbroberts/about-time-core';
+import type { BusyTemplate, LaneTemplate, TemplateMap } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 import type { DailyGoals } from '../reducer';
 import type { NutritionTotals } from '../utils/nutritionCalculators';
+import { calculateLaneNutrition } from '../utils/nutritionCalculators';
 
 interface NutritionImpactProps {
   currentTotals: NutritionTotals;
-  selectedMeal: BusyTemplate | null;
+  selectedMeal: BusyTemplate | LaneTemplate | null;
   dailyGoals: DailyGoals;
+  templates: TemplateMap;
 }
 
-export function NutritionImpact({ currentTotals, selectedMeal, dailyGoals }: NutritionImpactProps): React.ReactElement {
+export function NutritionImpact({ currentTotals, selectedMeal, dailyGoals, templates }: NutritionImpactProps): React.ReactElement {
   const newTotals = React.useMemo(() => {
-    if (!selectedMeal?.willProduce) return currentTotals;
+    if (!selectedMeal) return currentTotals;
+
+    let mealNutrition: NutritionTotals;
+
+    // Handle lane templates by calculating nested nutrition
+    if (selectedMeal.templateType === 'lane') {
+      mealNutrition = calculateLaneNutrition(selectedMeal.id, templates);
+    } else if (selectedMeal.willProduce) {
+      // Handle busy templates
+      mealNutrition = {
+        calories: selectedMeal.willProduce.calories || 0,
+        protein_g: selectedMeal.willProduce.protein_g || 0,
+        carbs_g: selectedMeal.willProduce.carbs_g || 0,
+        fats_g: selectedMeal.willProduce.fats_g || 0,
+      };
+    } else {
+      return currentTotals;
+    }
 
     return {
-      calories: currentTotals.calories + (selectedMeal.willProduce.calories || 0),
-      protein_g: currentTotals.protein_g + (selectedMeal.willProduce.protein_g || 0),
-      carbs_g: currentTotals.carbs_g + (selectedMeal.willProduce.carbs_g || 0),
-      fats_g: currentTotals.fats_g + (selectedMeal.willProduce.fats_g || 0),
+      calories: currentTotals.calories + mealNutrition.calories,
+      protein_g: currentTotals.protein_g + mealNutrition.protein_g,
+      carbs_g: currentTotals.carbs_g + mealNutrition.carbs_g,
+      fats_g: currentTotals.fats_g + mealNutrition.fats_g,
     };
-  }, [currentTotals, selectedMeal]);
+  }, [currentTotals, selectedMeal, templates]);
 
   const renderMacro = (
     label: string,
