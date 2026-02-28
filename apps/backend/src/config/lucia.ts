@@ -25,7 +25,9 @@ export const lucia = new Lucia(adapter, {
     expires: false, // Session cookies (expires when browser closes)
     attributes: {
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      // Use 'none' for cross-origin cookies (Railway subdomains)
+      // Use 'lax' for same-origin (development)
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
   },
   getUserAttributes: (attributes) => ({
