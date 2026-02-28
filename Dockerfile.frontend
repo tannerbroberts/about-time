@@ -31,8 +31,8 @@ WORKDIR /app
 # Copy built files
 COPY --from=builder /app/apps/frontend/dist /srv
 
-# Caddy configuration for SPA
-RUN echo ':$PORT' > /etc/caddy/Caddyfile && \
+# Caddy configuration for SPA (using Caddy 2 environment variable syntax)
+RUN echo ':{$PORT}' > /etc/caddy/Caddyfile && \
     echo 'root * /srv' >> /etc/caddy/Caddyfile && \
     echo 'try_files {path} /index.html' >> /etc/caddy/Caddyfile && \
     echo 'file_server' >> /etc/caddy/Caddyfile
