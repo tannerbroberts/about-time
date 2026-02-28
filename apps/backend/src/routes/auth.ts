@@ -142,7 +142,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
     reply.setCookie('session_id', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
       maxAge: 0,
     });
