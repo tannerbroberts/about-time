@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+# Backend Dockerfile for monorepo build
 FROM node:20-slim AS base
 
 # Builder stage - install and build
