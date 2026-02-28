@@ -3,5 +3,10 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile.backend"
+  },
+  "deploy": {
+    "watchPatterns": [
+      "**"
+    ]
   }
 }
