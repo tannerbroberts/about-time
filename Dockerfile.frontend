@@ -1,37 +1,22 @@
 # syntax=docker/dockerfile:1
 FROM node:20-slim AS base
 
-# Install dependencies only when needed
-FROM base AS deps
+# Builder stage - install and build
+FROM base AS builder
 WORKDIR /app
 
 # Ensure devDependencies are installed (needed for vite, typescript, etc.)
 ENV NODE_ENV=development
 
-# Copy package files
+# Copy all files (needed for npm to understand workspace structure)
 COPY package.json package-lock.json ./
-COPY packages/types/package.json ./packages/types/
-COPY packages/api-client/package.json ./packages/api-client/
-COPY packages/core/package.json ./packages/core/
-COPY apps/frontend/package.json ./apps/frontend/
-
-# Install dependencies (including devDependencies)
-# Using npm install instead of npm ci to ensure workspace devDependencies are installed
-RUN npm install --legacy-peer-deps && \
-    echo "=== Checking for vite ===" && \
-    ls -la node_modules/.bin/ | grep -E "(vite|Total)" || echo "vite not found!"
-
-# Build the packages
-FROM base AS builder
-WORKDIR /app
-
-# Copy node_modules from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json ./package.json
-
-# Copy all source files
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
+
+# Install ALL dependencies (production + dev) with workspace support
+RUN npm install --legacy-peer-deps && \
+    echo "=== Verifying vite installation ===" && \
+    test -f node_modules/.bin/vite && echo "✓ Vite found!" || (echo "✗ Vite NOT found!" && ls -la node_modules/.bin/ | head -20 && exit 1)
 
 # Build dependencies and frontend (using build:prod to skip linting)
 RUN npm run build --workspace=@tannerbroberts/about-time-core && \
