@@ -5,6 +5,9 @@ FROM node:20-slim AS base
 FROM base AS deps
 WORKDIR /app
 
+# Ensure devDependencies are installed (needed for vite, typescript, etc.)
+ENV NODE_ENV=development
+
 # Copy package files
 COPY package.json package-lock.json ./
 COPY packages/types/package.json ./packages/types/
