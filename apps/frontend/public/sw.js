@@ -2,8 +2,8 @@
  * Service Worker for offline-first functionality
  */
 
-const CACHE_NAME = 'about-time-v1';
-const API_CACHE_NAME = 'about-time-api-v1';
+const CACHE_NAME = 'about-time-v2';
+const API_CACHE_NAME = 'about-time-api-v2';
 
 // Static assets to cache
 const STATIC_ASSETS = [
