@@ -31,7 +31,7 @@ COPY apps/frontend/ ./apps/frontend/
 RUN npm run build --workspace=@tannerbroberts/about-time-core && \
     npm run build --workspace=@about-time/types && \
     npm run build --workspace=@about-time/api-client && \
-    cd apps/frontend && tsc -b && npx vite build
+    cd apps/frontend && npx tsc -b && npx vite build
 
 # Production image - serve static files
 FROM caddy:2-alpine AS runner
