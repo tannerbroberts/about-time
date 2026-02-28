@@ -1,5 +1,6 @@
 /**
  * Fastify server entry point
+ * Updated to use production CORS origin
  */
 
 import Fastify from 'fastify';
