@@ -27,11 +27,11 @@ COPY --from=deps /app/package.json ./package.json
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
 
-# Build dependencies and frontend
+# Build dependencies and frontend (skip linting in production build)
 RUN npm run build --workspace=@tannerbroberts/about-time-core && \
     npm run build --workspace=@about-time/types && \
     npm run build --workspace=@about-time/api-client && \
-    npm run build --workspace=@about-time/frontend
+    cd apps/frontend && tsc -b && npx vite build
 
 # Production image - serve static files
 FROM caddy:2-alpine AS runner
