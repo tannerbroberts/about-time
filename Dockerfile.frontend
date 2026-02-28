@@ -35,11 +35,8 @@ WORKDIR /app
 # Copy built files
 COPY --from=builder /app/apps/frontend/dist /srv
 
-# Caddy configuration for SPA (using Caddy 2 environment variable syntax)
-RUN echo ':{$PORT}' > /etc/caddy/Caddyfile && \
-    echo 'root * /srv' >> /etc/caddy/Caddyfile && \
-    echo 'file_server' >> /etc/caddy/Caddyfile && \
-    echo 'try_files {path} /index.html' >> /etc/caddy/Caddyfile
+# Caddy configuration for SPA (proper Caddy 2 syntax)
+RUN printf ':{$PORT}\nroot * /srv\nencode gzip\ntry_files {path} /index.html\nfile_server\n' > /etc/caddy/Caddyfile
 
 # Expose port (Railway sets $PORT)
 EXPOSE 3000
