@@ -16,9 +16,10 @@ COPY packages/core/package.json ./packages/core/
 COPY apps/frontend/package.json ./apps/frontend/
 
 # Install dependencies (including devDependencies)
-RUN npm ci --legacy-peer-deps --include=dev && \
-    echo "=== Checking installed binaries ===" && \
-    ls -la node_modules/.bin/ | head -30
+# Using npm install instead of npm ci to ensure workspace devDependencies are installed
+RUN npm install --legacy-peer-deps && \
+    echo "=== Checking for vite ===" && \
+    ls -la node_modules/.bin/ | grep -E "(vite|Total)" || echo "vite not found!"
 
 # Build the packages
 FROM base AS builder
