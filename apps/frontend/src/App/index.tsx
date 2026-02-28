@@ -13,6 +13,7 @@ import { theme } from '../theme';
 import { BottomNavigation } from './BottomNavigation';
 import { AppContext } from './Context';
 import { OnlineStatus } from './OnlineStatus';
+import { TopAppBar } from './TopAppBar';
 import { DefaultAppState, reducer } from './reducer';
 
 export function App(): React.ReactElement {
@@ -23,9 +24,11 @@ export function App(): React.ReactElement {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppContext.Provider value={contextValue}>
+        <TopAppBar />
         <Box
           component="main"
           sx={{
+            paddingTop: '64px', // Space for top app bar
             paddingBottom: '56px', // Space for bottom navigation
             minHeight: '100vh',
           }}
