@@ -3,7 +3,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import type { BusyTemplate, TemplateMap } from '@tannerbroberts/about-time-core';
+import type { BusyTemplate, LaneTemplate, TemplateMap } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 interface TemplateSelectorProps {
@@ -13,8 +13,8 @@ interface TemplateSelectorProps {
 }
 
 export function TemplateSelector({ templates, value, onChange }: TemplateSelectorProps): React.ReactElement {
-  const busyTemplates = Object.values(templates).filter(
-    (t): t is BusyTemplate => t.templateType === 'busy',
+  const schedulableTemplates = Object.values(templates).filter(
+    (t): t is BusyTemplate | LaneTemplate => t.templateType === 'busy' || t.templateType === 'lane',
   );
 
   return (
@@ -25,7 +25,7 @@ export function TemplateSelector({ templates, value, onChange }: TemplateSelecto
         onChange={(e) => onChange(e.target.value)}
         label="Meal Template"
       >
-        {busyTemplates.map((template) => (
+        {schedulableTemplates.map((template) => (
           <MenuItem key={template.id} value={template.id}>
             {template.intent}
           </MenuItem>

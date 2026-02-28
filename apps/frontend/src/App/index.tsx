@@ -13,8 +13,8 @@ import { theme } from '../theme';
 import { BottomNavigation } from './BottomNavigation';
 import { AppContext } from './Context';
 import { OnlineStatus } from './OnlineStatus';
-import { TopAppBar } from './TopAppBar';
 import { DefaultAppState, reducer } from './reducer';
+import { TopAppBar } from './TopAppBar';
 
 export function App(): React.ReactElement {
   const [appState, appDispatch] = React.useReducer(reducer, DefaultAppState);
