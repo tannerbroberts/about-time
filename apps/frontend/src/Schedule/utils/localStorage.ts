@@ -12,6 +12,9 @@ const DAILY_GOALS_KEY = 'about-time:daily-goals';
 
 /**
  * Load schedule lanes from API with localStorage cache fallback
+ * @deprecated This function fetches a large date range (±1 year) and is being replaced by
+ * view-based fetching via scheduleCacheManager. New code should use scheduleCacheManager.fetchForRange()
+ * instead. This function is kept for backward compatibility during the initial mount.
  */
 export const loadScheduleLanes = async (): Promise<Record<string, string>> => {
   try {

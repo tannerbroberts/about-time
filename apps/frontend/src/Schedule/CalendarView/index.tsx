@@ -7,8 +7,10 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
+import type { ViewType } from '../reducer';
 import { useScheduleContext } from '../useContext';
 import { formatDisplayDate } from '../utils/dateHelpers';
+import { ViewSwitcher } from '../ViewSwitcher';
 
 import { DayView } from './DayView';
 import { WeekView } from './WeekView';
@@ -26,6 +28,10 @@ export function CalendarView(): React.ReactElement {
 
   const handleToday = (): void => {
     dispatch({ type: 'SET_DATE', date: new Date() });
+  };
+
+  const handleViewChange = (view: ViewType): void => {
+    dispatch({ type: 'SET_VIEW', view });
   };
 
   const displayDate = formatDisplayDate(state.selectedDate);
@@ -52,18 +58,27 @@ export function CalendarView(): React.ReactElement {
             {displayDate}
           </Typography>
         </Box>
-        {!isToday && (
-          <Typography
-            variant="button"
-            sx={{ cursor: 'pointer', color: 'primary.main' }}
-            onClick={handleToday}
-          >
-            Today
-          </Typography>
-        )}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <ViewSwitcher currentView={state.currentView} onChange={handleViewChange} />
+          {!isToday && (
+            <Typography
+              variant="button"
+              sx={{ cursor: 'pointer', color: 'primary.main' }}
+              onClick={handleToday}
+            >
+              Today
+            </Typography>
+          )}
+        </Box>
       </Box>
 
-      {state.currentView === 'day' ? <DayView /> : <WeekView />}
+      {state.currentView === 'day' && <DayView />}
+      {state.currentView === 'week' && <WeekView />}
+      {(state.currentView === 'month' || state.currentView === 'year') && (
+        <Typography variant="body1" sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+          {state.currentView.charAt(0).toUpperCase() + state.currentView.slice(1)} view coming soon
+        </Typography>
+      )}
     </Paper>
   );
 }

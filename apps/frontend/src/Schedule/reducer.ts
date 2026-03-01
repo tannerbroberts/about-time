@@ -14,10 +14,12 @@ export interface SchedulerContext {
   position: { x: number; y: number };
 }
 
+export type ViewType = 'day' | 'week' | 'month' | 'year';
+
 export interface ScheduleState {
   templates: TemplateMap;
   scheduleLanes: Record<string, string>;
-  currentView: 'day' | 'week';
+  currentView: ViewType;
   selectedDate: Date;
   dailyGoals: DailyGoals;
   isSchedulerOpen: boolean;
@@ -35,7 +37,7 @@ export type ScheduleAction = | { type: 'HYDRATE_TEMPLATES'; templates: TemplateM
   | { type: 'REMOVE_MEAL'; dateKey: string; segmentId: string }
   | { type: 'SET_DAILY_GOALS'; goals: DailyGoals }
   | { type: 'SET_SELECTED_MEAL'; mealId: string | null }
-  | { type: 'SET_VIEW'; view: 'day' | 'week' };
+  | { type: 'SET_VIEW'; view: ViewType };
 
 export interface ScheduleContextValue {
   state: ScheduleState;
@@ -45,7 +47,7 @@ export interface ScheduleContextValue {
 export const DefaultScheduleState: ScheduleState = {
   templates: {},
   scheduleLanes: {},
-  currentView: 'day',
+  currentView: 'week', // Default to week view for better UX
   selectedDate: new Date(),
   dailyGoals: {
     calories: 2000,

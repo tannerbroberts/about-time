@@ -1,15 +1,16 @@
 import Container from '@mui/material/Container';
 import React from 'react';
 
-import { useBuildStore } from '../Build/store';
-
 import { CalendarView } from './CalendarView';
 import { EmptyState } from './EmptyState';
+import { useBuildTemplates } from './hooks/useBuildTemplates';
 import { InlineScheduler } from './InlineScheduler';
 import { NutritionPanel } from './NutritionPanel';
 import { ScheduleProvider } from './Provider';
 import { DefaultScheduleState, reducer } from './reducer';
 import { ScheduleFAB } from './ScheduleFAB';
+import { shallowEqual } from './utils/comparison';
+import { formatDateKey, getDateRangeForView } from './utils/dateRangeHelpers';
 import {
   loadDailyGoals,
   loadScheduleLanes,
@@ -17,9 +18,10 @@ import {
   setScheduleLane,
   removeScheduleLane,
 } from './utils/localStorage';
+import { scheduleCacheManager } from './utils/scheduleCacheManager';
 
 export function Schedule(): React.ReactElement {
-  const buildTemplates = useBuildStore((state) => state.templates);
+  const buildTemplates = useBuildTemplates();
   const [scheduleState, scheduleDispatch] = React.useReducer(reducer, DefaultScheduleState);
   const isInitialMount = React.useRef(true);
   const previousLanes = React.useRef<Record<string, string>>({});
@@ -50,7 +52,7 @@ export function Schedule(): React.ReactElement {
     loadData();
   }, []);
 
-  // Sync changes to API
+  // Sync changes to API with shallow comparison
   React.useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -62,11 +64,18 @@ export function Schedule(): React.ReactElement {
       const currentLanes = scheduleState.scheduleLanes;
       const prev = previousLanes.current;
 
+      // Shallow comparison to prevent unnecessary syncs
+      if (shallowEqual(currentLanes, prev)) {
+        return;
+      }
+
       // Find added/updated lanes
       for (const [dateKey, laneId] of Object.entries(currentLanes)) {
         if (prev[dateKey] !== laneId) {
           try {
             await setScheduleLane(dateKey, laneId);
+            // Invalidate cache for this date
+            scheduleCacheManager.invalidate(dateKey);
           } catch (error) {
             // eslint-disable-next-line no-console
             console.error(`Failed to sync lane for ${dateKey}:`, error);
@@ -79,6 +88,8 @@ export function Schedule(): React.ReactElement {
         if (!(dateKey in currentLanes)) {
           try {
             await removeScheduleLane(dateKey);
+            // Invalidate cache for this date
+            scheduleCacheManager.invalidate(dateKey);
           } catch (error) {
             // eslint-disable-next-line no-console
             console.error(`Failed to remove lane for ${dateKey}:`, error);
@@ -93,6 +104,25 @@ export function Schedule(): React.ReactElement {
 
     syncChanges();
   }, [scheduleState.scheduleLanes]);
+
+  // Load data for current view on view/date changes
+  React.useEffect(() => {
+    const loadDataForView = async (): Promise<void> => {
+      const { start, end } = getDateRangeForView(scheduleState.selectedDate, scheduleState.currentView);
+      const startDate = formatDateKey(start);
+      const endDate = formatDateKey(end);
+
+      try {
+        const lanes = await scheduleCacheManager.fetchForRange(startDate, endDate);
+        scheduleDispatch({ type: 'HYDRATE_SCHEDULE_LANES', lanes });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load schedule lanes:', error);
+      }
+    };
+
+    loadDataForView();
+  }, [scheduleState.currentView, scheduleState.selectedDate]);
 
   const contextValue = React.useMemo(
     () => ({ state: scheduleState, dispatch: scheduleDispatch }),
