@@ -90,6 +90,10 @@ export { insertSegmentAt } from './templates/layout/insertSegmentAt.js';
 export { visualizeLane } from './templates/layout/visualizeLane.js';
 export { visualizeLaneIds } from './templates/layout/visualizeLaneIds.js';
 
+// ==================== VARIABLES ====================
+
+export { expandComposite, expandMultipleComposites, validateComposition } from './variables/index.js';
+
 // ==================== VALIDATION ====================
 
 export { validateLane } from './validation/validateLane.js';

@@ -68,3 +68,26 @@ export interface DbDailyState {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface DbLibrary {
+  id: string;
+  name: string;
+  description: string | null;
+  laneTemplateId: string | null;
+  ownerId: string;
+  visibility: 'private' | 'unlisted' | 'public';
+  createdAt: Date;
+  updatedAt: Date;
+  templateCount: number;
+}
+
+export interface DbLibraryMembership {
+  id: string;
+  libraryId: string;
+  templateId: string;
+  addedAt: Date;
+  addedBy: string;
+  notes: string | null;
+  tags: string[] | null;
+  order: number | null;
+}

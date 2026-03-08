@@ -8,7 +8,7 @@ import importX from 'eslint-plugin-import-x'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'mcp-server']),
+  globalIgnores(['dist', 'mcp-server', 'tests']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

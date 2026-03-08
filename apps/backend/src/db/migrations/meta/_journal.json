@@ -15,6 +15,55 @@
       "when": 1772147428724,
       "tag": "0001_rich_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772917774744,
+      "tag": "0002_chubby_gambit",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772917829659,
+      "tag": "0003_white_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772917865538,
+      "tag": "0004_glorious_gladiator",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772930128060,
+      "tag": "0005_red_vanisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772931793539,
+      "tag": "0006_woozy_thanos",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1772933460375,
+      "tag": "0007_clean_the_santerians",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772933971944,
+      "tag": "0008_black_stellaris",
+      "breakpoints": true
     }
   ]
 }

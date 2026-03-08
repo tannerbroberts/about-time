@@ -2,6 +2,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
+import FolderIcon from '@mui/icons-material/Folder';
 import PublicIcon from '@mui/icons-material/Public';
 import PublicOffIcon from '@mui/icons-material/PublicOff';
 import Box from '@mui/material/Box';
@@ -16,6 +17,9 @@ import Typography from '@mui/material/Typography';
 import type { BusyTemplate, Template } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
+import { TemplateLibraryBadges } from './TemplateLibraryBadges';
+import { VariablesList } from './VariablesList';
+
 interface TemplateCardProps {
   template: Template;
   onEdit?: (id: string) => void;
@@ -29,6 +33,9 @@ interface TemplateCardProps {
   authorName?: string;
   showImportButton?: boolean;
   onImport?: (id: string) => void;
+  onAddToLibrary?: (id: string) => void;
+  showVariableDetails?: boolean;
+  showLibraryBadgesInSelection?: boolean;
 }
 
 export function TemplateCard({
@@ -44,6 +51,9 @@ export function TemplateCard({
   authorName,
   showImportButton,
   onImport,
+  onAddToLibrary,
+  showVariableDetails = false,
+  showLibraryBadgesInSelection = false,
 }: TemplateCardProps): React.ReactElement {
   const durationMinutes = Math.round(template.estimatedDuration / 60000);
   const templateType = template.templateType === 'busy' ? 'Busy' : 'Lane';
@@ -102,15 +112,31 @@ export function TemplateCard({
         <Typography variant="body2" color="text.secondary">
           Duration: {durationMinutes} min
         </Typography>
-        {totalVariables > 0 && (
+        {template.templateType === 'busy' && totalVariables > 0 && (
           <Box sx={{ marginTop: 1 }}>
-            <Typography variant="caption" color="text.secondary">
-              {produceCount > 0 && `Produces: ${produceCount} variable${produceCount > 1 ? 's' : ''}`}
-              {produceCount > 0 && consumeCount > 0 && ' • '}
-              {consumeCount > 0 && `Consumes: ${consumeCount} variable${consumeCount > 1 ? 's' : ''}`}
-            </Typography>
+            {!showVariableDetails ? (
+              <Typography variant="caption" color="text.secondary">
+                {produceCount > 0 && `Produces: ${produceCount} variable${produceCount > 1 ? 's' : ''}`}
+                {produceCount > 0 && consumeCount > 0 && ' • '}
+                {consumeCount > 0 && `Consumes: ${consumeCount} variable${consumeCount > 1 ? 's' : ''}`}
+              </Typography>
+            ) : (
+              <Stack spacing={1}>
+                {busyTemplate.willProduce && Object.keys(busyTemplate.willProduce).length > 0 && (
+                  <VariablesList variables={busyTemplate.willProduce} type="produce" />
+                )}
+                {busyTemplate.willConsume && Object.keys(busyTemplate.willConsume).length > 0 && (
+                  <VariablesList variables={busyTemplate.willConsume} type="consume" />
+                )}
+              </Stack>
+            )}
           </Box>
         )}
+        {(!showImportButton && !selectionMode) || (selectionMode && showLibraryBadgesInSelection) ? (
+          <Box sx={{ marginTop: 1 }}>
+            <TemplateLibraryBadges templateId={template.id} />
+          </Box>
+        ) : null}
       </CardContent>
       {!selectionMode && (
         <CardActions sx={{ justifyContent: 'flex-end', padding: 2, paddingTop: 0 }}>
@@ -151,6 +177,18 @@ export function TemplateCard({
                     </IconButton>
                   </Tooltip>
                 )
+              )}
+              {onAddToLibrary && (
+                <Tooltip title="Add to Library">
+                  <IconButton
+                    size="small"
+                    color="info"
+                    onClick={(): void => onAddToLibrary(template.id)}
+                    aria-label="Add to library"
+                  >
+                    <FolderIcon />
+                  </IconButton>
+                </Tooltip>
               )}
               {onCompose && (
                 <Tooltip title="Open in Editor">

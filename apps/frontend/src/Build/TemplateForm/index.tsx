@@ -1,3 +1,5 @@
+import type { ValueWithConfidence } from '@about-time/types';
+import { getNominalValue } from '@about-time/types';
 import CloseIcon from '@mui/icons-material/Close';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -39,8 +41,8 @@ export function TemplateForm(): React.ReactElement {
   }, [editingTemplateId, editingTemplate, creationTemplateType]);
   const [name, setName] = React.useState('');
   const [durationMinutes, setDurationMinutes] = React.useState(0);
-  const [willProduce, setWillProduce] = React.useState<Record<string, number>>({});
-  const [willConsume, setWillConsume] = React.useState<Record<string, number>>({});
+  const [willProduce, setWillProduce] = React.useState<Record<string, number | ValueWithConfidence>>({});
+  const [willConsume, setWillConsume] = React.useState<Record<string, number | ValueWithConfidence>>({});
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   // Ref for focusing name input
@@ -90,6 +92,17 @@ export function TemplateForm(): React.ReactElement {
     const templateId = editingTemplateId || crypto.randomUUID();
 
     if (templateType === 'busy') {
+      // Convert ValueWithConfidence to nominal values for template storage
+      const produceValues: Record<string, number> = {};
+      Object.entries(willProduce).forEach(([key, val]) => {
+        produceValues[key] = getNominalValue(val);
+      });
+
+      const consumeValues: Record<string, number> = {};
+      Object.entries(willConsume).forEach(([key, val]) => {
+        consumeValues[key] = getNominalValue(val);
+      });
+
       const template: BusyTemplate = {
         id: templateId,
         templateType: 'busy',
@@ -97,8 +110,8 @@ export function TemplateForm(): React.ReactElement {
         authorId: 'local-user', // TODO: Replace with actual user ID
         estimatedDuration: durationMinutes * 60000, // Convert minutes to ms
         references: [],
-        willProduce: Object.keys(willProduce).length > 0 ? willProduce : {},
-        willConsume: Object.keys(willConsume).length > 0 ? willConsume : {},
+        willProduce: Object.keys(produceValues).length > 0 ? produceValues : {},
+        willConsume: Object.keys(consumeValues).length > 0 ? consumeValues : {},
       };
 
       if (editingTemplateId) {

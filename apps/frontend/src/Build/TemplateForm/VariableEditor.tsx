@@ -1,3 +1,4 @@
+import type { ValueWithConfidence } from '@about-time/types';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Box from '@mui/material/Box';
@@ -8,10 +9,12 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
+import { ConfidenceInput } from './ConfidenceInput';
+
 interface VariableEditorProps {
   title: string;
-  variables: Record<string, number>;
-  onChange: (variables: Record<string, number>) => void;
+  variables: Record<string, number | ValueWithConfidence>;
+  onChange: (variables: Record<string, number | ValueWithConfidence>) => void;
 }
 
 export function VariableEditor({ title, variables, onChange }: VariableEditorProps): React.ReactElement {
@@ -31,7 +34,7 @@ export function VariableEditor({ title, variables, onChange }: VariableEditorPro
   const handleNameChange = (oldKey: string, newKey: string): void => {
     if (oldKey === newKey) return;
 
-    const newVariables: Record<string, number> = {};
+    const newVariables: Record<string, number | ValueWithConfidence> = {};
     Object.entries(variables).forEach(([k, v]) => {
       if (k === oldKey) {
         newVariables[newKey] = v;
@@ -42,7 +45,7 @@ export function VariableEditor({ title, variables, onChange }: VariableEditorPro
     onChange(newVariables);
   };
 
-  const handleValueChange = (key: string, value: number): void => {
+  const handleValueChange = (key: string, value: number | ValueWithConfidence): void => {
     const newVariables = { ...variables, [key]: value };
     onChange(newVariables);
   };
@@ -66,20 +69,19 @@ export function VariableEditor({ title, variables, onChange }: VariableEditorPro
             size="small"
             sx={{ flex: 1 }}
           />
-          <TextField
-            label="Value"
-            type="number"
-            value={value}
-            onChange={(e): void => handleValueChange(key, parseFloat(e.target.value) || 0)}
-            size="small"
-            sx={{ flex: 1 }}
-            inputProps={{ step: 1 }}
-          />
+          <Box sx={{ flex: 1 }}>
+            <ConfidenceInput
+              label="Value"
+              value={value}
+              onChange={(newValue): void => handleValueChange(key, newValue)}
+            />
+          </Box>
           <IconButton
             size="small"
             color="error"
             onClick={(): void => handleRemoveVariable(key)}
             aria-label="Remove variable"
+            sx={{ marginTop: 0.5 }}
           >
             <DeleteIcon />
           </IconButton>

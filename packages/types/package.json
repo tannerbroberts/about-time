@@ -22,6 +22,22 @@
     "./database": {
       "types": "./dist/database.d.ts",
       "import": "./dist/database.js"
+    },
+    "./library": {
+      "types": "./dist/library.d.ts",
+      "import": "./dist/library.js"
+    },
+    "./confidence": {
+      "types": "./dist/confidence.d.ts",
+      "import": "./dist/confidence.js"
+    },
+    "./confidenceMath": {
+      "types": "./dist/confidenceMath.d.ts",
+      "import": "./dist/confidenceMath.js"
+    },
+    "./composite": {
+      "types": "./dist/composite.d.ts",
+      "import": "./dist/composite.js"
     }
   },
   "files": [

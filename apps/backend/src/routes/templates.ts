@@ -163,6 +163,39 @@ export const templateRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   /**
+   * Fork a template (create independent copy)
+   * POST /api/templates/:id/fork
+   */
+  fastify.post('/:id/fork', async (request, reply) => {
+    try {
+      const { user } = request as AuthenticatedRequest;
+      const { id } = request.params as { id: string };
+      const body = request.body as { addToLibraryId?: string };
+
+      const forkedTemplate = await templateService.forkTemplate(user.id, id, {
+        addToLibraryId: body.addToLibraryId,
+      });
+
+      return reply.code(201).send({
+        success: true,
+        template: forkedTemplate,
+        message: 'Template forked successfully',
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Template not found') {
+          return reply.code(404).send({ error: 'NotFound', message: 'Template not found' });
+        }
+        if (error.message.includes('not allowed')) {
+          return reply.code(403).send({ error: 'Forbidden', message: error.message });
+        }
+      }
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to fork template' });
+    }
+  });
+
+  /**
    * Get template with children hierarchy
    * GET /api/templates/:id/children
    */
@@ -256,6 +289,30 @@ export const templateRoutes: FastifyPluginAsync = async (fastify) => {
       }
       fastify.log.error(error);
       return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to import template' });
+    }
+  });
+
+  /**
+   * Get usage statistics for a template
+   * GET /api/templates/:id/usage-stats
+   */
+  fastify.get('/:id/usage-stats', async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+
+      // Import LibraryService dynamically to avoid circular dependency
+      const { LibraryService } = await import('../services/library.service.js');
+      const libraryService = new LibraryService();
+
+      const stats = await libraryService.getTemplateUsageStats(id);
+
+      return reply.send({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'InternalServerError', message: 'Failed to get usage stats' });
     }
   });
 };

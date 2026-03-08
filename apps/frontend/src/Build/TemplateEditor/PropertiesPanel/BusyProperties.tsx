@@ -1,3 +1,5 @@
+import type { ValueWithConfidence } from '@about-time/types';
+import { getNominalValue } from '@about-time/types';
 import Box from '@mui/material/Box';
 import type { BusyTemplate } from '@tannerbroberts/about-time-core';
 import React from 'react';
@@ -12,17 +14,29 @@ export interface BusyPropertiesProps {
 export function BusyProperties({ template }: BusyPropertiesProps): React.ReactElement {
   const updateTemplate = useBuildStore((state) => state.updateTemplate);
 
-  const handleWillProduceChange = (variables: Record<string, number>): void => {
+  const handleWillProduceChange = (variables: Record<string, number | ValueWithConfidence>): void => {
+    // Convert to nominal values for template storage
+    const nominalValues: Record<string, number> = {};
+    Object.entries(variables).forEach(([key, val]) => {
+      nominalValues[key] = getNominalValue(val);
+    });
+
     updateTemplate(template.id, {
       ...template,
-      willProduce: variables,
+      willProduce: nominalValues,
     });
   };
 
-  const handleWillConsumeChange = (variables: Record<string, number>): void => {
+  const handleWillConsumeChange = (variables: Record<string, number | ValueWithConfidence>): void => {
+    // Convert to nominal values for template storage
+    const nominalValues: Record<string, number> = {};
+    Object.entries(variables).forEach(([key, val]) => {
+      nominalValues[key] = getNominalValue(val);
+    });
+
     updateTemplate(template.id, {
       ...template,
-      willConsume: variables,
+      willConsume: nominalValues,
     });
   };
 

@@ -206,3 +206,250 @@ ActionTreeMenu/
   │   └── NavigateActions.tsx   # Navigate category (focus parent/change base)
   └── types.ts                  # Type definitions
 ```
+
+### Library System
+
+The Library System provides template organization through scoped collections with many-to-many relationships.
+
+**Core Concepts:**
+- **Libraries**: Named collections that organize templates by context or purpose
+- **Many-to-Many**: Templates can belong to multiple libraries simultaneously
+- **Scoped Libraries**: Each LaneTemplate auto-creates its own library for child templates
+- **Global Library**: All templates remain accessible in the main template list
+
+**Data Model:**
+- `libraries` table: Library metadata (name, description, visibility, owner, lane template link)
+- `library_memberships` table: Many-to-many junction (library ↔ template with notes, tags, order)
+- Templates maintain independent existence; deleting a library only removes memberships
+
+**API Endpoints:**
+```
+GET    /api/libraries              # List user's libraries
+GET    /api/libraries/:id          # Get library details
+POST   /api/libraries              # Create library
+PUT    /api/libraries/:id          # Update library metadata
+DELETE /api/libraries/:id          # Delete library (keeps templates)
+
+GET    /api/libraries/:id/templates              # List templates in library
+POST   /api/libraries/:id/templates              # Add template to library
+PUT    /api/libraries/:id/templates/:templateId  # Update membership metadata
+DELETE /api/libraries/:id/templates/:templateId  # Remove from library (keeps template)
+```
+
+**Key UX Patterns:**
+
+1. **Remove vs Delete Distinction:**
+   - **Remove from Library**: Breaks membership link, template remains
+   - **Delete Template**: Permanently deletes template from all libraries
+   - Confirmation dialogs clearly explain the difference
+
+2. **Library Browser (LibraryBrowser/):**
+   - Modal dialog for managing libraries
+   - Create/edit/delete libraries
+   - View templates in each library
+   - Add/remove templates with search
+
+3. **Template Library Badges (TemplateLibraryBadges.tsx):**
+   - Shows which libraries contain each template
+   - Displayed on template cards
+   - Tooltip shows full list if in 3+ libraries
+   - Uses useMemo to efficiently compute membership
+
+4. **Library Filtering:**
+   - BaseTemplateSelectionModal includes library dropdown
+   - Filter templates by library when building
+   - "All Templates" option for unfiltered view
+
+5. **Quick Add to Library:**
+   - Folder icon button on template cards
+   - LibrarySelector dialog with search
+   - One-click addition to any library
+
+**State Management:**
+- Managed in Build store (Zustand)
+- `libraries`: Record<string, Library> - All user libraries
+- `libraryTemplates`: Record<string, Template[]> - Templates per library
+- `selectedLibraryId`: Currently viewing library
+- Actions: loadLibraries, createLibrary, addTemplateToLibrary, etc.
+
+**Auto-Creation:**
+- LaneTemplates automatically get a library: `{intent} Library`
+- Created in TemplateService.createTemplate() when templateType === 'lane'
+- Failure to create library doesn't block template creation (logged error)
+
+**File Structure:**
+```
+Build/
+  ├── LibraryBrowser/
+  │   ├── index.tsx             # Main library management dialog
+  │   ├── LibraryCard.tsx       # Display library info
+  │   ├── LibraryForm.tsx       # Create/edit library form
+  │   ├── LibraryDetail.tsx     # View templates in library
+  │   └── TemplateSelector.tsx  # Add templates to library
+  ├── Library/
+  │   ├── LibrarySelector.tsx       # Select library for template
+  │   └── TemplateLibraryBadges.tsx # Show library membership
+  └── store.ts                      # Library state & actions
+
+packages/
+  └── api-client/src/
+      └── libraries.ts          # Library API client methods
+```
+
+**Integration Points:**
+- Library button in main template view opens LibraryBrowser
+- Folder icon on template cards opens LibrarySelector
+- Template picker includes library filter dropdown
+- All operations show success/error notifications
+
+**Advanced Features:**
+- **Usage Tracking**: Templates track `lastUsedAt` and `usageCount` when added to segments
+- **Cleanup Tools**: Find unused templates (>90 days or never used) with bulk remove
+- **Export/Import**: Export library as JSON, import creates new library with all templates
+- **Circular Reference Prevention**: Prevents adding Lane A to Lane B's library if Lane B is in Lane A
+- **De-duplication Toggle**: View templates once even if in multiple libraries
+
+### Composite Variables
+
+Composite variables are reusable groups of variables that can be versioned, forked, and live-linked.
+
+**Core Concepts:**
+- **Composite**: Named group of variables with confidence bounds (e.g., "complete_meal")
+- **Snapshot**: Frozen copy at specific version, won't change
+- **Live Link**: Reference to latest version, automatically updates
+- **Expansion**: Multiplying composite by count expands to atomic values
+
+**Data Model:**
+```typescript
+interface CompositeUnitDefinition {
+  id: string;
+  name: string;
+  version: number;
+  composition: Record<string, ValueWithConfidence>;
+  authorId: string;
+  originCompositeId: string | null;
+  linkType: 'original' | 'forked' | 'live-linked';
+  changelog?: string;
+}
+
+type VariableValue =
+  | { type: 'atomic'; data: ValueWithConfidence }
+  | { type: 'composite-live'; data: CompositeLiveReference }
+  | { type: 'composite-snapshot'; data: CompositeSnapshot };
+```
+
+**Database Schema:**
+- `composite_unit_definitions` table: Composite metadata and composition
+- Stored in `packages/types/src/composite.ts`
+- Expansion algorithm in `packages/core/src/variables/expandComposite.ts`
+
+**API Endpoints:**
+```
+GET    /api/composites              # List user's composites
+GET    /api/composites/:id          # Get composite
+GET    /api/composites/:id/versions # Get all versions
+POST   /api/composites              # Create composite
+PUT    /api/composites/:id          # Update (creates new version)
+DELETE /api/composites/:id          # Delete composite
+POST   /api/composites/:id/fork     # Create independent copy
+POST   /api/composites/:id/live-link # Create live reference
+POST   /api/composites/:id/bulk-update-snapshots # Update all snapshots
+```
+
+**UI Components:**
+- **CreateCompositeDialog**: Full-screen dialog for creating composites
+- **CompositeVariablePicker**: Two-step picker (selection → configuration)
+- **EnhancedVariablesList**: Shows both composite and expanded views
+
+**Expansion Algorithm:**
+```typescript
+// 3 × complete_meal
+// Input:  { calories: 500, protein_g: 50 }
+// Output: { calories: 1500, protein_g: 150 }
+
+function expandComposite(
+  composition: Record<string, ValueWithConfidence>,
+  count: number
+): Record<string, ValueWithConfidence> {
+  const expanded: Record<string, ValueWithConfidence> = {};
+  for (const [variableName, value] of Object.entries(composition)) {
+    const normalized = normalizeValue(value);
+    expanded[variableName] = multiplyByScalar(normalized, count);
+  }
+  return expanded;
+}
+```
+
+**Versioning:**
+- Each update increments version number
+- Snapshots capture specific version
+- Live links always use latest version
+- Changelog tracks changes between versions
+
+### Confidence Factors
+
+Confidence factors express uncertainty in measurements using intervals.
+
+**Core Concepts:**
+- **Nominal Value**: Expected/average value
+- **Confidence Bounds**: Lower and upper limits
+- **Propagation**: Combining multiple confidence intervals
+- **Display Format**: `500 ±10% (450-550)`
+
+**Data Model:**
+```typescript
+interface ValueWithConfidence {
+  value: number;     // Nominal/expected value
+  lower?: number;    // Lower confidence bound
+  upper?: number;    // Upper confidence bound
+}
+```
+
+**Database Schema:**
+- `template_variables` table stores confidence bounds
+- Columns: `nominal_value`, `lower_bound`, `upper_bound`
+- Per-variable confidence tracking
+
+**Propagation Algorithm:**
+```typescript
+function aggregateWithConfidence(
+  values: ValueWithConfidence[]
+): ValueWithConfidence {
+  const totalValue = values.reduce((sum, v) => sum + v.value, 0);
+  const totalLower = values.reduce((sum, v) => sum + (v.lower ?? v.value), 0);
+  const totalUpper = values.reduce((sum, v) => sum + (v.upper ?? v.value), 0);
+
+  // Apply ceiling to prevent unbounded growth (max ±25%)
+  const range = totalUpper - totalLower;
+  const maxRange = totalValue * 0.5;
+
+  if (range > maxRange) {
+    const adjustment = (range - maxRange) / 2;
+    return {
+      value: totalValue,
+      lower: totalLower + adjustment,
+      upper: totalUpper - adjustment,
+    };
+  }
+
+  return { value: totalValue, lower: totalLower, upper: totalUpper };
+}
+```
+
+**UI Components:**
+- **ConfidenceInput**: Input component with nominal, lower, upper fields
+- **VariableViewToggle**: Toggle between composite/expanded views
+- **EnhancedVariablesList**: Shows confidence bounds in both views
+
+**View Modes:**
+- **Composite View**: Shows high-level units (e.g., "2 × complete_meal")
+- **Expanded View**: Shows all atomic values with sources and confidence
+- Toggle persisted in localStorage
+- Smooth transition animations
+
+**Best Practices:**
+- Typical ranges: ±5-20%
+- Tighter for measurements (±5%)
+- Wider for estimates (±20-30%)
+- Always include some uncertainty
+- Review propagated confidence in aggregated views

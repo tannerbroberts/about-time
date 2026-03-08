@@ -10,8 +10,11 @@ import { corsPlugin } from './plugins/cors.js';
 import { helmetPlugin } from './plugins/helmet.js';
 import metricsPlugin from './plugins/metrics.js';
 import { authRoutes } from './routes/auth.js';
+import { compositesRoutes } from './routes/composites.js';
 import { publicTemplateRoutes } from './routes/public-templates.js';
 import { templateRoutes } from './routes/templates.js';
+import { templateVariablesRoutes } from './routes/templateVariables.js';
+import { libraryRoutes } from './routes/libraries.js';
 import { scheduleRoutes } from './routes/schedule.js';
 import { executeRoutes } from './routes/execute.js';
 import { migrateRoutes } from './routes/migrate.js';
@@ -79,8 +82,11 @@ fastify.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOS
 
 // Register routes
 await fastify.register(authRoutes, { prefix: '/api/auth' });
+await fastify.register(compositesRoutes, { prefix: '/api/composites' });
 await fastify.register(publicTemplateRoutes, { prefix: '/api/public-templates' });
 await fastify.register(templateRoutes, { prefix: '/api/templates' });
+await fastify.register(templateVariablesRoutes, { prefix: '/api/template-variables' });
+await fastify.register(libraryRoutes, { prefix: '/api/libraries' });
 await fastify.register(scheduleRoutes, { prefix: '/api/schedule' });
 await fastify.register(executeRoutes, { prefix: '/api/execute' });
 await fastify.register(migrateRoutes, { prefix: '/api/migrate' });

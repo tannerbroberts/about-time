@@ -1,9 +1,25 @@
 import {
+  createComposite as createCompositeAPI,
+  getUserComposites as getUserCompositesAPI,
+} from '@about-time/api-client/composites';
+import {
+  fetchLibraries as fetchLibrariesAPI,
+  createLibrary as createLibraryAPI,
+  updateLibrary as updateLibraryAPI,
+  deleteLibrary as deleteLibraryAPI,
+  getLibraryTemplates as getLibraryTemplatesAPI,
+  addTemplateToLibrary as addTemplateToLibraryAPI,
+  removeTemplateFromLibrary as removeTemplateFromLibraryAPI,
+} from '@about-time/api-client/libraries';
+import {
   publishTemplate as publishTemplateAPI,
   unpublishTemplate as unpublishTemplateAPI,
   fetchPublicTemplates as fetchPublicTemplatesAPI,
   importPublicTemplate as importPublicTemplateAPI,
 } from '@about-time/api-client/templates';
+import type { CompositeUnitDefinition } from '@about-time/types/composite';
+import type { ValueWithConfidence } from '@about-time/types/confidence';
+import type { Library } from '@about-time/types/library';
 import type { Template, TemplateMap } from '@tannerbroberts/about-time-core';
 import type React from 'react';
 import { create } from 'zustand';
@@ -29,6 +45,8 @@ export interface BuildState {
   searchQuery: string;
   sortBy: 'recent' | 'name' | 'calories' | 'protein';
   filterTemplateType: 'all' | 'busy' | 'lane';
+  deduplicateLibraries: boolean;
+  variableViewMode: 'composite' | 'expanded';
 
   // Form state
   isTemplateFormOpen: boolean;
@@ -63,6 +81,18 @@ export interface BuildState {
   publicSearchQuery: string;
   isPublicLibraryOpen: boolean;
 
+  // Library management
+  libraries: Record<string, Library>;
+  selectedLibraryId: string | null;
+  libraryTemplates: Record<string, Template[]>;
+  isLibraryBrowserOpen: boolean;
+  isLibraryFormOpen: boolean;
+  editingLibraryId: string | null;
+
+  // Composite variables
+  composites: Record<string, CompositeUnitDefinition>;
+  isCompositeDialogOpen: boolean;
+
   // Notifications
   notifications: Array<{
     id: string;
@@ -85,6 +115,8 @@ export interface BuildActions {
   setSearchQuery: (query: string) => void;
   setSortBy: (sortBy: BuildState['sortBy']) => void;
   setFilterType: (filterType: BuildState['filterTemplateType']) => void;
+  setDeduplicateLibraries: (deduplicate: boolean) => void;
+  setVariableViewMode: (mode: BuildState['variableViewMode']) => void;
 
   // Form actions
   openTemplateForm: (templateId?: string, preselectedType?: 'busy' | 'lane') => void;
@@ -128,6 +160,31 @@ export interface BuildActions {
   publishTemplate: (templateId: string) => Promise<void>;
   unpublishTemplate: (templateId: string) => Promise<void>;
 
+  // Library management actions
+  loadLibraries: () => Promise<void>;
+  createLibrary: (name: string, description?: string, laneTemplateId?: string) => Promise<void>;
+  updateLibrary: (libraryId: string, name?: string, description?: string) => Promise<void>;
+  deleteLibrary: (libraryId: string) => Promise<void>;
+  selectLibrary: (libraryId: string | null) => void;
+  loadLibraryTemplates: (libraryId: string) => Promise<void>;
+  addTemplateToLibrary: (libraryId: string, templateId: string) => Promise<void>;
+  removeTemplateFromLibrary: (libraryId: string, templateId: string) => Promise<void>;
+  openLibraryBrowser: () => void;
+  closeLibraryBrowser: () => void;
+  openLibraryForm: (libraryId?: string) => void;
+  closeLibraryForm: () => void;
+
+  // Composite variable actions
+  loadComposites: () => Promise<void>;
+  createComposite: (data: {
+    name: string;
+    composition: Record<string, ValueWithConfidence>;
+    isPublic: boolean;
+    changelog?: string;
+  }) => Promise<void>;
+  openCompositeDialog: () => void;
+  closeCompositeDialog: () => void;
+
   // Notification actions
   showNotification: (
     message: string,
@@ -140,11 +197,33 @@ export interface BuildActions {
 
 export type BuildStore = BuildState & BuildActions;
 
+// Load deduplication preference from localStorage
+const loadDeduplicationPreference = (): boolean => {
+  try {
+    const saved = localStorage.getItem('deduplicateLibraries');
+    return saved === 'true';
+  } catch {
+    return false;
+  }
+};
+
+// Load variable view mode preference from localStorage
+const loadVariableViewModePreference = (): 'composite' | 'expanded' => {
+  try {
+    const saved = localStorage.getItem('variableViewMode');
+    return saved === 'expanded' ? 'expanded' : 'composite';
+  } catch {
+    return 'composite';
+  }
+};
+
 const defaultState: BuildState = {
   templates: {},
   searchQuery: '',
   sortBy: 'recent',
   filterTemplateType: 'all',
+  deduplicateLibraries: loadDeduplicationPreference(),
+  variableViewMode: loadVariableViewModePreference(),
   isTemplateFormOpen: false,
   editingTemplateId: null,
   creationTemplateType: null,
@@ -166,6 +245,14 @@ const defaultState: BuildState = {
   publicTemplateAuthors: {},
   publicSearchQuery: '',
   isPublicLibraryOpen: false,
+  libraries: {},
+  selectedLibraryId: null,
+  libraryTemplates: {},
+  isLibraryBrowserOpen: false,
+  isLibraryFormOpen: false,
+  editingLibraryId: null,
+  composites: {},
+  isCompositeDialogOpen: false,
   notifications: [],
 };
 
@@ -287,6 +374,24 @@ export const useBuildStore = create<BuildStore>((set) => ({
 
   setFilterType: (filterType): void => {
     set({ filterTemplateType: filterType });
+  },
+
+  setDeduplicateLibraries: (deduplicate): void => {
+    try {
+      localStorage.setItem('deduplicateLibraries', String(deduplicate));
+    } catch {
+      // Ignore localStorage errors
+    }
+    set({ deduplicateLibraries: deduplicate });
+  },
+
+  setVariableViewMode: (mode): void => {
+    try {
+      localStorage.setItem('variableViewMode', mode);
+    } catch {
+      // Ignore localStorage errors
+    }
+    set({ variableViewMode: mode });
   },
 
   // Form actions
@@ -524,6 +629,238 @@ export const useBuildStore = create<BuildStore>((set) => ({
       console.error('Failed to import template:', error);
       useBuildStore.getState().showNotification('Failed to import template', 'error');
     }
+  },
+
+  // Library management actions
+  loadLibraries: async (): Promise<void> => {
+    try {
+      const libraries = await fetchLibrariesAPI();
+      const librariesMap: Record<string, Library> = {};
+      for (const library of libraries) {
+        librariesMap[library.id] = library;
+      }
+      set({ libraries: librariesMap });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load libraries:', error);
+      useBuildStore.getState().showNotification('Failed to load libraries', 'error');
+    }
+  },
+
+  createLibrary: async (name, description, laneTemplateId): Promise<void> => {
+    try {
+      const created = await createLibraryAPI({ name, description, laneTemplateId });
+      set((state) => ({
+        libraries: {
+          ...state.libraries,
+          [created.id]: created,
+        },
+        isLibraryFormOpen: false,
+        editingLibraryId: null,
+      }));
+      useBuildStore.getState().showNotification('Library created successfully!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create library:', error);
+      useBuildStore.getState().showNotification('Failed to create library', 'error');
+      throw error;
+    }
+  },
+
+  updateLibrary: async (libraryId, name, description): Promise<void> => {
+    try {
+      const updated = await updateLibraryAPI(libraryId, { name, description });
+      set((state) => ({
+        libraries: {
+          ...state.libraries,
+          [libraryId]: updated,
+        },
+        isLibraryFormOpen: false,
+        editingLibraryId: null,
+      }));
+      useBuildStore.getState().showNotification('Library updated successfully!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update library:', error);
+      useBuildStore.getState().showNotification('Failed to update library', 'error');
+      throw error;
+    }
+  },
+
+  deleteLibrary: async (libraryId): Promise<void> => {
+    try {
+      await deleteLibraryAPI(libraryId);
+      set((state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [libraryId]: _removed, ...remaining } = state.libraries;
+        return {
+          libraries: remaining,
+          selectedLibraryId: state.selectedLibraryId === libraryId ? null : state.selectedLibraryId,
+        };
+      });
+      useBuildStore.getState().showNotification('Library deleted successfully!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to delete library:', error);
+      useBuildStore.getState().showNotification('Failed to delete library', 'error');
+      throw error;
+    }
+  },
+
+  selectLibrary: (libraryId): void => {
+    set({ selectedLibraryId: libraryId });
+    if (libraryId) {
+      useBuildStore.getState().loadLibraryTemplates(libraryId);
+    }
+  },
+
+  loadLibraryTemplates: async (libraryId): Promise<void> => {
+    try {
+      const results = await getLibraryTemplatesAPI(libraryId);
+      const templates = results.map((r) => r.template);
+      set((state) => ({
+        libraryTemplates: {
+          ...state.libraryTemplates,
+          [libraryId]: templates,
+        },
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load library templates:', error);
+      useBuildStore.getState().showNotification('Failed to load library templates', 'error');
+    }
+  },
+
+  addTemplateToLibrary: async (libraryId, templateId): Promise<void> => {
+    try {
+      await addTemplateToLibraryAPI(libraryId, { templateId });
+
+      // Refresh library templates
+      await useBuildStore.getState().loadLibraryTemplates(libraryId);
+
+      // Update library template count
+      set((state) => {
+        const library = state.libraries[libraryId];
+        if (library) {
+          return {
+            libraries: {
+              ...state.libraries,
+              [libraryId]: {
+                ...library,
+                templateCount: library.templateCount + 1,
+              },
+            },
+          };
+        }
+        return {};
+      });
+
+      useBuildStore.getState().showNotification('Template added to library!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to add template to library:', error);
+      useBuildStore.getState().showNotification('Failed to add template to library', 'error');
+      throw error;
+    }
+  },
+
+  removeTemplateFromLibrary: async (libraryId, templateId): Promise<void> => {
+    try {
+      await removeTemplateFromLibraryAPI(libraryId, templateId);
+
+      // Refresh library templates
+      await useBuildStore.getState().loadLibraryTemplates(libraryId);
+
+      // Update library template count
+      set((state) => {
+        const library = state.libraries[libraryId];
+        if (library) {
+          return {
+            libraries: {
+              ...state.libraries,
+              [libraryId]: {
+                ...library,
+                templateCount: Math.max(0, library.templateCount - 1),
+              },
+            },
+          };
+        }
+        return {};
+      });
+
+      useBuildStore.getState().showNotification('Template removed from library!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to remove template from library:', error);
+      useBuildStore.getState().showNotification('Failed to remove template from library', 'error');
+      throw error;
+    }
+  },
+
+  openLibraryBrowser: (): void => {
+    set({ isLibraryBrowserOpen: true });
+    useBuildStore.getState().loadLibraries();
+  },
+
+  closeLibraryBrowser: (): void => {
+    set({ isLibraryBrowserOpen: false, selectedLibraryId: null });
+  },
+
+  openLibraryForm: (libraryId): void => {
+    set({
+      isLibraryFormOpen: true,
+      editingLibraryId: libraryId || null,
+    });
+  },
+
+  closeLibraryForm: (): void => {
+    set({
+      isLibraryFormOpen: false,
+      editingLibraryId: null,
+    });
+  },
+
+  // Composite variable actions
+  loadComposites: async (): Promise<void> => {
+    try {
+      const composites = await getUserCompositesAPI();
+      const compositesMap: Record<string, CompositeUnitDefinition> = {};
+      for (const composite of composites) {
+        compositesMap[composite.id] = composite;
+      }
+      set({ composites: compositesMap });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load composites:', error);
+      useBuildStore.getState().showNotification('Failed to load composite variables', 'error');
+    }
+  },
+
+  createComposite: async (data): Promise<void> => {
+    try {
+      const created = await createCompositeAPI(data);
+      set((state) => ({
+        composites: {
+          ...state.composites,
+          [created.id]: created,
+        },
+        isCompositeDialogOpen: false,
+      }));
+      useBuildStore.getState().showNotification('Composite variable created successfully!', 'success');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create composite:', error);
+      useBuildStore.getState().showNotification('Failed to create composite variable', 'error');
+      throw error;
+    }
+  },
+
+  openCompositeDialog: (): void => {
+    set({ isCompositeDialogOpen: true });
+  },
+
+  closeCompositeDialog: (): void => {
+    set({ isCompositeDialogOpen: false });
   },
 
   // Notification actions

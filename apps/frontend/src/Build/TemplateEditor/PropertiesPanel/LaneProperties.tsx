@@ -1,17 +1,19 @@
+import type { ValueWithConfidence } from '@about-time/types';
+import { formatWithConfidence } from '@about-time/types';
 import { Box, Typography } from '@mui/material';
 import type { LaneTemplate, Template } from '@tannerbroberts/about-time-core';
 import React from 'react';
 
 import { useBuildStore } from '../../store';
-import { calculateNestedVariables } from '../../utils/variableAggregation';
+import { calculateNestedVariablesWithConfidence } from '../../utils/confidenceAggregation';
 
 interface LanePropertiesProps {
   template: LaneTemplate;
 }
 
 interface NestedVariablesSummaryProps {
-  willProduce: Record<string, number>;
-  willConsume: Record<string, number>;
+  willProduce: Record<string, ValueWithConfidence>;
+  willConsume: Record<string, ValueWithConfidence>;
 }
 
 function NestedVariablesSummary({ willProduce, willConsume }: NestedVariablesSummaryProps): React.ReactElement {
@@ -31,7 +33,7 @@ function NestedVariablesSummary({ willProduce, willConsume }: NestedVariablesSum
           <Box sx={{ pl: 2 }}>
             {Object.entries(willProduce).map(([key, value]) => (
               <Typography key={key} variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                {key}: {value}
+                {key}: {formatWithConfidence(value)}
               </Typography>
             ))}
           </Box>
@@ -51,7 +53,7 @@ function NestedVariablesSummary({ willProduce, willConsume }: NestedVariablesSum
           <Box sx={{ pl: 2 }}>
             {Object.entries(willConsume).map(([key, value]) => (
               <Typography key={key} variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                {key}: {value}
+                {key}: {formatWithConfidence(value)}
               </Typography>
             ))}
           </Box>
@@ -69,8 +71,9 @@ export function LaneProperties({ template }: LanePropertiesProps): React.ReactEl
   const templates = useBuildStore((state) => state.templates);
 
   // Memoized aggregation - recalculates only when template ID or templates map changes
+  // TODO: In future, pass variablesWithConfidence map from database
   const nestedVariables = React.useMemo(
-    () => calculateNestedVariables(template.id, templates as Record<string, Template>),
+    () => calculateNestedVariablesWithConfidence(template.id, templates as Record<string, Template>),
     [template.id, templates],
   );
 

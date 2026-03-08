@@ -14,6 +14,18 @@
     "./templates": {
       "types": "./dist/templates.d.ts",
       "import": "./dist/templates.js"
+    },
+    "./libraries": {
+      "types": "./dist/libraries.d.ts",
+      "import": "./dist/libraries.js"
+    },
+    "./templateVariables": {
+      "types": "./dist/templateVariables.d.ts",
+      "import": "./dist/templateVariables.js"
+    },
+    "./composites": {
+      "types": "./dist/composites.d.ts",
+      "import": "./dist/composites.js"
     }
   },
   "files": [
