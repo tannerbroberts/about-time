@@ -3,7 +3,7 @@
  */
 
 import { db } from '../db/client.js';
-import { dailyState, type NewDailyState } from '../db/schema.js';
+import { dailyState } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 
 export class ExecuteService {

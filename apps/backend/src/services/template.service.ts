@@ -3,13 +3,20 @@
  */
 
 import { db } from '../db/client.js';
-import { templates, templateRelationships, users, type NewTemplate, type NewTemplateRelationship } from '../db/schema.js';
+import { templates, templateRelationships, users, type NewTemplateRelationship } from '../db/schema.js';
 import { eq, and, desc, asc, ilike, or, sql } from 'drizzle-orm';
-import type { Template, TemplateMap, LaneTemplate, BusyTemplate } from '@tannerbroberts/about-time-core';
-import { getCache, setCache, deleteCache, deleteCachePattern, CACHE_KEYS, CACHE_TTL } from '../config/redis.js';
+import type { Template, TemplateMap, LaneTemplate } from '@tannerbroberts/about-time-core';
+import { getCache, setCache, deleteCache, CACHE_KEYS, CACHE_TTL } from '../config/redis.js';
+import { LibraryService } from './library.service.js';
 import crypto from 'crypto';
 
 export class TemplateService {
+  private libraryService: LibraryService;
+
+  constructor() {
+    this.libraryService = new LibraryService();
+  }
+
   /**
    * Create a new template
    */
@@ -30,6 +37,27 @@ export class TemplateService {
     // Insert relationships if any
     if (relationships.length > 0) {
       await db.insert(templateRelationships).values(relationships);
+
+      // Track usage for child templates
+      const uniqueChildTemplateIds = [...new Set(relationships.map(r => r.childTemplateId))];
+      await Promise.all(
+        uniqueChildTemplateIds.map(childId => this.libraryService.trackTemplateUsage(childId))
+      );
+    }
+
+    // Auto-create library for LaneTemplates
+    if (template.templateType === 'lane') {
+      try {
+        await this.libraryService.createLibrary(userId, {
+          name: `${template.intent} Library`,
+          description: `Auto-generated library for ${template.intent}`,
+          laneTemplateId: template.id,
+          visibility: 'private',
+        });
+      } catch (error) {
+        // Log error but don't fail template creation
+        console.error('Failed to auto-create library for lane template:', error);
+      }
     }
 
     // Invalidate templates list cache
@@ -162,6 +190,12 @@ export class TemplateService {
     // Insert new relationships
     if (relationships.length > 0) {
       await db.insert(templateRelationships).values(relationships);
+
+      // Track usage for child templates
+      const uniqueChildTemplateIds = [...new Set(relationships.map(r => r.childTemplateId))];
+      await Promise.all(
+        uniqueChildTemplateIds.map(childId => this.libraryService.trackTemplateUsage(childId))
+      );
     }
 
     // Invalidate caches
@@ -191,6 +225,109 @@ export class TemplateService {
     // Invalidate caches
     await deleteCache(CACHE_KEYS.TEMPLATE(userId, templateId));
     await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+  }
+
+  /**
+   * Fork a template (create independent copy with author attribution)
+   */
+  async forkTemplate(
+    userId: string,
+    templateId: string,
+    options?: { addToLibraryId?: string },
+  ): Promise<Template> {
+    // Get original template
+    const original = await db.query.templates.findFirst({
+      where: eq(templates.id, templateId),
+      with: {
+        user: true,
+      },
+    });
+
+    if (!original) {
+      throw new Error('Template not found');
+    }
+
+    // Check if forking is allowed
+    if (!original.allowForking && original.userId !== userId) {
+      throw new Error('Forking is not allowed for this template');
+    }
+
+    // Create forked template data with new ID
+    const forkedTemplate: Template = {
+      ...original.templateData,
+      id: crypto.randomUUID(),
+    };
+
+    // Insert forked template with attribution
+    const [dbTemplate] = await db.insert(templates).values({
+      id: forkedTemplate.id,
+      userId,
+      templateData: forkedTemplate,
+      templateType: forkedTemplate.templateType,
+      intent: forkedTemplate.intent,
+      estimatedDuration: forkedTemplate.estimatedDuration,
+      originTemplateId: original.id,
+      originAuthorId: original.userId,
+      linkType: 'forked',
+      version: 1,
+      visibility: 'private',
+    }).returning();
+
+    // Copy template variables if they exist
+    const originalVariables = await db.query.templateVariables.findMany({
+      where: eq(templates.id, original.id),
+    });
+
+    if (originalVariables.length > 0) {
+      const { TemplateVariableService } = await import('./templateVariable.service.js');
+      const variableService = new TemplateVariableService();
+
+      for (const variable of originalVariables) {
+        await variableService.upsertTemplateVariable(userId, forkedTemplate.id, {
+          variableName: variable.variableName,
+          variableType: variable.variableType as 'produce' | 'consume',
+          nominalValue: variable.nominalValue,
+          lowerBound: variable.lowerBound ?? undefined,
+          upperBound: variable.upperBound ?? undefined,
+        });
+      }
+    }
+
+    // Copy relationships for lane templates
+    if (forkedTemplate.templateType === 'lane') {
+      const originalRelationships = await db.query.templateRelationships.findMany({
+        where: eq(templateRelationships.parentTemplateId, original.id),
+      });
+
+      if (originalRelationships.length > 0) {
+        const newRelationships = originalRelationships.map(rel => ({
+          id: crypto.randomUUID(),
+          parentTemplateId: forkedTemplate.id,
+          childTemplateId: rel.childTemplateId,
+          offset: rel.offset,
+        }));
+
+        await db.insert(templateRelationships).values(newRelationships);
+      }
+    }
+
+    // Add to library if specified
+    if (options?.addToLibraryId) {
+      try {
+        await this.libraryService.addTemplateToLibrary(userId, {
+          libraryId: options.addToLibraryId,
+          templateId: forkedTemplate.id,
+        });
+      } catch (error) {
+        // Log but don't fail the fork
+        console.error('Failed to add forked template to library:', error);
+      }
+    }
+
+    // Invalidate caches
+    await deleteCache(CACHE_KEYS.TEMPLATES(userId));
+
+    return dbTemplate.templateData;
   }
 
   /**

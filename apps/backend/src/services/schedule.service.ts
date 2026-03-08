@@ -3,8 +3,8 @@
  */
 
 import { db } from '../db/client.js';
-import { scheduleLanes, dailyGoals, type NewScheduleLane, type NewDailyGoals } from '../db/schema.js';
-import { eq, and, gte, lte, between } from 'drizzle-orm';
+import { scheduleLanes, dailyGoals } from '../db/schema.js';
+import { eq, and, gte, lte } from 'drizzle-orm';
 
 export class ScheduleService {
   /**

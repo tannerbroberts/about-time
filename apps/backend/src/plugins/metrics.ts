@@ -68,20 +68,22 @@ const activeConnections = new promClient.Gauge({
  */
 const metricsPlugin: FastifyPluginAsync = async (fastify) => {
   // Track active connections
-  fastify.addHook('onRequest', async (request, reply) => {
+  fastify.addHook('onRequest', async (_request, _reply) => {
     activeConnections.inc();
   });
 
-  fastify.addHook('onResponse', async (request, reply) => {
+  fastify.addHook('onResponse', async (_request, _reply) => {
     activeConnections.dec();
   });
 
   // Track request metrics
-  fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.addHook('onRequest', async (request: FastifyRequest, _reply: FastifyReply) => {
+    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
     (request as any).startTime = Date.now();
   });
 
   fastify.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const startTime = (request as any).startTime;
     if (!startTime) return;
 

@@ -26,7 +26,7 @@ export const redis = new Redis({
   host: redisUrl.hostname,
   port: parseInt(redisUrl.port || '6379', 10),
   password: redisUrl.password || undefined,
-  retryStrategy: (times: number) => {
+  retryStrategy: (times: number): number => {
     const delay = Math.min(times * 50, 2000);
     return delay;
   },

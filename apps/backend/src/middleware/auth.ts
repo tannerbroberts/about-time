@@ -46,11 +46,13 @@ export const requireAuth = async (
     }
 
     // Attach user and session to request
+    // eslint-disable-next-line no-param-reassign
     (request as AuthenticatedRequest).user = {
       id: user.id,
       email: user.email,
       displayName: user.displayName,
     };
+    // eslint-disable-next-line no-param-reassign
     (request as AuthenticatedRequest).session = {
       id: session.id,
       expiresAt: session.expiresAt,

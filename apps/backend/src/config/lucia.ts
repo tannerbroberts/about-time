@@ -30,7 +30,7 @@ export const lucia = new Lucia(adapter, {
       sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
   },
-  getUserAttributes: (attributes) => ({
+  getUserAttributes: (attributes): { email: string; displayName: string | null; oauthProvider: string | null } => ({
     email: attributes.email,
     displayName: attributes.displayName,
     oauthProvider: attributes.oauthProvider,
